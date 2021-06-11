@@ -1,0 +1,13 @@
+
+The specification will be split into directories:
+one for the model and one for the profiles.
+
+The model directory will have subdirectories per namespace.
+
+Every class will be in its own file.
+
+All the properties of a namespace will be in a single file.
+
+A new repo https://github.com/spdx/spec-v3-template
+has been created to include template files.
+
