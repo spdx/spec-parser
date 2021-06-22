@@ -5,65 +5,81 @@ from lexer import MDLexer
 
 class MDParser(Parser):
 
+    # debugfile = 'parser.out'
     tokens = MDLexer.tokens
 
-    @_('HEADLINE NEWLINE description metadata data_prop instances')
+    @_('TOPHEADLINE description metadata data_prop instances')
     def document(self, p):
-        return ['document', p.HEADLINE, p.description, p.metadata, p.data_prop]
+        return ['document', p.TOPHEADLINE, p.description, p.metadata, p.data_prop]
 
     @_('empty')
     def description(self, p):
         return ['description']
 
-    @_('HEADLINE NEWLINE TEXTLINE',
-        'HEADLINE NEWLINE TEXTLINE NEWLINE')
+    @_('DESCRIPTION TEXTLINE')
     def description(self, p):
-        return ['description', p.HEADLINE, p.TEXTLINE]
+        return ['description', p.TEXTLINE]
 
     @_('empty')
     def metadata(self, p):
         return ['metadata']
 
-    @_('HEADLINE NEWLINE TEXTLINE',
-        'HEADLINE NEWLINE TEXTLINE NEWLINE')
+    @_('METADATA TEXTLINE',
+        'METADATA ULISTA')
     def metadata(self, p):
-        return ['metadata', p.HEADLINE, p.TEXTLINE]
+        return ['metadata', p[1]]
 
     @_('empty')
     def data_prop(self, p):
         return ['data_prop']
 
-    @_('HEADLINE NEWLINE data_types',
-        'HEADLINE NEWLINE data_types NEWLINE')
+    @_('DATAPROP data_types')
     def data_prop(self, p):
-        return ['data_prop', p.HEADLINE, p.data_types]
+        return ['data_prop', p.data_types]
 
-    @_('data_types NEWLINE data_type')
+    @_('empty')
+    def instances(self, p):
+        return ['instances']
+
+    @_('INSTANCES specs')
+    def instances(self, p):
+        return ['instances', p.specs]
+
+    @_('specs spec')
+    def specs(self, p):
+        return p.specs+[p.spec]
+
+    @_('spec')
+    def specs(self, p):
+        return [p.spec]
+
+    @_('ULISTA')
+    def spec(self, p):
+        return p.ULISTA
+
+    @_('data_types data_type')
     def data_types(self, p):
         return p.data_types+[p.data_type]
 
     @_('data_type')
     def data_types(self, p):
-        return p.data_type
+        return [p.data_type]
 
-    @_('ULIST_ITEM_0 NEWLINE props',
-        'ULIST_ITEM_0 NEWLINE props NEWLINE')
+    @_('ULISTA props')
     def data_type(self, p):
-        return [p.ULIST_ITEM_0, p.props]
+        return [p.ULISTA, p.props]
 
-    @_('props NEWLINE prop')
+    @_('props prop')
     def props(self, p):
-        return p.props0+[p.prop]
+        return p.props+[p.prop]
 
     @_('prop')
     def props(self, p):
         return p.prop
 
-    @_('ULIST_ITEM_1')
+    @_('ULISTB')
     def prop(self, p):
-        return p.ULIST_ITEM_1
-
-    # @_('INSTANCES NEWLINE ')
+        return p.ULISTB
 
     @_('')
     def empty(self, p):
