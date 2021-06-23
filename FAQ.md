@@ -9,17 +9,17 @@
 ## Deliverables
 
 #### Community Bonding
-- [ ] Review the existing discussion and work done around the structure of markdown representation.
+- [X] Review the existing discussion and work done around the structure of markdown representation.
 
-#### Mid evaluation
-- [ ] Toward finalizing the structure of markdown.
+#### Mid evaluation Deliverables
 - [ ] Proposing and documenting the specification of structured markdown in form of RegEx and CFL.
-- [ ] Implementing the parsing tool. 
+- [ ] Implementing the parser for models, profiles with error checking and error reporting. 
+- [ ] Extending parser to auto generate pretty markdown. 
 
-#### Final Evaluation
-- [ ]  Documenting and testing the tool with existing markdowns.
+#### Final Evaluation Deliverables
+- [ ] Extending the parser to output relation information in desired format.
+- [ ] Documenting and testing the tool with existing markdowns.
 - [ ] Improving and packaging tool as a package for better portability.
-- [ ] (On development Branch) Implementing the conversion of structured markdown to Intermediate Representation (JSON or XML)
 
 ## Implementation language and tools
 - Python 3
