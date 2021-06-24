@@ -1,0 +1,32 @@
+document
+    : TOPHEADLINE description metadata instances
+    ;
+
+para
+    : para TEXTLINE
+    | TEXTLINE
+    ;
+
+description 
+    : DESCRIPTION para
+    | empty
+    ;
+
+metadata
+    : METADATA para
+    | empty
+    ;
+
+instances
+    : INSTANCES props
+    | empty
+    ;
+
+props
+    : props ULISTA
+    | ULISTA
+    ;
+
+empty
+    : 
+    ;
