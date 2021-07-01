@@ -43,4 +43,7 @@ if __name__ == '__main__':
         args.out = 'md_generated'
 
     specParser = SpecParser()
-    specParser.parse(args.model, args.profile, args.md, args.out)
+    spec = specParser.parse(args.model, args.profile, args.md, args.out)
+
+    if args.md:
+        spec.dump_md(args.out)

@@ -1,4 +1,4 @@
-from sys import meta_path
+import os
 from helper import safe_open
 from __version__ import __version__
 
@@ -8,8 +8,8 @@ class Spec:
 
         self.model_dir = model_dir
         self.profile_dir = profile_dir
-        self.namespaces = {}
-        self.profiles = {}
+        self.namespaces = dict()
+        self.profiles = dict()
 
     def add_namespace(self, namespace):
 
@@ -30,6 +30,62 @@ class Spec:
             pass
 
         self.profiles[name] = profile
+
+    def dump_md(self, out_dir):
+
+        for name, namespace in self.namespaces.items():
+            namespace.dump_md(os.path.join(out_dir, 'model', f'{name}'))
+
+        for name, profile in self.profiles.items():
+            profile.dump_md(os.path.join(out_dir, 'profiles', f'{name}.md'))
+
+
+class SpecNamespace:
+
+    def __init__(self, name):
+
+        self.name = name
+        self.elements = dict()
+        self.types = dict()
+        self.property = None
+
+    def add_element(self, element):
+        name = element.name
+
+        if name in self.elements:
+            # raiseError(f"ERROR: Element with name: {name} already exists")
+            pass
+
+        self.elements[name] = element
+
+    def add_type(self, type):
+        name = type.name
+
+        if name in self.types:
+            # raiseError(f"ERROR: type with name: {name} already exists")
+            pass
+
+        self.types[name] = type
+
+    def add_property(self, property):
+        if self.property is not None:
+            # raiseError(f"ERROR: property with name: {name} already exists")
+            pass
+
+        self.property = property
+
+    def dump_md(self, dir):
+
+        # print(f'{self.name}\n\t{self.elements}\n\t{self.types}\n\t{self.property}')
+        # return
+        for name, element in self.elements.items():
+            element.dump_md(os.path.join(dir, f'{name}.md'))
+
+        for name, _type in self.types.items():
+            _type.dump_md(os.path.join(dir, f'{name}.md'))
+
+        if self.property:
+            self.property.dump_md(os.path.join(dir, f'properties.md'))
 
 
 class SpecProfile:
@@ -155,22 +211,6 @@ class SpecProperty:
                     for prop_relation in metadata:
                         f.write(f'{prop_relation}\n')
                     f.write('\n')
-
-
-class SpecNamespace:
-
-    def __init__(self, name):
-
-        self.name = name
-
-    def add_element(self, element):
-        name = element.name
-
-        if name in self.elements:
-            # raiseError(f"ERROR: Element with name: {name} already exists")
-            pass
-
-        self.elements[name] = element
 
 
 class SpecElement:
