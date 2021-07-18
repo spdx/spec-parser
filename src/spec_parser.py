@@ -7,7 +7,6 @@ from parser import (
     MDVocab
 )
 from helper import safe_listdir
-
 from utils import *
 
 __all__ = ['SpecParser']
@@ -22,6 +21,8 @@ class SpecParser:
         self.mdClass = MDClass()
         self.mdProperty = MDProperty()
         self.mdVocab = MDVocab()
+
+
 
     def parse(self, spec_dir):
 

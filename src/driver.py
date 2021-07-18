@@ -17,7 +17,7 @@ def get_args():
     argparser.add_argument('--out', type=str,
                            help='Output Directory for generating markdown')
 
-    args = argparser.parse_args(["--md", "spec-v3-template/model"])
+    args = argparser.parse_args()
 
     return args
 
