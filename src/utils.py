@@ -83,10 +83,12 @@ class SpecClass:
 
         self.extract_metadata(metadata)
 
+        # add all default metadata fields
         union_dict(self.metadata, metadata_defaults)
 
         self.extract_properties(props)
 
+        # add all default property fields
         for val in self.properties.values():
             union_dict(val, property_defaults)
 
@@ -158,7 +160,7 @@ class SpecClass:
 
             # write the header
             f.write(
-                f'<!-- Auto generated markdown by Spec-parser {__version__} -->\n\n')
+                f'<!-- Auto generated markdown by Spec-parser v{__version__} -->\n\n')
 
             # write the topheadline
             f.write(f'# {self.name}\n\n')
@@ -182,7 +184,7 @@ class SpecClass:
             f.write('\n')
 
             # write the data_props
-            f.write(f'## Data Properties\n\n')
+            f.write(f'## Properties\n\n')
             for name, subprops in self.properties.items():
                 f.write(f'- {name}\n')
                 for _key, subprop in subprops.items():
@@ -201,6 +203,9 @@ class SpecProperty:
         self.metadata = dict()
 
         self.extract_metadata(metadata)
+
+        # add all default metadata fields
+        union_dict(self.metadata, metadata_defaults)
 
     def extract_metadata(self, mdata_list):
 
@@ -231,7 +236,7 @@ class SpecProperty:
 
             # write the header
             f.write(
-                f'<!-- Auto generated markdown by Spec-parser {__version__} -->\n\n')
+                f'<!-- Auto generated markdown by Spec-parser v{__version__} -->\n\n')
 
             # write the topheadline
             f.write(f'# {self.name}\n\n')
@@ -266,6 +271,10 @@ class SpecVocab:
         self.entries = dict()
 
         self.extract_metadata(metadata)
+
+        # add all default metadata fields
+        union_dict(self.metadata, metadata_defaults)
+
         self.extract_entries(entries)
 
     def extract_metadata(self, mdata_list):
@@ -320,7 +329,7 @@ class SpecVocab:
 
             # write the header
             f.write(
-                f'<!-- Auto generated markdown by Spec-parser {__version__} -->\n\n')
+                f'<!-- Auto generated markdown by Spec-parser v{__version__} -->\n\n')
 
             # write the topheadline
             f.write(f'# {self.name}\n\n')

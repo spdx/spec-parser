@@ -3,6 +3,7 @@ import sys
 import re
 from sly import Parser, Lexer
 
+
 class MyLogger(object):
     def __init__(self, f):
         self.f = f
@@ -19,6 +20,7 @@ class MyLogger(object):
         self.f.write('ERROR: ' + (msg % args) + '\n')
 
     critical = debug
+
 
 class MDLexer(Lexer):
 
@@ -143,7 +145,7 @@ class MDClass(Parser):
         if len(p) == 1:
             return ''
         else:
-            return f"{p.para} {p.TEXTLINE.strip()}"
+            return f"{p.para} {p.TEXTLINE}".strip()
 
     @_('NEWLINE',
         'empty')
