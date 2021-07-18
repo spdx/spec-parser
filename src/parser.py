@@ -7,42 +7,44 @@ from sly import Parser, Lexer
 class MDLexer(Lexer):
 
     tokens = {
-        HASHES_1,
-        HASHES_2,
-        HASHES_3,
-        HASHES_4,
-        HASHES_5,
-        HASHES_6,
+        H1,
+        H2,
+        H3,
+        H4,
+        H5,
+        H6,
         DESCRIPTION,
+        SUMMARY,
         METADATA,
         DATAPROP,
-        INSTANCES,
+        ENTRIES,
         TEXTLINE,
         ULISTA,
         ULISTB,
         NEWLINE,
     }
 
+    SUMMARY = r'((?<=\n)|^)\#{2}\s+Summary\s+(\n+|$)'
     DESCRIPTION = r'((?<=\n)|^)\#{2}\s+Description\s+(\n+|$)'
     METADATA = r'((?<=\n)|^)\#{2}\s+Metadata\s+(\n+|$)'
-    DATAPROP = r'((?<=\n)|^)\#{2}\s+Data Properties\s+(\n+|$)'
-    INSTANCES = r'((?<=\n)|^)\#{2}\s+Instances\s+(\n+|$)'
+    DATAPROP = r'((?<=\n)|^)\#{2}\s+Properties\s+(\n+|$)'
+    ENTRIES = r'((?<=\n)|^)\#{2}\s+Entries\s+(\n+|$)'
 
-    HASHES_6 = r'((?<=\n)|^)\#{6}'
-    HASHES_5 = r'((?<=\n)|^)\#{5}'
-    HASHES_4 = r'((?<=\n)|^)\#{4}'
-    HASHES_3 = r'((?<=\n)|^)\#{3}'
-    HASHES_2 = r'((?<=\n)|^)\#{2}'
-    HASHES_1 = r'((?<=\n)|^)\#{1}'
+    H6 = r'((?<=\n)|^)\#{6}'
+    H5 = r'((?<=\n)|^)\#{5}'
+    H4 = r'((?<=\n)|^)\#{4}'
+    H3 = r'((?<=\n)|^)\#{3}'
+    H2 = r'((?<=\n)|^)\#{2}'
+    H1 = r'((?<=\n)|^)\#{1}'
 
     ULISTA = r'((?<=\n)|^)[*+-][^`*\n\t\\[\]]+(\n+|$)'
-    ULISTB = r'((?<=\n)|^)([ ]{2,4}|\t)[*+-][^`*\n\t\\[\]]+(\n+|$)'
+    ULISTB = r'((?<=\n)|^)([ ]{2,4}|\t)[*+-][^`\n\t\\[\]]+(\n+|$)'
 
     TEXTLINE = r'[^`*\n\t\\[\]]+(\n+|$)'
 
     ignore_comment = r'<!?--(?:(?!-->)(.|\n|\s))*-->\n*'
 
-    @_(r'\n+$')
+    @_(r'\n+')
     def NEWLINE(self, t):
         self.lineno += len(t.value)
         return t
@@ -52,140 +54,86 @@ class MDLexer(Lexer):
         self.index += 1
 
 
-class MDElement(Parser):
+class MDClass(Parser):
 
     # debugfile = 'parser.out'
     tokens = MDLexer.tokens
 
-    @_('topheadline description metadata data_prop')
+    @_('newlines name summary description metadata properties')
     def document(self, p):
-        return SpecElement(p.topheadline, p.description, p.metadata, p.data_prop)
+        return SpecClass(p.name, p.summary, p.description, p.metadata, p.properties)
 
-    @_('HASHES_1 TEXTLINE')
-    def topheadline(self, p):
+    @_('H1 TEXTLINE')
+    def name(self, p):
         return p.TEXTLINE.strip()
 
-    @_('empty')
-    def description(self, p):
-        return p.empty
-
-    @_('DESCRIPTION para')
-    def description(self, p):
+    @_('SUMMARY para',
+        'empty')
+    def summary(self, p):
+        if len(p) == 1:
+            return None
         return p.para
 
-    @_('empty')
-    def metadata(self, p):
-        return None
-
-    @_('METADATA para')
-    def metadata(self, p):
+    @_('DESCRIPTION para',
+        'empty')
+    def description(self, p):
+        if len(p) == 1:
+            return None
         return p.para
 
-    @_('empty')
-    def data_prop(self, p):
+    @_('METADATA metadata_list',
+        'empty')
+    def metadata(self, p):
+        if len(p) == 1:
+            return []
+        return p.metadata_list
+
+    @_('metadata_list ULISTA',
+        'empty')
+    def metadata_list(self, p):
+        if len(p) == 2:
+            return p.metadata_list+[p.ULISTA.strip()]
         return []
 
-    @ _('DATAPROP props')
-    def data_prop(self, p):
-        return p.props
+    @_('DATAPROP entries',
+        'empty')
+    def properties(self, p):
+        if len(p) == 1:
+            return []
+        return p.entries
 
-    @ _('props prop')
-    def props(self, p):
-        return p.props+[p.prop]
+    @_('entries entry',
+        'empty')
+    def entries(self, p):
+        if len(p) == 1:
+            return []
+        return p.entries+[p.entry]
 
-    @ _('prop')
-    def props(self, p):
-        return [p.prop]
+    @_('ULISTA entry_sublist')
+    def entry(self, p):
+        return {'name': p.ULISTA.strip(), 'subprops': p.entry_sublist}
 
-    @ _('ULISTA subprops')
-    def prop(self, p):
-        # TODO: do preprocessing if needed
-        return {'name': p.ULISTA.strip(), 'subprops': p.subprops}
+    @_('entry_sublist ULISTB',
+        'empty')
+    def entry_sublist(self, p):
+        if len(p) == 1:
+            return []
+        return p.entry_sublist + [p.ULISTB.strip()]
 
-    @ _('subprops subprop',
-        'subprop')
-    def subprops(self, p):
-        if len(p) == 2:
-            return p.subprops + [p.subprop]
-        else:
-            return [p.subprop]
-
-    @ _('ULISTB')
-    def subprop(self, p):
-        # TODO: do preprocessing if needed
-        return p.ULISTB.strip()
-
-    @ _('para TEXTLINE',
-        'TEXTLINE')
+    @_('para TEXTLINE',
+        'empty')
     def para(self, p):
         if len(p) == 1:
-            return p.TEXTLINE.strip()
+            return ''
         else:
-            return ' '.join([p.para, p.TEXTLINE.strip()])
+            return f"{p.para} {p.TEXTLINE.strip()}"
 
-    @ _('')
-    def empty(self, p):
+    @_('NEWLINE',
+        'empty')
+    def newlines(self, p):
         return None
 
-    def error(self, p):
-        print('ERROR: ', p)
-        return None
-
-
-class MDType(Parser):
-
-    # debugfile = 'parser.out'
-    tokens = MDLexer.tokens
-
-    @ _('topheadline description metadata instances')
-    def document(self, p):
-        return SpecType(p.topheadline, p.description, p.metadata, p.instances)
-
-    @ _('HASHES_1 TEXTLINE')
-    def topheadline(self, p):
-        return p.TEXTLINE.strip()
-
-    @ _('empty')
-    def description(self, p):
-        return p.empty
-
-    @ _('DESCRIPTION para')
-    def description(self, p):
-        return p.para
-
-    @ _('empty')
-    def metadata(self, p):
-        return None
-
-    @ _('METADATA ULISTA')
-    def metadata(self, p):
-        return p.ULISTA.strip()
-
-    @ _('empty')
-    def instances(self, p):
-        return []
-
-    @ _('INSTANCES instances_list')
-    def instances(self, p):
-        return p.instances_list
-
-    @ _('instances_list ULISTA',
-        'ULISTA')
-    def instances_list(self, p):
-        if len(p) == 2:
-            return p.instances_list + [p.ULISTA.strip()]
-        else:
-            return [p.ULISTA.strip()]
-
-    @ _('para TEXTLINE',
-        'TEXTLINE')
-    def para(self, p):
-        if len(p) == 1:
-            return p.TEXTLINE.strip()
-        else:
-            return ' '.join([p.para, p.TEXTLINE.strip()])
-
-    @ _('')
+    @_('')
     def empty(self, p):
         return None
 
@@ -199,51 +147,59 @@ class MDProperty(Parser):
     # debugfile = 'parser.out'
     tokens = MDLexer.tokens
 
-    @ _('properties')
+    # debugfile = 'parser.out'
+    tokens = MDLexer.tokens
+
+    @_('newlines name summary description metadata')
     def document(self, p):
-        return SpecProperty(p.properties)
+        return SpecProperty(p.name, p.summary, p.description, p.metadata)
 
-    @ _('properties property',
-        'property')
-    def properties(self, p):
-        if len(p) == 2:
-            return p.properties + [p.property]
-        else:
-            return [p.property]
-
-    @ _('topheadline description metadata')
-    def property(self, p):
-        return {'name': p.topheadline, 'description': p.description, 'metadata': p.metadata}
-
-    @ _('HASHES_1 TEXTLINE')
-    def topheadline(self, p):
+    @_('H1 TEXTLINE')
+    def name(self, p):
         return p.TEXTLINE.strip()
 
-    @ _('DESCRIPTION para')
-    def description(self, p):
+    @_('SUMMARY para',
+        'empty')
+    def summary(self, p):
+        if len(p) == 1:
+            return None
         return p.para
 
-    @ _('METADATA prop_relations')
+    @_('DESCRIPTION para',
+        'empty')
+    def description(self, p):
+        if len(p) == 1:
+            return None
+        return p.para
+
+    @_('METADATA metadata_list',
+        'empty')
     def metadata(self, p):
-        return p.prop_relations
+        if len(p) == 1:
+            return []
+        return p.metadata_list
 
-    @ _('prop_relations ULISTA',
-        'ULISTA')
-    def prop_relations(self, p):
+    @_('metadata_list ULISTA',
+        'empty')
+    def metadata_list(self, p):
         if len(p) == 2:
-            return p.prop_relations + [p.ULISTA.strip()]
-        else:
-            return [p.ULISTA.strip()]
+            return p.metadata_list+[p.ULISTA.strip()]
+        return []
 
-    @ _('para TEXTLINE',
-        'TEXTLINE')
+    @_('para TEXTLINE',
+        'empty')
     def para(self, p):
         if len(p) == 1:
-            return p.TEXTLINE.strip()
+            return ''
         else:
-            return ' '.join([p.para, p.TEXTLINE.strip()])
+            return f"{p.para} {p.TEXTLINE.strip()}"
 
-    @ _('')
+    @_('NEWLINE',
+        'empty')
+    def newlines(self, p):
+        return None
+
+    @_('')
     def empty(self, p):
         return None
 
@@ -252,36 +208,75 @@ class MDProperty(Parser):
         return None
 
 
-class MDProfile(Parser):
+class MDVocab(Parser):
 
     # debugfile = 'parser.out'
     tokens = MDLexer.tokens
 
-    @ _('topheadline description')
+    @_('newlines name summary description metadata entries')
     def document(self, p):
-        return SpecProfile(p.topheadline, p.description)
+        return SpecVocab(p.name, p.summary, p.description, p.metadata, p.entries)
 
-    @ _('HASHES_1 TEXTLINE')
-    def topheadline(self, p):
+    @_('H1 TEXTLINE')
+    def name(self, p):
         return p.TEXTLINE.strip()
 
-    @ _('empty')
-    def description(self, p):
-        return p.empty
-
-    @ _('DESCRIPTION para')
-    def description(self, p):
+    @_('SUMMARY para',
+        'empty')
+    def summary(self, p):
+        if len(p) == 1:
+            return None
         return p.para
 
-    @ _('para TEXTLINE',
-        'TEXTLINE')
+    @_('DESCRIPTION para',
+        'empty')
+    def description(self, p):
+        if len(p) == 1:
+            return None
+        return p.para
+
+    @_('METADATA metadata_list',
+        'empty')
+    def metadata(self, p):
+        if len(p) == 1:
+            return []
+        return p.metadata_list
+
+    @_('metadata_list ULISTA',
+        'empty')
+    def metadata_list(self, p):
+        if len(p) == 2:
+            return p.metadata_list+[p.ULISTA.strip()]
+        return []
+
+    @_('ENTRIES entries_list',
+       'empty')
+    def entries(self, p):
+        if len(p) == 1:
+            return []
+        return p.entries_list
+
+    @_('entries_list ULISTA',
+        'empty')
+    def entries_list(self, p):
+        if len(p) == 2:
+            return p.entries_list+[p.ULISTA.strip()]
+        return []
+
+    @_('para TEXTLINE',
+        'empty')
     def para(self, p):
         if len(p) == 1:
-            return p.TEXTLINE.strip()
+            return ''
         else:
-            return ' '.join([p.para, p.TEXTLINE.strip()])
+            return f"{p.para} {p.TEXTLINE.strip()}"
 
-    @ _('')
+    @_('NEWLINE',
+        'empty')
+    def newlines(self, p):
+        return None
+
+    @_('')
     def empty(self, p):
         return None
 
@@ -293,7 +288,7 @@ class MDProfile(Parser):
 if __name__ == '__main__':
 
     lexer = MDLexer()
-    parser = MDProfile()
+    parser = MDClass()
 
     with open(sys.argv[1], "r") as f:
         inp = f.read()
@@ -302,5 +297,4 @@ if __name__ == '__main__':
         print(tok)
 
     result = parser.parse(lexer.tokenize(inp))
-    result.dump_md('nirmal/test.md')
-    print(result)
+    result.dump_md('./test.md')

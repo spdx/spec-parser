@@ -1,6 +1,12 @@
 import os
 import os.path as path
-from parser import *
+from parser import (
+    MDClass,
+    MDLexer,
+    MDProperty,
+    MDVocab
+)
+from helper import safe_listdir
 
 from utils import *
 
@@ -11,141 +17,159 @@ class SpecParser:
 
     def __init__(self):
 
-        # parser related utils
+        # markdown parser
         self.lexer = MDLexer()
-        self.mdClass = MDElement()
-        self.mdType = MDType()
+        self.mdClass = MDClass()
         self.mdProperty = MDProperty()
-        self.mdProfile = MDProfile()
+        self.mdVocab = MDVocab()
 
-    def parse(self, model_dir, profile_dir, dump_md, out_dir):
+    def parse(self, spec_dir):
 
-        # find all namespaces by scanning model directory
-        namespaces = [n for n in os.listdir(
-            model_dir) if path.isdir(path.join(model_dir, n))]
+        # flag for error during parsing
+        isError = False
 
-        spec_obj = Spec(model_dir, profile_dir)
-        for namespace in namespaces:
-            # parse all elements present inside namespace
-            self.parse_namespace(namespace, path.join(
-                model_dir, namespace), spec_obj)
+        # init the Spec object for storing parsed information
+        spec_obj = Spec(spec_dir)
 
-        profiles = [n for n in os.listdir(
-            profile_dir) if path.isfile(path.join(profile_dir, n))]
+        # traverse through all namespace and parse !!
+        for namespace in safe_listdir(spec_dir):
 
-        for profile in profiles:
-            # parse profile of namespace
-            profile_path = os.path.join(profile_dir, profile)
-            self.parse_profile(profile_path, spec_obj)
+            if not path.isdir(path.join(spec_dir, namespace)):
+                continue
 
-        # if we need to dump the result markdown
-        # if dump_md:
-        #     spec_obj.dump_md(out_dir)
+            classes = []
+            properties = []
+            vocabularies = []
+
+            # parse all markdown files inside Classes folder
+            classes_dir = path.join(spec_dir, namespace, 'Classes')
+            for fname in safe_listdir(classes_dir):
+
+                # Construct file path
+                fname = path.join(classes_dir, fname)
+
+                # if file is not markdown file then skip
+                if not self.isMarkdown(fname):
+                    continue
+
+                # try parsing class markdown
+                specClass = self.parse_class(fname)
+
+                if specClass is None:
+                    # set the error flag
+                    isError = True
+                else:
+                    classes.append(specClass)
+
+            # parse all markdown files inside Properties folder
+            props_dir = path.join(spec_dir, namespace, 'Properties')
+            for fname in safe_listdir(props_dir):
+
+                # Construct file path
+                fname = path.join(props_dir, fname)
+
+                # if file is not markdown file then skip
+                if not self.isMarkdown(fname):
+                    continue
+
+                # try parsing property markdown
+                specProperty = self.parse_property(fname)
+
+                if specProperty is None:
+                    # set the error flag
+                    isError = True
+                else:
+                    properties.append(specProperty)
+
+            # parse all markdown files inside Vocabularies folder
+            vocabs_dir = path.join(spec_dir, namespace, 'Vocabularies')
+            for fname in safe_listdir(vocabs_dir):
+
+                # Construct file path
+                fname = path.join(vocabs_dir, fname)
+
+                # if file is not markdown file then skip
+                if not self.isMarkdown(fname):
+                    continue
+
+                # try parsing vacab markdown
+                specVocab = self.parse_vocab(fname)
+
+                if specVocab is None:
+                    # set the error flag
+                    isError = True
+                else:
+                    vocabularies.append(specVocab)
+
+            # add the namespace in spec object
+            spec_obj.add_namespace(
+                namespace, classes, properties, vocabularies)
+
+        # if we encounter error, then return None element
+        if isError:
+            return None
 
         return spec_obj
 
-    def isElement(self, fname):
-        if fname.endswith('.md') and not fname.endswith('Type.md') \
-                and not fname.endswith('properties.md'):
-            return True
-        return False
+    def parse_class(self, fname: str):
 
-    def isType(self, fname):
-        if fname.endswith('Type.md'):
-            return True
-        return False
-
-    def isProperty(self, fname):
-        if fname.endswith('properties.md'):
-            return True
-        return False
-
-    def parse_namespace(self, name, dir, obj):
-
-        namespace_obj = SpecNamespace(name)
-
-        for fname in os.listdir(dir):
-            path = os.path.join(dir, fname)
-            if self.isElement(fname):
-                self.parse_element(path, namespace_obj)
-            elif self.isType(fname):
-                self.parse_type(path, namespace_obj)
-            elif self.isProperty(fname):
-                self.parse_property(path, namespace_obj)
-            else:
-                # report the error and move forward
-                pass
-
-        obj.add_namespace(namespace_obj)
-
-    def parse_element(self, path, obj):
-
-        text = self.get_text(path)
-        specElement = None
+        text = self.get_text(fname)
         if text is None:
             # report to logger and return
-            return
+            return None
 
-        specElement = self.mdClass.parse(self.lexer.tokenize(text))
+        specClass = self.mdClass.parse(self.lexer.tokenize(text))
 
-        if specElement is None:
-            print(path)
+        if specClass is None:
+            print(fname)
             # report to logger and return
-            return
+            return None
 
-        obj.add_element(specElement)
+        return specClass
 
-    def parse_type(self, path, obj):
+    def parse_property(self, fname: str):
 
-        text = self.get_text(path)
+        text = self.get_text(fname)
         if text is None:
             # report to logger and return
-            return
-
-        specType = self.mdType.parse(self.lexer.tokenize(text))
-
-        if specType is None:
-            # report to logger and return
-            return
-
-        obj.add_type(specType)
-
-    def parse_property(self, path, obj):
-
-        text = self.get_text(path)
-        if text is None:
-            # report to logger and return
-            return
+            return None
 
         specProperty = self.mdProperty.parse(self.lexer.tokenize(text))
 
         if specProperty is None:
+            print(fname)
             # report to logger and return
-            return
-
-        obj.add_property(specProperty)
-
-    def parse_profile(self, path, obj):
-
-        text = self.get_text(path)
-        if text is None:
-            # report to logger and return
-            return
-
-        specProfile = self.mdProfile.parse(self.lexer.tokenize(text))
-
-        if specProfile is None:
-            # report to logger and return
-            return
-
-        obj.add_profile(specProfile)
-
-    def get_text(self, name):
-
-        if not os.path.isfile(name):
             return None
 
-        with open(name, "r") as f:
+        return specProperty
+
+    def parse_vocab(self, fname: str):
+
+        text = self.get_text(fname)
+        if text is None:
+            # report to logger and return
+            return None
+
+        specVocab = self.mdVocab.parse(self.lexer.tokenize(text))
+
+        if specVocab is None:
+            print(fname)
+            # report to logger and return
+            return None
+
+        return specVocab
+
+    def isMarkdown(self, fname):
+        if path.isfile(fname) and fname.endswith('.md'):
+            return True
+        return False
+
+    def get_text(self, fname):
+
+        if not os.path.isfile(fname):
+            return None
+
+        with open(fname, "r") as f:
             inp = f.read()
 
         return inp
