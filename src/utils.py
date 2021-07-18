@@ -1,7 +1,12 @@
 import os
 import re
 from os import path
-from helper import safe_open
+from helper import (
+    safe_open, 
+    union_dict, 
+    metadata_defaults,
+    property_defaults
+)
 from __version__ import __version__
 
 
@@ -77,7 +82,13 @@ class SpecClass:
         self.properties = dict()
 
         self.extract_metadata(metadata)
+
+        union_dict(self.metadata, metadata_defaults)
+
         self.extract_properties(props)
+
+        for val in self.properties.values():
+            union_dict(val, property_defaults)
 
     def extract_metadata(self, mdata_list):
 
@@ -99,7 +110,7 @@ class SpecClass:
             if _key in self.metadata:
                 # report the error
                 pass
-
+            
             self.metadata[_key] = _value
 
     def extract_properties(self, props_list):
