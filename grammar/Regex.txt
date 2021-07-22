@@ -1,0 +1,21 @@
+TOPHEADLINE: '((?<=\n)|^)\#{1}\s+[^`*\n\t#\\[\]]+(\n+|$)'
+
+DESCRIPTION: '((?<=\n)|^)\#{2}\s+Description\s+(\n+|$)'
+
+METADATA: '((?<=\n)|^)\#{2}\s+Metadata\s+(\n+|$)'
+
+DATAPROP: '((?<=\n)|^)\#{2}\s+Data Properties\s+(\n+|$)'
+
+INSTANCES: '((?<=\n)|^)\#{2}\s+Instances\s+(\n+|$)'
+
+HEADLINE: '((?<=\n)|^)\#{1,6}\s+[^`*\n\t#\\[\]]+(\n+|$)'
+
+ULISTA: '((?<=\n)|^)[*+-]\s+[^`*\n\t\\[\]]+(\n+|$)'
+
+ULISTB: '((?<=\n)|^)\s[*+-]\s+[^`*\n\t\\[\]]+(\n+|$)'
+
+TEXTLINE: '[^`*\n\t\\[\]]+(\n+|$)'
+
+NEWLINE: '\n+$'
+
+COMMENT: '<!?--(?:(?!-->)(.|\n|\s))*-->\n*'

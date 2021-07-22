@@ -1,0 +1,36 @@
+document
+    : TOPHEADLINE description metadata dataprop
+    ;
+
+para
+    : para TEXTLINE
+    | TEXTLINE
+    ;
+
+description 
+    : DESCRIPTION para
+    | empty
+    ;
+
+metadata
+    : METADATA para
+    | empty
+    ;
+
+dataprop
+    : DATAPROP props
+    | empty
+    ;
+
+props
+    : ULISTA subprops
+    ;
+
+subprops
+    : subprops ULISTB
+    | ULISTB
+    ;
+
+empty
+    : 
+    ;
