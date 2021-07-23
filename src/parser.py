@@ -22,6 +22,25 @@ class MyLogger(object):
     critical = debug
 
 
+class MDLexerList(Lexer):
+    tokens = {
+        WORD,
+        COLON,
+        NEWLINE
+    }
+
+    WORD = r'[^\s]*[^\s:]'
+    COLON = r'\s*:\s'
+
+    @_(r'\n+')
+    def NEWLINE(self, t):
+        self.lineno += len(t.value)
+        self.pop_state()
+        return t
+
+    ignore_whitespace = r'\s+'
+
+
 class MDLexer(Lexer):
 
     tokens = {
@@ -36,7 +55,11 @@ class MDLexer(Lexer):
         METADATA,
         DATAPROP,
         ENTRIES,
+        WORD,
+        COLON,
         TEXTLINE,
+        ULISTA_INIT,
+        ULISTB_INIT,
         ULISTA,
         ULISTB,
         NEWLINE,
@@ -54,6 +77,17 @@ class MDLexer(Lexer):
     H3 = r'((?<=\n)|^)\#{3}'
     H2 = r'((?<=\n)|^)\#{2}'
     H1 = r'((?<=\n)|^)\#{1}'
+
+    @_(r'((?<=\n)|^)[*+-]')
+    def ULISTA_INIT(self, t):
+        self.push_state(MDLexerList)
+        return t
+
+    @_(r'((?<=\n)|^)([ ]{2,4}|\t)[*+-]')
+    def ULISTB_INIT(self, t):
+        self.push_state(MDLexerList)
+        return t
+
 
     ULISTA = r'((?<=\n)|^)[*+-][^`*\n\t\\[\]]+(\n+|$)'
     ULISTB = r'((?<=\n)|^)([ ]{2,4}|\t)[*+-][^`\n\t\\[\]]+(\n+|$)'
@@ -78,7 +112,7 @@ class MDClass(Parser):
     log = MyLogger(sys.stderr)
     tokens = MDLexer.tokens
 
-    @_('newlines name summary description metadata properties')
+    @_('maybe_newlines name summary description metadata properties')
     def document(self, p):
         return SpecClass(p.name, p.summary, p.description, p.metadata, p.properties)
 
@@ -107,12 +141,16 @@ class MDClass(Parser):
             return []
         return p.metadata_list
 
-    @_('metadata_list ULISTA',
+    @_('metadata_list metadata_line',
         'empty')
     def metadata_list(self, p):
         if len(p) == 2:
-            return p.metadata_list+[p.ULISTA.strip()]
+            return p.metadata_list+[p.metadata_line]
         return []
+
+    @_('ULISTA_INIT word COLON word_list')
+    def metadata_line(self, p):
+        return {'name': p.word, 'values': p.word_list}
 
     @_('DATAPROP entries',
         'empty')
@@ -128,16 +166,32 @@ class MDClass(Parser):
             return []
         return p.entries+[p.entry]
 
-    @_('ULISTA entry_sublist')
+    @_('ULISTA_INIT word avline_list')
     def entry(self, p):
-        return {'name': p.ULISTA.strip(), 'subprops': p.entry_sublist}
+        return {'name': p.word, 'values': p.avline_list}
 
-    @_('entry_sublist ULISTB',
-        'empty')
-    def entry_sublist(self, p):
+    @_('avline_list avline',
+        'avline')
+    def avline_list(self, p):
         if len(p) == 1:
-            return []
-        return p.entry_sublist + [p.ULISTB.strip()]
+            return [p.avline]
+        return p.avline_list + [p.avline]
+
+    @_('ULISTB_INIT word COLON word_list')
+    def avline(self, p):
+        return {'name': p.word, 'values': p.word_list}
+
+    @_('WORD NEWLINE',
+        'WORD')
+    def word(self, p):
+        return p.WORD.strip()
+
+    @_('word_list word',
+        'word')
+    def word_list(self, p):
+        if len(p) == 1:
+            return [p.word]
+        return p.word_list + [p.word]
 
     @_('para TEXTLINE',
         'empty')
@@ -147,9 +201,13 @@ class MDClass(Parser):
         else:
             return f"{p.para} {p.TEXTLINE}".strip()
 
-    @_('NEWLINE',
-        'empty')
+    @_('NEWLINE')
     def newlines(self, p):
+        return None
+
+    @_('newlines',
+        'empty')
+    def maybe_newlines(self, p):
         return None
 
     @_('')
@@ -167,10 +225,7 @@ class MDProperty(Parser):
     log = MyLogger(sys.stderr)
     tokens = MDLexer.tokens
 
-    # debugfile = 'parser.out'
-    tokens = MDLexer.tokens
-
-    @_('newlines name summary description metadata')
+    @_('maybe_newlines name summary description metadata')
     def document(self, p):
         return SpecProperty(p.name, p.summary, p.description, p.metadata)
 
@@ -199,12 +254,28 @@ class MDProperty(Parser):
             return []
         return p.metadata_list
 
-    @_('metadata_list ULISTA',
+    @_('metadata_list metadata_line',
         'empty')
     def metadata_list(self, p):
         if len(p) == 2:
-            return p.metadata_list+[p.ULISTA.strip()]
+            return p.metadata_list+[p.metadata_line]
         return []
+
+    @_('ULISTA_INIT word COLON word_list')
+    def metadata_line(self, p):
+        return {'name': p.word, 'values': p.word_list}
+        
+    @_('WORD NEWLINE',
+        'WORD')
+    def word(self, p):
+        return p.WORD.strip()
+
+    @_('word_list word',
+        'word')
+    def word_list(self, p):
+        if len(p) == 1:
+            return [p.word]
+        return p.word_list + [p.word]
 
     @_('para TEXTLINE',
         'empty')
@@ -214,9 +285,13 @@ class MDProperty(Parser):
         else:
             return f"{p.para} {p.TEXTLINE.strip()}"
 
-    @_('NEWLINE',
-        'empty')
+    @_('NEWLINE')
     def newlines(self, p):
+        return None
+
+    @_('newlines',
+        'empty')
+    def maybe_newlines(self, p):
         return None
 
     @_('')
@@ -234,7 +309,7 @@ class MDVocab(Parser):
     log = MyLogger(sys.stderr)
     tokens = MDLexer.tokens
 
-    @_('newlines name summary description metadata entries')
+    @_('maybe_newlines name summary description metadata entries')
     def document(self, p):
         return SpecVocab(p.name, p.summary, p.description, p.metadata, p.entries)
 
@@ -263,26 +338,46 @@ class MDVocab(Parser):
             return []
         return p.metadata_list
 
-    @_('metadata_list ULISTA',
+    @_('metadata_list metadata_line',
         'empty')
     def metadata_list(self, p):
         if len(p) == 2:
-            return p.metadata_list+[p.ULISTA.strip()]
+            return p.metadata_list+[p.metadata_line]
         return []
 
-    @_('ENTRIES entries_list',
+    @_('ULISTA_INIT word COLON word_list')
+    def metadata_line(self, p):
+        return {'name': p.word, 'values': p.word_list}
+
+    @_('ENTRIES entry_list',
        'empty')
     def entries(self, p):
         if len(p) == 1:
             return []
-        return p.entries_list
+        return p.entry_list
 
-    @_('entries_list ULISTA',
+    @_('entry_list entry_line',
         'empty')
-    def entries_list(self, p):
+    def entry_list(self, p):
         if len(p) == 2:
-            return p.entries_list+[p.ULISTA.strip()]
+            return p.entry_list+[p.entry_line]
         return []
+
+    @_('ULISTA_INIT word COLON word_list')
+    def entry_line(self, p):
+        return {'name': p.word, 'values': p.word_list}
+
+    @_('WORD NEWLINE',
+        'WORD')
+    def word(self, p):
+        return p.WORD.strip()
+
+    @_('word_list word',
+        'word')
+    def word_list(self, p):
+        if len(p) == 1:
+            return [p.word]
+        return p.word_list + [p.word]
 
     @_('para TEXTLINE',
         'empty')
@@ -292,9 +387,13 @@ class MDVocab(Parser):
         else:
             return f"{p.para} {p.TEXTLINE.strip()}"
 
-    @_('NEWLINE',
-        'empty')
+    @_('NEWLINE')
     def newlines(self, p):
+        return None
+
+    @_('newlines',
+        'empty')
+    def maybe_newlines(self, p):
         return None
 
     @_('')
@@ -309,7 +408,7 @@ class MDVocab(Parser):
 if __name__ == '__main__':
 
     lexer = MDLexer()
-    parser = MDClass()
+    parser = MDVocab()
 
     with open(sys.argv[1], "r") as f:
         inp = f.read()
