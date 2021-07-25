@@ -1,7 +1,7 @@
 import os
+import logging
 from argparse import ArgumentParser
-from spec_parser import SpecParser
-
+from helper import ErrorFoundFilter, isError
 
 def get_args():
 
@@ -13,6 +13,7 @@ def get_args():
 
     argparser.add_argument('--md', action="store_true",
                            help='Dumps markdown')
+
 
     argparser.add_argument('--out', type=str,
                            help='Output Directory for generating markdown')
@@ -26,6 +27,12 @@ if __name__ == '__main__':
 
     args = get_args()
 
+    logging.basicConfig(format='%(name)-18s: %(levelname)-8s %(message)s')
+    logger = logging.getLogger()
+    for handler in logger.handlers:
+        handler.addFilter(ErrorFoundFilter())
+        break
+
     if not os.path.isdir(args.spec_dir):
         print(
             f'ERROR: Directory containing models :{args.spec_dir} doesn\'t exists')
@@ -34,8 +41,8 @@ if __name__ == '__main__':
     if args.out is None:
         args.out = 'md_generated'
 
+    from spec_parser import SpecParser
     specParser = SpecParser()
     spec = specParser.parse(args.spec_dir)
-
     if args.md:
         spec.dump_md(args.out)

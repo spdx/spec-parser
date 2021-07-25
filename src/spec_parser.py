@@ -8,6 +8,9 @@ from parser import (
 )
 from helper import safe_listdir
 from utils import *
+import logging
+
+logger = logging.getLogger(__name__)
 
 __all__ = ['SpecParser']
 
@@ -21,13 +24,9 @@ class SpecParser:
         self.mdClass = MDClass()
         self.mdProperty = MDProperty()
         self.mdVocab = MDVocab()
-
-
+        self.logger = logging.getLogger(self.__class__.__name__)
 
     def parse(self, spec_dir):
-
-        # flag for error during parsing
-        isError = False
 
         # init the Spec object for storing parsed information
         spec_obj = Spec(spec_dir)
@@ -56,10 +55,7 @@ class SpecParser:
                 # try parsing class markdown
                 specClass = self.parse_class(fname)
 
-                if specClass is None:
-                    # set the error flag
-                    isError = True
-                else:
+                if specClass is not None:
                     classes.append(specClass)
 
             # parse all markdown files inside Properties folder
@@ -76,10 +72,7 @@ class SpecParser:
                 # try parsing property markdown
                 specProperty = self.parse_property(fname)
 
-                if specProperty is None:
-                    # set the error flag
-                    isError = True
-                else:
+                if specProperty is not None:
                     properties.append(specProperty)
 
             # parse all markdown files inside Vocabularies folder
@@ -96,19 +89,12 @@ class SpecParser:
                 # try parsing vacab markdown
                 specVocab = self.parse_vocab(fname)
 
-                if specVocab is None:
-                    # set the error flag
-                    isError = True
-                else:
+                if specVocab is not None:
                     vocabularies.append(specVocab)
 
             # add the namespace in spec object
             spec_obj.add_namespace(
                 namespace, classes, properties, vocabularies)
-
-        # if we encounter error, then return None element
-        if isError:
-            return None
 
         return spec_obj
 
@@ -116,14 +102,12 @@ class SpecParser:
 
         text = self.get_text(fname)
         if text is None:
-            # report to logger and return
             return None
 
         specClass = self.mdClass.parse(self.lexer.tokenize(text))
 
         if specClass is None:
-            print(fname)
-            # report to logger and return
+            self.logger.error(f'Unable to parse `Class` markdown: \'{fname}\'')
             return None
 
         return specClass
@@ -132,14 +116,13 @@ class SpecParser:
 
         text = self.get_text(fname)
         if text is None:
-            # report to logger and return
             return None
 
         specProperty = self.mdProperty.parse(self.lexer.tokenize(text))
 
         if specProperty is None:
             print(fname)
-            # report to logger and return
+            self.logger.error(f'Unable to parse `Property` markdown: \'{fname}\'')
             return None
 
         return specProperty
@@ -148,14 +131,12 @@ class SpecParser:
 
         text = self.get_text(fname)
         if text is None:
-            # report to logger and return
             return None
 
         specVocab = self.mdVocab.parse(self.lexer.tokenize(text))
 
         if specVocab is None:
-            print(fname)
-            # report to logger and return
+            self.logger.error(f'Unable to parse `Vocabulary` markdown: \'{fname}\'')
             return None
 
         return specVocab
@@ -168,6 +149,7 @@ class SpecParser:
     def get_text(self, fname):
 
         if not os.path.isfile(fname):
+            self.logger(f'No such file exists: \'{fname}\'')
             return None
 
         with open(fname, "r") as f:

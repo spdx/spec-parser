@@ -1,25 +1,25 @@
 from utils import *
+import logging
 import sys
 import re
 from sly import Parser, Lexer
 
+# class MyLogger(object):
+#     def __init__(self, f):
+#         self.f = f
 
-class MyLogger(object):
-    def __init__(self, f):
-        self.f = f
+#     def debug(self, msg, *args, **kwargs):
+#         self.f.write((msg % args) + '\n')
 
-    def debug(self, msg, *args, **kwargs):
-        self.f.write((msg % args) + '\n')
+#     info = debug
 
-    info = debug
+#     def warning(self, msg, *args, **kwargs):
+#         self.f.write('WARNING: ' + (msg % args) + '\n')
 
-    def warning(self, msg, *args, **kwargs):
-        self.f.write('WARNING: ' + (msg % args) + '\n')
+#     def error(self, msg, *args, **kwargs):
+#         self.f.write('ERROR: ' + (msg % args) + '\n')
 
-    def error(self, msg, *args, **kwargs):
-        self.f.write('ERROR: ' + (msg % args) + '\n')
-
-    critical = debug
+#     critical = debug
 
 
 class MDLexer(Lexer):
@@ -75,7 +75,7 @@ class MDLexer(Lexer):
 class MDClass(Parser):
 
     # debugfile = 'parser.out'
-    log = MyLogger(sys.stderr)
+    log = logging.getLogger(__name__+'.MDClass')
     tokens = MDLexer.tokens
 
     @_('newlines name summary description metadata properties')
@@ -164,7 +164,7 @@ class MDClass(Parser):
 class MDProperty(Parser):
 
     # debugfile = 'parser.out'
-    log = MyLogger(sys.stderr)
+    log = logging.getLogger(__name__+'.MDProperty')
     tokens = MDLexer.tokens
 
     # debugfile = 'parser.out'
@@ -231,7 +231,7 @@ class MDProperty(Parser):
 class MDVocab(Parser):
 
     # debugfile = 'parser.out'
-    log = MyLogger(sys.stderr)
+    log = logging.getLogger(f'{__name__}.MDVocab')
     tokens = MDLexer.tokens
 
     @_('newlines name summary description metadata entries')

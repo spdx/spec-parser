@@ -1,9 +1,25 @@
 import os
+import logging
 from os import path
 
 metadata_defaults = {'Instantiability': 'Concrete', 'Status': 'Stable'}
 property_defaults = {'minCount': 0, 'maxCount': '*'}
 
+class ErrorFoundFilter(logging.Filter):
+    def __init__(self):
+        self.worst_level = logging.INFO
+    def filter(self, record):
+        if record.levelno > self.worst_level:
+            self.worst_level = record.levelno
+        return True
+        
+def isError():
+    logger = logging.getLogger()
+    for handler in logger.handlers:
+        for filter in handler.filters:
+            if isinstance(filter, ErrorFoundFilter):
+                return filter.worst_level >= logging.ERROR
+    return False
 
 def safe_open(fname, *args):
     ''' Open "fname" after creating neccessary nested directories as needed.
