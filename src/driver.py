@@ -46,3 +46,5 @@ if __name__ == '__main__':
     spec = specParser.parse(args.spec_dir)
     if args.md:
         spec.dump_md(args.out)
+    
+    spec.gen_rdf()

@@ -1,4 +1,5 @@
 import os
+import rdflib
 import logging
 import re
 from os import path
@@ -79,12 +80,50 @@ class Spec:
                 vocab_obj.dump_md(
                     path.join(out_dir, namespace_name, 'Vocabularies', f'{name}.md'))
 
+    def gen_rdf(self):
+
+        from rdflib.namespace import RDF, OWL, RDFS, XSD
+        
+        g = rdflib.Graph()
+
+        NS0 = rdflib.Namespace("http://www.w3.org/2003/06/sw-vocab-status/ns#")
+        g.bind('ns0', NS0)
+
+
+        _dict = {'ns0': NS0, 'rdf': RDF, 'owl':OWL, 'rdfs':RDFS, 'xsd':XSD}
+
+        # add all custom namespaces
+        for _name in self.namespaces.keys():
+            nspace_obj = rdflib.Namespace(f'https://spdx.org/test/{_name}#')
+            _dict[_name] = nspace_obj
+
+
+        # add triples starting from each namespaces
+        for _namespace in self.namespaces.values():
+
+            classes = _namespace['classes']
+            properties = _namespace['properties']
+            vocabs = _namespace['vocabs']
+
+            for class_obj in classes.values():
+                class_obj._gen_rdf(g, _dict)
+
+            for prop_obj in properties.values():
+                prop_obj._gen_rdf(g, _dict)
+
+            for vocab_obj in vocabs.values():
+                vocab_obj._gen_rdf(g, _dict)
+
+        print(g.serialize(format="turtle"))
 
 class SpecClass:
 
     def __init__(self, name, summary, description, metadata, props):
 
+        self.spec = None
+        self.namepace_name = None
         self.logger = logging.getLogger(self.__class__.__name__)
+
         self.name = name
         self.summary = summary
         self.description = description
@@ -202,10 +241,44 @@ class SpecClass:
                     f.write(f'  - {_key}: {subprop}\n')
                 f.write('\n')
 
+    def _gen_rdf(self, graph, nspaces_dict):
+
+        RDF = nspaces_dict['rdf']
+        RDFS = nspaces_dict['rdfs']
+        OWL = nspaces_dict['owl']
+        CUR = nspaces_dict[self.namespace_name]
+
+        class_node = CUR[self.metadata.get('name', self.name)]
+        graph.add((class_node, RDF.type, OWL['Class']))
+        
+        if 'SubclassOf' in self.metadata and self.metadata['SubclassOf'] != 'none':
+            # check if object is included in other namespace or in self
+            # self.logger.warning(f'{class_node} {self.rdf_namepace(self.metadata["SubclassOf"],nspaces_dict)}')
+            graph.add((class_node, RDFS.subClassOf, self.rdf_namepace(self.metadata['SubclassOf'],nspaces_dict)))
+    
+    def rdf_namepace(self, obj_str, nspaces_dict):
+
+        splitted_str = re.split(r':', obj_str)
+        if len(splitted_str) > 2:
+            self.logger.error('Invalid object')
+            return
+
+        if len(splitted_str) == 2:
+            CUR = nspaces_dict[splitted_str[0]]
+        else:
+            CUR = nspaces_dict[self.namespace_name]
+        
+        return CUR[splitted_str[-1]]
+
 
 class SpecProperty:
 
     def __init__(self, name, summary, description, metadata):
+
+
+        self.spec = None
+        self.namepace_name = None
+        self.logger = logging.getLogger(self.__class__.__name__)
 
         self.name = name
         self.summary = summary
@@ -269,11 +342,54 @@ class SpecProperty:
             for name, val in self.metadata.items():
                 f.write(f'- {name}: {val}\n')
 
+    def _gen_rdf(self, graph, nspaces_dict):
+
+        RDF = nspaces_dict['rdf']
+        RDFS = nspaces_dict['rdfs']
+        OWL = nspaces_dict['owl']
+        CUR = nspaces_dict[self.namespace_name]
+        
+        property_node = CUR[self.metadata['name']]
+
+        nature = self.metadata.get('Nature', 'ObjectProperty')
+        if nature == 'DataProperty':
+            nature = 'DatatypeProperty'
+
+        graph.add((property_node, RDF.type, OWL[nature]))
+        
+        if 'Range' in self.metadata:
+
+            # check if object is included in other namespace or in self
+            graph.add((property_node, RDFS.range, self.rdf_namepace(self.metadata['Range'],nspaces_dict)))
+
+        if 'Domain' in self.metadata:
+
+            # check if object is included in other namespace or in self
+            graph.add((property_node, RDFS.domain, self.rdf_namepace(self.metadata['Domain'],nspaces_dict)))
+    
+    def rdf_namepace(self, obj_str, nspaces_dict):
+
+        splitted_str = re.split(r':', obj_str)
+        if len(splitted_str) > 2:
+            self.logger.error('Invalid object')
+            return
+
+        if len(splitted_str) == 2:
+            CUR = nspaces_dict[splitted_str[0]]
+        else:
+            CUR = nspaces_dict[self.namespace_name]
+        
+        return CUR[splitted_str[-1]]
 
 class SpecVocab:
 
     def __init__(self, name, summary, description, metadata, entries):
 
+
+        self.spec = None
+        self.namepace_name = None
+        self.logger = logging.getLogger(self.__class__.__name__)
+        
         self.name = name
         self.summary = summary
         self.description = description
@@ -367,3 +483,31 @@ class SpecVocab:
             f.write(f'## Entries\n\n')
             for name, val in self.entries.items():
                 f.write(f'- {name}: {val}\n')
+
+    def _gen_rdf(self, graph, nspaces_dict):
+
+        RDF = nspaces_dict['rdf']
+        RDFS = nspaces_dict['rdfs']
+        OWL = nspaces_dict['owl']
+        CUR = nspaces_dict[self.namespace_name]
+        
+        class_node = CUR[self.metadata['name']]
+        graph.add((class_node, RDF.type, OWL['Class']))
+        
+        # if 'SubClassOf' in self.metadata and self.metadata['SubClassOf'] != 'none':
+        #     # check if object is included in other namespace or in self
+        #     graph.add(class_node, RDFS.subClassOf, self.rdf_namepace(self.metadata['SubClassOf'],nspaces_dict))
+    
+    def rdf_namepace(self, obj_str, nspaces_dict):
+
+        splitted_str = re.split(r':', obj_str)
+        if len(splitted_str) > 2:
+            self.logger.error('Invalid object')
+            return
+
+        if len(splitted_str) == 2:
+            CUR = nspaces_dict[splitted_str[0]]
+        else:
+            CUR = nspaces_dict[self.namepace_name]
+        
+        return CUR[splitted_str[-1]]

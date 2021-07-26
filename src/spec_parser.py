@@ -55,8 +55,12 @@ class SpecParser:
                 # try parsing class markdown
                 specClass = self.parse_class(fname)
 
-                if specClass is not None:
-                    classes.append(specClass)
+                if specClass is None:
+                    continue
+
+                specClass.namespace_name = namespace
+                specClass.spec = self    
+                classes.append(specClass)
 
             # parse all markdown files inside Properties folder
             props_dir = path.join(spec_dir, namespace, 'Properties')
@@ -72,8 +76,12 @@ class SpecParser:
                 # try parsing property markdown
                 specProperty = self.parse_property(fname)
 
-                if specProperty is not None:
-                    properties.append(specProperty)
+                if specProperty is None:
+                    continue
+
+                specProperty.namespace_name = namespace
+                specProperty.spec = self
+                properties.append(specProperty)
 
             # parse all markdown files inside Vocabularies folder
             vocabs_dir = path.join(spec_dir, namespace, 'Vocabularies')
@@ -89,8 +97,12 @@ class SpecParser:
                 # try parsing vacab markdown
                 specVocab = self.parse_vocab(fname)
 
-                if specVocab is not None:
-                    vocabularies.append(specVocab)
+                if specVocab is None:
+                    continue
+
+                specVocab.namespace_name = namespace
+                specVocab.spec = self
+                vocabularies.append(specVocab)
 
             # add the namespace in spec object
             spec_obj.add_namespace(
@@ -142,9 +154,15 @@ class SpecParser:
         return specVocab
 
     def isMarkdown(self, fname):
-        if path.isfile(fname) and fname.endswith('.md'):
-            return True
-        return False
+
+        if not path.isfile(fname) or not fname.endswith('.md'):
+            return False
+
+        if m:= re.match(r'^_(\w*).md$',path.split(fname)[-1]):
+            self.logger.warning(f'skipping {fname}')
+            return False 
+
+        return True
 
     def get_text(self, fname):
 
