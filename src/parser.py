@@ -21,7 +21,6 @@ from sly import Parser, Lexer
 
 #     critical = debug
 
-
 class MDLexer(Lexer):
 
     tokens = {
@@ -34,33 +33,35 @@ class MDLexer(Lexer):
         DESCRIPTION,
         SUMMARY,
         METADATA,
-        DATAPROP,
+        PROPERTIES,
         ENTRIES,
+        H_TEXTLINE,
         TEXTLINE,
         ULISTA,
         ULISTB,
         NEWLINE,
     }
 
+    ignore_comment = r'<!?--(?:(?!-->)(.|\n|\s))*-->\n*'
+    
     SUMMARY = r'((?<=\n)|^)\#{2}\s+Summary\s+(\n+|$)'
     DESCRIPTION = r'((?<=\n)|^)\#{2}\s+Description\s+(\n+|$)'
     METADATA = r'((?<=\n)|^)\#{2}\s+Metadata\s+(\n+|$)'
-    DATAPROP = r'((?<=\n)|^)\#{2}\s+Properties\s+(\n+|$)'
+    PROPERTIES = r'((?<=\n)|^)\#{2}\s+Properties\s+(\n+|$)'
     ENTRIES = r'((?<=\n)|^)\#{2}\s+Entries\s+(\n+|$)'
+    
+    H6 = r'((?<=\n)|^)\s*\#{6}'
+    H5 = r'((?<=\n)|^)\s*\#{5}'
+    H4 = r'((?<=\n)|^)\s*\#{4}'
+    H3 = r'((?<=\n)|^)\s*\#{3}'
+    H2 = r'((?<=\n)|^)\s*\#{2}'
+    H1 = r'((?<=\n)|^)\s*\#{1}'
+    H_TEXTLINE = r'(?<=\#)[^\n]+(\n+|$)'
 
-    H6 = r'((?<=\n)|^)\#{6}'
-    H5 = r'((?<=\n)|^)\#{5}'
-    H4 = r'((?<=\n)|^)\#{4}'
-    H3 = r'((?<=\n)|^)\#{3}'
-    H2 = r'((?<=\n)|^)\#{2}'
-    H1 = r'((?<=\n)|^)\#{1}'
+    ULISTA = r'((?<=\n)|^)[*+-][^\n]+(\n+|$)'
+    ULISTB = r'((?<=\n)|^)([ ]{2,4}|\t)[*+-][^\n]+(\n+|$)'
 
-    ULISTA = r'((?<=\n)|^)[*+-][^`*\n\t\\[\]]+(\n+|$)'
-    ULISTB = r'((?<=\n)|^)([ ]{2,4}|\t)[*+-][^`\n\t\\[\]]+(\n+|$)'
-
-    TEXTLINE = r'[^`*\n\t\\[\]]+(\n+|$)'
-
-    ignore_comment = r'<!?--(?:(?!-->)(.|\n|\s))*-->\n*'
+    TEXTLINE = r'((?<=\n)|^)[^\n]+(\n+|$)'
 
     @_(r'\n+')
     def NEWLINE(self, t):
@@ -71,85 +72,136 @@ class MDLexer(Lexer):
         print("Illegal character '%s'" % t.value[0])
         self.index += 1
 
-
 class MDClass(Parser):
 
     # debugfile = 'parser.out'
     log = logging.getLogger(__name__+'.MDClass')
     tokens = MDLexer.tokens
+    isError = False
 
-    @_('newlines name summary description metadata properties')
+    @_('maybe_newlines name summary description metadata properties')
     def document(self, p):
-        return SpecClass(p.name, p.summary, p.description, p.metadata, p.properties)
+        if self.isError:
+            return None
+        return SpecClass(p.name, p.summary
+        , p.description, p.metadata, p.properties)
 
-    @_('H1 TEXTLINE')
+    @_('H1 H_TEXTLINE')
     def name(self, p):
-        return p.TEXTLINE.strip()
+        return p.H_TEXTLINE.strip()
 
-    @_('SUMMARY para',
-        'empty')
+    @_('SUMMARY para')
     def summary(self, p):
-        if len(p) == 1:
-            return None
-        return p.para
+        return p.para.strip()
 
-    @_('DESCRIPTION para',
-        'empty')
+    @_('DESCRIPTION para')
     def description(self, p):
-        if len(p) == 1:
-            return None
-        return p.para
+        return p.para.strip()
 
-    @_('METADATA metadata_list',
-        'empty')
+    @_('METADATA metadata_list')
     def metadata(self, p):
-        if len(p) == 1:
-            return []
         return p.metadata_list
 
-    @_('metadata_list ULISTA',
+    @_('metadata_list metadata_line',
         'empty')
     def metadata_list(self, p):
         if len(p) == 2:
-            return p.metadata_list+[p.ULISTA.strip()]
+            return p.metadata_list+[p.metadata_line]
         return []
 
-    @_('DATAPROP entries',
-        'empty')
+    @_('ULISTA')
+    def metadata_line(self, p):
+        
+        ulista = p.ULISTA
+
+        # strip the md list identifier, ie r'[-*+]'
+        ulista = re.split(r'[-*+]', ulista, 1)[-1].strip()
+
+        # strip the key and value in metadata entry, ie. <key>: <value>
+        ulista = re.split(r'\s*:\s', ulista, 1)
+
+        if len(ulista) != 2:
+            # report the invalid syntax
+            self.error(p._slice[0])
+            return None
+
+        _key = ulista[0].strip()
+        _values = re.split(r'\s',ulista[-1].strip())
+
+        return {'name': _key, 'values': _values}
+
+    @_('PROPERTIES properties_list')
     def properties(self, p):
-        if len(p) == 1:
-            return []
-        return p.entries
+        return p.properties_list
 
-    @_('entries entry',
+    @_('properties_list single_property',
         'empty')
-    def entries(self, p):
+    def properties_list(self, p):
         if len(p) == 1:
             return []
-        return p.entries+[p.entry]
+        return p.properties_list+[p.single_property]
 
-    @_('ULISTA entry_sublist')
-    def entry(self, p):
-        return {'name': p.ULISTA.strip(), 'subprops': p.entry_sublist}
+    @_('ULISTA avline_list')
+    def single_property(self, p):
+        
+        ulista = p.ULISTA
 
-    @_('entry_sublist ULISTB',
-        'empty')
-    def entry_sublist(self, p):
+        # strip the md list identifier, ie r'[-*+]'
+        ulista = re.split(r'[-*+]', ulista, 1)[-1].strip()
+
+        return {'name': ulista, 'values': p.avline_list}
+
+    @_('avline_list avline',
+        'avline')
+    def avline_list(self, p):
         if len(p) == 1:
-            return []
-        return p.entry_sublist + [p.ULISTB.strip()]
+            return [p.avline]
+        return p.avline_list + [p.avline]
 
-    @_('para TEXTLINE',
+    @_('ULISTB')
+    def avline(self, p):
+        
+        ulistb = p.ULISTB
+
+        # strip the md list identifier, ie r'[-*+]'
+        ulistb = re.split(r'[-*+]', ulistb, 1)[-1].strip()
+
+        # strip the key and value in metadata entry, ie. <key>: <values>
+        ulistb = re.split(r'\s*:\s', ulistb, 1)
+
+        if len(ulistb) != 2:
+            # report the invalid syntax
+            self.error(p._slice[0])
+            return None
+
+        _key = ulistb[0].strip()
+
+        # split values by whitespaces
+        _values = re.split(r'\s',ulistb[-1].strip())
+
+        return {'name': _key, 'values': _values}
+
+    @_('para para_line',
         'empty')
     def para(self, p):
         if len(p) == 1:
             return ''
         else:
-            return f"{p.para} {p.TEXTLINE}".strip()
+            return f"{p.para}{p.para_line}"
 
-    @_('NEWLINE',
-        'empty')
+    @_('TEXTLINE',
+        'ULISTA',
+        'ULISTB')
+    def para_line(self, p):
+        return p[0]
+
+    @_('NEWLINE')
     def newlines(self, p):
+        return None
+
+    @_('newlines',
+        'empty')
+    def maybe_newlines(self, p):
         return None
 
     @_('')
@@ -157,66 +209,88 @@ class MDClass(Parser):
         return None
 
     def error(self, p):
+        self.isError = True
         print('ERROR: ', p)
         return None
-
 
 class MDProperty(Parser):
 
     # debugfile = 'parser.out'
     log = logging.getLogger(__name__+'.MDProperty')
     tokens = MDLexer.tokens
+    isError = False
 
-    # debugfile = 'parser.out'
-    tokens = MDLexer.tokens
-
-    @_('newlines name summary description metadata')
+    @_('maybe_newlines name summary description metadata')
     def document(self, p):
+        if self.isError:
+            return None
         return SpecProperty(p.name, p.summary, p.description, p.metadata)
 
-    @_('H1 TEXTLINE')
+    @_('H1 H_TEXTLINE')
     def name(self, p):
-        return p.TEXTLINE.strip()
+        return p.H_TEXTLINE.strip()
 
-    @_('SUMMARY para',
-        'empty')
+    @_('SUMMARY para')
     def summary(self, p):
-        if len(p) == 1:
-            return None
-        return p.para
+        return p.para.strip()
 
-    @_('DESCRIPTION para',
-        'empty')
+    @_('DESCRIPTION para')
     def description(self, p):
-        if len(p) == 1:
-            return None
-        return p.para
+        return p.para.strip()
 
-    @_('METADATA metadata_list',
-        'empty')
+    @_('METADATA metadata_list')
     def metadata(self, p):
-        if len(p) == 1:
-            return []
         return p.metadata_list
 
-    @_('metadata_list ULISTA',
+    @_('metadata_list metadata_line',
         'empty')
     def metadata_list(self, p):
         if len(p) == 2:
-            return p.metadata_list+[p.ULISTA.strip()]
+            return p.metadata_list+[p.metadata_line]
         return []
 
-    @_('para TEXTLINE',
+    @_('ULISTA')
+    def metadata_line(self, p):
+        
+        ulista = p.ULISTA
+
+        # strip the md list identifier, ie r'[-*+]'
+        ulista = re.split(r'[-*+]', ulista, 1)[-1].strip()
+
+        # strip the key and value in metadata entry, ie. <key>: <value>
+        ulista = re.split(r'\s*:\s', ulista, 1)
+
+        if len(ulista) != 2:
+            # report the invalid syntax
+            self.error(p._slice[0])
+            return None
+
+        _key = ulista[0].strip()
+        _values = re.split(r'\s',ulista[-1].strip())
+
+        return {'name': _key, 'values': _values}
+
+    @_('para para_line',
         'empty')
     def para(self, p):
         if len(p) == 1:
             return ''
         else:
-            return f"{p.para} {p.TEXTLINE.strip()}"
+            return f"{p.para}{p.para_line}"
 
-    @_('NEWLINE',
-        'empty')
+    @_('TEXTLINE',
+        'ULISTA',
+        'ULISTB')
+    def para_line(self, p):
+        return p[0]
+
+    @_('NEWLINE')
     def newlines(self, p):
+        return None
+
+    @_('newlines',
+        'empty')
+    def maybe_newlines(self, p):
         return None
 
     @_('')
@@ -224,77 +298,120 @@ class MDProperty(Parser):
         return None
 
     def error(self, p):
+        self.isError = True
         print('ERROR: ', p)
         return None
 
 
-class MDVocab(Parser):
-
+class MDVocab(MDProperty):
     # debugfile = 'parser.out'
     log = logging.getLogger(f'{__name__}.MDVocab')
     tokens = MDLexer.tokens
+    isError = False
 
-    @_('newlines name summary description metadata entries')
+    @_('maybe_newlines name summary description metadata entries')
     def document(self, p):
+        if self.isError:
+            return None
         return SpecVocab(p.name, p.summary, p.description, p.metadata, p.entries)
 
-    @_('H1 TEXTLINE')
+    @_('H1 H_TEXTLINE')
     def name(self, p):
-        return p.TEXTLINE.strip()
+        return p.H_TEXTLINE.strip()
 
-    @_('SUMMARY para',
-        'empty')
+    @_('SUMMARY para')
     def summary(self, p):
-        if len(p) == 1:
-            return None
-        return p.para
+        return p.para.strip()
 
-    @_('DESCRIPTION para',
-        'empty')
+    @_('DESCRIPTION para')
     def description(self, p):
-        if len(p) == 1:
-            return None
-        return p.para
+        return p.para.strip()
 
-    @_('METADATA metadata_list',
-        'empty')
+    @_('METADATA metadata_list')
     def metadata(self, p):
-        if len(p) == 1:
-            return []
         return p.metadata_list
 
-    @_('metadata_list ULISTA',
+    @_('metadata_list metadata_line',
         'empty')
     def metadata_list(self, p):
         if len(p) == 2:
-            return p.metadata_list+[p.ULISTA.strip()]
+            return p.metadata_list+[p.metadata_line]
         return []
 
-    @_('ENTRIES entries_list',
-       'empty')
+    @_('ULISTA')
+    def metadata_line(self, p):
+        
+        ulista = p.ULISTA
+
+        # strip the md list identifier, ie r'[-*+]'
+        ulista = re.split(r'[-*+]', ulista, 1)[-1].strip()
+
+        # strip the key and value in metadata entry, ie. <key>: <value>
+        ulista = re.split(r'\s*:\s', ulista, 1)
+
+        if len(ulista) != 2:
+            # report the invalid syntax
+            self.error(p._slice[0])
+            return None
+
+        _key = ulista[0].strip()
+        _values = re.split(r'\s',ulista[-1].strip())
+
+        return {'name': _key, 'values': _values}
+
+    @_('ENTRIES entry_list')
     def entries(self, p):
-        if len(p) == 1:
-            return []
-        return p.entries_list
+        return p.entry_list
 
-    @_('entries_list ULISTA',
+    @_('entry_list entry_line',
         'empty')
-    def entries_list(self, p):
+    def entry_list(self, p):
         if len(p) == 2:
-            return p.entries_list+[p.ULISTA.strip()]
+            return p.entry_list+[p.entry_line]
         return []
 
-    @_('para TEXTLINE',
+    @_('ULISTA')
+    def entry_line(self, p):
+        
+        ulista = p.ULISTA
+
+        # strip the md list identifier, ie r'[-*+]'
+        ulista = re.split(r'[-*+]', ulista, 1)[-1].strip()
+
+        # strip the key and value in metadata entry, ie. <key>: <value>
+        ulista = re.split(r'\s*:\s', ulista, 1)
+
+        if len(ulista) != 2:
+            # report the invalid syntax
+            self.error(p._slice[0])
+            return None
+
+        _key = ulista[0].strip()
+        _value = ulista[-1].strip()
+
+        return {'name': _key, 'value': _value}
+
+    @_('para para_line',
         'empty')
     def para(self, p):
         if len(p) == 1:
             return ''
         else:
-            return f"{p.para} {p.TEXTLINE.strip()}"
+            return f"{p.para}{p.para_line}"
 
-    @_('NEWLINE',
-        'empty')
+    @_('TEXTLINE',
+        'ULISTA',
+        'ULISTB')
+    def para_line(self, p):
+        return p[0]
+
+    @_('NEWLINE')
     def newlines(self, p):
+        return None
+
+    @_('newlines',
+        'empty')
+    def maybe_newlines(self, p):
         return None
 
     @_('')
@@ -302,16 +419,20 @@ class MDVocab(Parser):
         return None
 
     def error(self, p):
+        self.isError = True
         print('ERROR: ', p)
         return None
-
 
 if __name__ == '__main__':
 
     lexer = MDLexer()
     parser = MDClass()
 
-    with open(sys.argv[1], "r") as f:
+    fpath = sys.argv[1]
+    # fpath = "spec-v3-template/model/Core/Vocabularies/HashAlgorithmVocab.md"
+    print(fpath)
+
+    with open(fpath, "r") as f:
         inp = f.read()
 
     for tok in lexer.tokenize(inp):

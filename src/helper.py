@@ -2,8 +2,8 @@ import os
 import logging
 from os import path
 
-metadata_defaults = {'Instantiability': 'Concrete', 'Status': 'Stable'}
-property_defaults = {'minCount': 0, 'maxCount': '*'}
+metadata_defaults = {'Instantiability': ['Concrete'], 'Status': ['Stable']}
+property_defaults = {'minCount': ['0'], 'maxCount': ['*']}
 
 class ErrorFoundFilter(logging.Filter):
     def __init__(self):

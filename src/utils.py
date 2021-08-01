@@ -105,59 +105,36 @@ class SpecClass:
 
     def extract_metadata(self, mdata_list):
 
-        for ulista in mdata_list:
-
-            # strip the md list identifier, ie r'[-*+]'
-            ulista = re.split(r'[-*+]', ulista, 1)[-1].strip()
-
-            # strip the key and value in metadata entry, ie. <key>: <value>
-            ulista = re.split(r':', ulista, 1)
-
-            if len(ulista) != 2:
-                # report the invalid syntax
-                pass
-
-            _key = ulista[0].strip()
-            _value = ulista[-1].strip()
+        for _dict in mdata_list:
+            
+            _key = _dict['name']
+            _values = _dict['values']
 
             if _key in self.metadata:
                 # report the error
                 self.logger.error(f'{self.name}: Metadata key \'{_key}\' already exists')
             
-            self.metadata[_key] = _value
+            self.metadata[_key] = _values
 
     def extract_properties(self, props_list):
 
         for prop in props_list:
 
             name = prop['name']
-            subprops = prop['subprops']
-
-            # strip the md list identifier from name, ie r'[-*+]'
-            name = re.split(r'[-*+]', name, 1)[-1].strip()
+            avline_list = prop['values']
 
             subprops_dict = dict()
 
-            for ulistb in subprops:
+            for avline in avline_list:
 
-                # strip the md list identifier, ie r'[-*+]'
-                ulistb = re.split(r'[-*+]', ulistb, 1)[-1]
-
-                # strip the key and value in metadata entry, ie. <key>: <value>
-                ulistb = re.split(r':', ulistb, 1)
-
-                if len(ulistb) != 1:
-                    # report the invalid syntax
-                    pass
-
-                _key = ulistb[0].strip()
-                _value = ulistb[-1].strip()
+                _key = avline['name']
+                _values = avline['values']
 
                 if _key in subprops_dict:
                     # report the error
                     self.logger.error(f'{self.name}: Attribute key \'{_key}\' already exists in data property \'{name}\'')
 
-                subprops_dict[_key] = _value
+                subprops_dict[_key] = _values
 
             if name in self.properties:
                 # report the error
@@ -190,8 +167,8 @@ class SpecClass:
 
             # write the metadata
             f.write(f'## Metadata\n\n')
-            for name, val in self.metadata.items():
-                f.write(f'- {name}: {val}\n')
+            for name, vals in self.metadata.items():
+                f.write(f'- {name}: {" ".join(vals)}\n')
             f.write('\n')
 
             # write the data_props
@@ -199,7 +176,7 @@ class SpecClass:
             for name, subprops in self.properties.items():
                 f.write(f'- {name}\n')
                 for _key, subprop in subprops.items():
-                    f.write(f'  - {_key}: {subprop}\n')
+                    f.write(f'  - {_key}: {" ".join(subprop)}\n')
                 f.write('\n')
 
 
@@ -220,26 +197,16 @@ class SpecProperty:
 
     def extract_metadata(self, mdata_list):
 
-        for ulista in mdata_list:
+        for mdata_line in mdata_list:
 
-            # strip the md list identifier, ie r'[-*+]'
-            ulista = re.split(r'[-*+]', ulista, 1)[-1]
-
-            # strip the key and value in metadata entry, ie. <key>: <value>
-            ulista = re.split(r':', ulista, 1)
-
-            if len(ulista) != 2:
-                # report the invalid syntax
-                pass
-
-            _key = ulista[0].strip()
-            _value = ulista[-1].strip()
+            _key = mdata_line['name']
+            _values = mdata_line['values']
 
             if _key in self.metadata:
                 # report the error
                 self.logger.error(f'{self.name}: Metadata key \'{_key}\' already exists')
 
-            self.metadata[_key] = _value
+            self.metadata[_key] = _values
 
     def dump_md(self, fname):
 
@@ -267,7 +234,7 @@ class SpecProperty:
             # write the metadata
             f.write(f'## Metadata\n\n')
             for name, val in self.metadata.items():
-                f.write(f'- {name}: {val}\n')
+                f.write(f'- {name}: {" ".join(val)}\n')
 
 
 class SpecVocab:
@@ -290,43 +257,23 @@ class SpecVocab:
 
     def extract_metadata(self, mdata_list):
 
-        for ulista in mdata_list:
+        for mdata_line in mdata_list:
 
-            # strip the md list identifier, ie r'[-*+]'
-            ulista = re.split(r'[-*+]', ulista, 1)[-1]
-
-            # strip the key and value in metadata entry, ie. <key>: <value>
-            ulista = re.split(r':', ulista, 1)
-
-            if len(ulista) != 1:
-                # report the invalid syntax
-                pass
-
-            _key = ulista[0].strip()
-            _value = ulista[-1].strip()
+            _key = mdata_line['name']
+            _values = mdata_line['values']
 
             if _key in self.metadata:
                 # report the error
                 self.logger.error(f'{self.name}: Metadata key \'{_key}\' already exists')
 
-            self.metadata[_key] = _value
+            self.metadata[_key] = _values
 
-    def extract_entries(self, entries_list):
+    def extract_entries(self, entry_list):
 
-        for ulista in entries_list:
+        for entry in entry_list:
 
-            # strip the md list identifier, ie r'[-*+]'
-            ulista = re.split(r'[-*+]', ulista, 1)[-1]
-
-            # strip the key and value in metadata entry, ie. <key>: <value>
-            ulista = re.split(r':', ulista, 1)
-
-            if len(ulista) != 1:
-                # report the invalid syntax
-                pass
-
-            _key = ulista[0].strip()
-            _value = ulista[-1].strip()
+            _key = entry['name']
+            _value = entry['value']
 
             if _key in self.entries:
                 # report the error
@@ -360,7 +307,7 @@ class SpecVocab:
             # write the metadata
             f.write(f'## Metadata\n\n')
             for name, val in self.metadata.items():
-                f.write(f'- {name}: {val}\n')
+                f.write(f'- {name}: {" ".join(val)}\n')
             f.write('\n')
 
             # write the entries
