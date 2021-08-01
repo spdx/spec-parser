@@ -35,31 +35,33 @@ class MDLexer(Lexer):
         METADATA,
         PROPERTIES,
         ENTRIES,
+        H_TEXTLINE,
         TEXTLINE,
         ULISTA,
         ULISTB,
         NEWLINE,
     }
 
+    ignore_comment = r'<!?--(?:(?!-->)(.|\n|\s))*-->\n*'
+    
     SUMMARY = r'((?<=\n)|^)\#{2}\s+Summary\s+(\n+|$)'
     DESCRIPTION = r'((?<=\n)|^)\#{2}\s+Description\s+(\n+|$)'
     METADATA = r'((?<=\n)|^)\#{2}\s+Metadata\s+(\n+|$)'
     PROPERTIES = r'((?<=\n)|^)\#{2}\s+Properties\s+(\n+|$)'
     ENTRIES = r'((?<=\n)|^)\#{2}\s+Entries\s+(\n+|$)'
+    
+    H6 = r'((?<=\n)|^)\s*\#{6}'
+    H5 = r'((?<=\n)|^)\s*\#{5}'
+    H4 = r'((?<=\n)|^)\s*\#{4}'
+    H3 = r'((?<=\n)|^)\s*\#{3}'
+    H2 = r'((?<=\n)|^)\s*\#{2}'
+    H1 = r'((?<=\n)|^)\s*\#{1}'
+    H_TEXTLINE = r'(?<=\#)[^\n]+(\n+|$)'
 
-    H6 = r'((?<=\n)|^)\#{6}'
-    H5 = r'((?<=\n)|^)\#{5}'
-    H4 = r'((?<=\n)|^)\#{4}'
-    H3 = r'((?<=\n)|^)\#{3}'
-    H2 = r'((?<=\n)|^)\#{2}'
-    H1 = r'((?<=\n)|^)\#{1}'
+    ULISTA = r'((?<=\n)|^)[*+-][^\n]+(\n+|$)'
+    ULISTB = r'((?<=\n)|^)([ ]{2,4}|\t)[*+-][^\n]+(\n+|$)'
 
-    ULISTA = r'((?<=\n)|^)[*+-][^`*\n\t\\[\]]+(\n+|$)'
-    ULISTB = r'((?<=\n)|^)([ ]{2,4}|\t)[*+-][^`\n\t\\[\]]+(\n+|$)'
-
-    TEXTLINE = r'[^`*\n\t\\[\]]+(\n+|$)'
-
-    ignore_comment = r'<!?--(?:(?!-->)(.|\n|\s))*-->\n*'
+    TEXTLINE = r'((?<=\n)|^)[^\n]+(\n+|$)'
 
     @_(r'\n+')
     def NEWLINE(self, t):
@@ -81,25 +83,26 @@ class MDClass(Parser):
     def document(self, p):
         if self.isError:
             return None
-        return SpecClass(p.name, p.summary, p.description, p.metadata, p.properties)
+        return SpecClass(p.name, p.summary
+        , p.description, p.metadata, p.properties)
 
-    @_('H1 TEXTLINE')
+    @_('H1 H_TEXTLINE')
     def name(self, p):
-        return p.TEXTLINE.strip()
+        return p.H_TEXTLINE.strip()
 
     @_('SUMMARY para',
         'empty')
     def summary(self, p):
         if len(p) == 1:
             return None
-        return p.para
+        return p.para.strip()
 
     @_('DESCRIPTION para',
         'empty')
     def description(self, p):
         if len(p) == 1:
             return None
-        return p.para
+        return p.para.strip()
 
     @_('METADATA metadata_list',
         'empty')
@@ -190,13 +193,19 @@ class MDClass(Parser):
 
         return {'name': _key, 'values': _values}
 
-    @_('para TEXTLINE',
+    @_('para para_line',
         'empty')
     def para(self, p):
         if len(p) == 1:
             return ''
         else:
-            return f"{p.para} {p.TEXTLINE.strip()}"
+            return f"{p.para}{p.para_line}"
+
+    @_('TEXTLINE',
+        'ULISTA',
+        'ULISTB')
+    def para_line(self, p):
+        return p[0]
 
     @_('NEWLINE')
     def newlines(self, p):
@@ -229,23 +238,23 @@ class MDProperty(Parser):
             return None
         return SpecProperty(p.name, p.summary, p.description, p.metadata)
 
-    @_('H1 TEXTLINE')
+    @_('H1 H_TEXTLINE')
     def name(self, p):
-        return p.TEXTLINE.strip()
+        return p.H_TEXTLINE.strip()
 
     @_('SUMMARY para',
         'empty')
     def summary(self, p):
         if len(p) == 1:
             return None
-        return p.para
+        return p.para.strip()
 
     @_('DESCRIPTION para',
         'empty')
     def description(self, p):
         if len(p) == 1:
             return None
-        return p.para
+        return p.para.strip()
 
     @_('METADATA metadata_list',
         'empty')
@@ -282,13 +291,19 @@ class MDProperty(Parser):
 
         return {'name': _key, 'values': _values}
 
-    @_('para TEXTLINE',
+    @_('para para_line',
         'empty')
     def para(self, p):
         if len(p) == 1:
             return ''
         else:
-            return f"{p.para} {p.TEXTLINE.strip()}"
+            return f"{p.para}{p.para_line}"
+
+    @_('TEXTLINE',
+        'ULISTA',
+        'ULISTB')
+    def para_line(self, p):
+        return p[0]
 
     @_('NEWLINE')
     def newlines(self, p):
@@ -321,23 +336,23 @@ class MDVocab(MDProperty):
             return None
         return SpecVocab(p.name, p.summary, p.description, p.metadata, p.entries)
 
-    @_('H1 TEXTLINE')
+    @_('H1 H_TEXTLINE')
     def name(self, p):
-        return p.TEXTLINE.strip()
+        return p.H_TEXTLINE.strip()
 
     @_('SUMMARY para',
         'empty')
     def summary(self, p):
         if len(p) == 1:
             return None
-        return p.para
+        return p.para.strip()
 
     @_('DESCRIPTION para',
         'empty')
     def description(self, p):
         if len(p) == 1:
             return None
-        return p.para
+        return p.para.strip()
 
     @_('METADATA metadata_list',
         'empty')
@@ -409,13 +424,19 @@ class MDVocab(MDProperty):
 
         return {'name': _key, 'value': _value}
 
-    @_('para TEXTLINE',
+    @_('para para_line',
         'empty')
     def para(self, p):
         if len(p) == 1:
             return ''
         else:
-            return f"{p.para} {p.TEXTLINE.strip()}"
+            return f"{p.para}{p.para_line}"
+
+    @_('TEXTLINE',
+        'ULISTA',
+        'ULISTB')
+    def para_line(self, p):
+        return p[0]
 
     @_('NEWLINE')
     def newlines(self, p):
@@ -435,15 +456,14 @@ class MDVocab(MDProperty):
         print('ERROR: ', p)
         return None
 
-
-
 if __name__ == '__main__':
 
     lexer = MDLexer()
-    parser = MDVocab()
+    parser = MDClass()
 
-    # fpath = sys.argv[1]
-    fpath = "spec-v3-template/model/Core/Vocabularies/HashAlgorithmVocab.md"
+    fpath = sys.argv[1]
+    # fpath = "spec-v3-template/model/Core/Vocabularies/HashAlgorithmVocab.md"
+    print(fpath)
 
     with open(fpath, "r") as f:
         inp = f.read()
