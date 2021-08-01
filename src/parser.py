@@ -90,25 +90,16 @@ class MDClass(Parser):
     def name(self, p):
         return p.H_TEXTLINE.strip()
 
-    @_('SUMMARY para',
-        'empty')
+    @_('SUMMARY para')
     def summary(self, p):
-        if len(p) == 1:
-            return None
         return p.para.strip()
 
-    @_('DESCRIPTION para',
-        'empty')
+    @_('DESCRIPTION para')
     def description(self, p):
-        if len(p) == 1:
-            return None
         return p.para.strip()
 
-    @_('METADATA metadata_list',
-        'empty')
+    @_('METADATA metadata_list')
     def metadata(self, p):
-        if len(p) == 1:
-            return []
         return p.metadata_list
 
     @_('metadata_list metadata_line',
@@ -139,11 +130,8 @@ class MDClass(Parser):
 
         return {'name': _key, 'values': _values}
 
-    @_('PROPERTIES properties_list',
-        'empty')
+    @_('PROPERTIES properties_list')
     def properties(self, p):
-        if len(p) == 1:
-            return []
         return p.properties_list
 
     @_('properties_list single_property',
@@ -242,25 +230,16 @@ class MDProperty(Parser):
     def name(self, p):
         return p.H_TEXTLINE.strip()
 
-    @_('SUMMARY para',
-        'empty')
+    @_('SUMMARY para')
     def summary(self, p):
-        if len(p) == 1:
-            return None
         return p.para.strip()
 
-    @_('DESCRIPTION para',
-        'empty')
+    @_('DESCRIPTION para')
     def description(self, p):
-        if len(p) == 1:
-            return None
         return p.para.strip()
 
-    @_('METADATA metadata_list',
-        'empty')
+    @_('METADATA metadata_list')
     def metadata(self, p):
-        if len(p) == 1:
-            return []
         return p.metadata_list
 
     @_('metadata_list metadata_line',
@@ -340,25 +319,16 @@ class MDVocab(MDProperty):
     def name(self, p):
         return p.H_TEXTLINE.strip()
 
-    @_('SUMMARY para',
-        'empty')
+    @_('SUMMARY para')
     def summary(self, p):
-        if len(p) == 1:
-            return None
         return p.para.strip()
 
-    @_('DESCRIPTION para',
-        'empty')
+    @_('DESCRIPTION para')
     def description(self, p):
-        if len(p) == 1:
-            return None
         return p.para.strip()
 
-    @_('METADATA metadata_list',
-        'empty')
+    @_('METADATA metadata_list')
     def metadata(self, p):
-        if len(p) == 1:
-            return []
         return p.metadata_list
 
     @_('metadata_list metadata_line',
@@ -389,11 +359,8 @@ class MDVocab(MDProperty):
 
         return {'name': _key, 'values': _values}
 
-    @_('ENTRIES entry_list',
-       'empty')
+    @_('ENTRIES entry_list')
     def entries(self, p):
-        if len(p) == 1:
-            return []
         return p.entry_list
 
     @_('entry_list entry_line',
