@@ -4,8 +4,8 @@ import re
 from os import path
 from helper import (
     isError,
-    safe_open, 
-    union_dict, 
+    safe_open,
+    union_dict,
     metadata_defaults,
     property_defaults
 )
@@ -28,21 +28,24 @@ class Spec:
         for _class in classes:
             if _class.name in class_dict:
                 # report error
-                self.logger.error('Duplicate `Class` object found: \'{name}:{_class.name}\'')
+                self.logger.error(
+                    'Duplicate `Class` object found: \'{name}:{_class.name}\'')
 
             class_dict[_class.name] = _class
 
         for _prop in properties:
             if _prop.name in props_dict:
                 # report error
-                self.logger.error('Duplicate `Property` object found: \'{name}:{_prop.name}\'')
+                self.logger.error(
+                    'Duplicate `Property` object found: \'{name}:{_prop.name}\'')
 
             props_dict[_prop.name] = _prop
 
         for _vocab in vocabs:
             if _vocab.name in vocabs_dict:
                 # report error
-                self.logger.error('Duplicate `Vocab` object found: \'{name}:{_vocab.name}\'')
+                self.logger.error(
+                    'Duplicate `Vocab` object found: \'{name}:{_vocab.name}\'')
 
             vocabs_dict[_vocab.name] = _vocab
 
@@ -58,7 +61,8 @@ class Spec:
 
         # if we have encounter error then terminate
         if isError():
-            self.logger.warning(f'Error parsing the spec. Aborting the dump_md...')
+            self.logger.warning(
+                f'Error parsing the spec. Aborting the dump_md...')
             return
 
         for namespace_name, namespace in self.namespaces.items():
@@ -106,14 +110,15 @@ class SpecClass:
     def extract_metadata(self, mdata_list):
 
         for _dict in mdata_list:
-            
+
             _key = _dict['name']
             _values = _dict['values']
 
             if _key in self.metadata:
                 # report the error
-                self.logger.error(f'{self.name}: Metadata key \'{_key}\' already exists')
-            
+                self.logger.error(
+                    f'{self.name}: Metadata key \'{_key}\' already exists')
+
             self.metadata[_key] = _values
 
     def extract_properties(self, props_list):
@@ -132,13 +137,15 @@ class SpecClass:
 
                 if _key in subprops_dict:
                     # report the error
-                    self.logger.error(f'{self.name}: Attribute key \'{_key}\' already exists in data property \'{name}\'')
+                    self.logger.error(
+                        f'{self.name}: Attribute key \'{_key}\' already exists in data property \'{name}\'')
 
                 subprops_dict[_key] = _values
 
             if name in self.properties:
                 # report the error
-                self.logger.error(f'{self.name}: Data property \'{_key}\' already exists')
+                self.logger.error(
+                    f'{self.name}: Data property `{_key}` already exists')
 
             self.properties[name] = subprops_dict
 
@@ -204,7 +211,8 @@ class SpecProperty:
 
             if _key in self.metadata:
                 # report the error
-                self.logger.error(f'{self.name}: Metadata key \'{_key}\' already exists')
+                self.logger.error(
+                    f'{self.name}: Metadata key \'{_key}\' already exists')
 
             self.metadata[_key] = _values
 
@@ -264,7 +272,8 @@ class SpecVocab:
 
             if _key in self.metadata:
                 # report the error
-                self.logger.error(f'{self.name}: Metadata key \'{_key}\' already exists')
+                self.logger.error(
+                    f'{self.name}: Metadata key \'{_key}\' already exists')
 
             self.metadata[_key] = _values
 
@@ -277,7 +286,8 @@ class SpecVocab:
 
             if _key in self.entries:
                 # report the error
-                self.logger.error(f'{self.name}: Entry \'{_key}\' already exists')
+                self.logger.error(
+                    f'{self.name}: Entry \'{_key}\' already exists')
 
             self.entries[_key] = _value
 

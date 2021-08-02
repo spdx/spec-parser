@@ -7,11 +7,10 @@ from parser import (
     MDVocab
 )
 from helper import safe_listdir
-from utils import *
 import logging
+from utils import Spec
 
 logger = logging.getLogger(__name__)
-
 __all__ = ['SpecParser']
 
 
@@ -24,6 +23,11 @@ class SpecParser:
         self.mdClass = MDClass()
         self.mdProperty = MDProperty()
         self.mdVocab = MDVocab()
+
+        self.mdClass.lexer = self.lexer
+        self.mdProperty.lexer = self.lexer
+        self.mdVocab.lexer = self.lexer
+
         self.logger = logging.getLogger(self.__class__.__name__)
 
     def parse(self, spec_dir):
@@ -104,6 +108,9 @@ class SpecParser:
         if text is None:
             return None
 
+        self.lexer.fname = fname
+        self.mdClass.fname = fname
+        self.mdClass.text = text
         specClass = self.mdClass.parse(self.lexer.tokenize(text))
 
         if specClass is None:
@@ -118,11 +125,15 @@ class SpecParser:
         if text is None:
             return None
 
+        self.lexer.fname = fname
+        self.mdProperty.fname = fname
+        self.mdProperty.text = text
         specProperty = self.mdProperty.parse(self.lexer.tokenize(text))
 
         if specProperty is None:
             print(fname)
-            self.logger.error(f'Unable to parse `Property` markdown: \'{fname}\'')
+            self.logger.error(
+                f'Unable to parse `Property` markdown: \'{fname}\'')
             return None
 
         return specProperty
@@ -133,10 +144,14 @@ class SpecParser:
         if text is None:
             return None
 
+        self.lexer.fname = fname
+        self.mdVocab.fname = fname
+        self.mdVocab.text = text
         specVocab = self.mdVocab.parse(self.lexer.tokenize(text))
 
         if specVocab is None:
-            self.logger.error(f'Unable to parse `Vocabulary` markdown: \'{fname}\'')
+            self.logger.error(
+                f'Unable to parse `Vocabulary` markdown: \'{fname}\'')
             return None
 
         return specVocab

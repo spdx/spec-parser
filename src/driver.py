@@ -1,7 +1,8 @@
 import os
 import logging
 from argparse import ArgumentParser
-from helper import ErrorFoundFilter, isError
+from helper import ErrorFoundFilter
+
 
 def get_args():
 
@@ -13,7 +14,6 @@ def get_args():
 
     argparser.add_argument('--md', action="store_true",
                            help='Dumps markdown')
-
 
     argparser.add_argument('--out', type=str,
                            help='Output Directory for generating markdown')
@@ -34,8 +34,8 @@ if __name__ == '__main__':
         break
 
     if not os.path.isdir(args.spec_dir):
-        print(
-            f'ERROR: Directory containing models :{args.spec_dir} doesn\'t exists')
+        logger.error(
+            f'Error: Directory containing models :{args.spec_dir} doesn\'t exists')
         exit(1)
 
     if args.out is None:
