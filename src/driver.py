@@ -15,6 +15,9 @@ def get_args():
     argparser.add_argument('--md', action="store_true",
                            help='Dumps markdown')
 
+    argparser.add_argument('--refs', action="store_true",
+                           help='Generate References list for Property')
+
     argparser.add_argument('--out', type=str,
                            help='Output Directory for generating markdown')
 
@@ -45,4 +48,4 @@ if __name__ == '__main__':
     specParser = SpecParser()
     spec = specParser.parse(args.spec_dir)
     if args.md:
-        spec.dump_md(args.out)
+        spec.dump_md(args)

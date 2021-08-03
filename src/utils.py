@@ -19,6 +19,9 @@ class Spec:
         self.namespaces = dict()
         self.logger = logging.getLogger(self.__class__.__name__)
 
+        # will store all classes that references certain data property
+        self.dataprop_refs = dict()
+
     def add_namespace(self, name, classes, properties, vocabs):
 
         class_dict = dict()
@@ -57,7 +60,7 @@ class Spec:
 
         self.namespaces[name] = namespace_el
 
-    def dump_md(self, out_dir):
+    def dump_md(self, args):
 
         # if we have encounter error then terminate
         if isError():
@@ -72,16 +75,13 @@ class Spec:
             vocabs = namespace['vocabs']
 
             for name, class_obj in classes.items():
-                class_obj.dump_md(
-                    path.join(out_dir, namespace_name, 'Classes', f'{name}.md'))
+                class_obj.dump_md(args)
 
             for name, prop_obj in properties.items():
-                prop_obj.dump_md(
-                    path.join(out_dir, namespace_name, 'Properties', f'{name}.md'))
+                prop_obj.dump_md(args)
 
             for name, vocab_obj in vocabs.items():
-                vocab_obj.dump_md(
-                    path.join(out_dir, namespace_name, 'Vocabularies', f'{name}.md'))
+                vocab_obj.dump_md(args)
 
 
 class SpecClass:
@@ -156,7 +156,19 @@ class SpecClass:
 
             self.properties[name] = subprops_dict
 
-    def dump_md(self, fname):
+        # populate all refs to data property
+        for dataprop in self.properties.keys():
+
+            if dataprop not in self.spec.dataprop_refs:
+                self.spec.dataprop_refs[dataprop] = []
+
+            self.spec.dataprop_refs[dataprop].append(
+                f'{self.namespace_name}:{self.name}')
+
+    def dump_md(self, args):
+
+        fname = path.join(args.out, self.namespace_name,
+                          'Classes', f'{self.name}.md')
 
         with safe_open(fname, 'w') as f:
 
@@ -167,17 +179,15 @@ class SpecClass:
             # write the topheadline
             f.write(f'# {self.name}\n\n')
 
-            if self.summary is not None:
-                # write the summary
-                f.write(f'## Summary\n\n')
-                f.write(f'{self.summary}\n')
-                f.write(f'\n')
+            # write the summary
+            f.write(f'## Summary\n\n')
+            f.write(f'{self.summary}\n')
+            f.write(f'\n')
 
-            if self.description is not None:
-                # write the description
-                f.write(f'## Description\n\n')
-                f.write(f'{self.description}\n')
-                f.write(f'\n')
+            # write the description
+            f.write(f'## Description\n\n')
+            f.write(f'{self.description}\n')
+            f.write(f'\n')
 
             # write the metadata
             f.write(f'## Metadata\n\n')
@@ -232,7 +242,10 @@ class SpecProperty:
         self.metadata['id'] = [
             f'{id_metadata_prefix}{self.namespace_name}#{self.name}']
 
-    def dump_md(self, fname):
+    def dump_md(self, args):
+
+        fname = path.join(args.out, self.namespace_name,
+                          'Properties', f'{self.name}.md')
 
         with safe_open(fname, 'w') as f:
 
@@ -243,22 +256,27 @@ class SpecProperty:
             # write the topheadline
             f.write(f'# {self.name}\n\n')
 
-            if self.summary is not None:
-                # write the summary
-                f.write(f'## Summary\n\n')
-                f.write(f'{self.summary}\n')
-                f.write(f'\n')
+            # write the summary
+            f.write(f'## Summary\n\n')
+            f.write(f'{self.summary}\n')
+            f.write(f'\n')
 
-            if self.description is not None:
-                # write the description
-                f.write(f'## Description\n\n')
-                f.write(f'{self.description}\n')
-                f.write(f'\n')
+            # write the description
+            f.write(f'## Description\n\n')
+            f.write(f'{self.description}\n')
+            f.write(f'\n')
 
             # write the metadata
             f.write(f'## Metadata\n\n')
             for name, val in self.metadata.items():
                 f.write(f'- {name}: {" ".join(val)}\n')
+            f.write(f'\n')
+
+            if getattr(args, 'refs', False):
+                # Class references
+                f.write(f'## References\n\n')
+                for name in self.spec.dataprop_refs.get(self.name, []):
+                    f.write(f'- {name}\n')
 
 
 class SpecVocab:
@@ -316,7 +334,10 @@ class SpecVocab:
 
             self.entries[_key] = _value
 
-    def dump_md(self, fname):
+    def dump_md(self, args):
+
+        fname = path.join(args.out, self.namespace_name,
+                          'Vocabularies', f'{self.name}.md')
 
         with safe_open(fname, 'w') as f:
 
@@ -327,17 +348,15 @@ class SpecVocab:
             # write the topheadline
             f.write(f'# {self.name}\n\n')
 
-            if self.summary is not None:
-                # write the summary
-                f.write(f'## Summary\n\n')
-                f.write(f'{self.summary}\n')
-                f.write(f'\n')
+            # write the summary
+            f.write(f'## Summary\n\n')
+            f.write(f'{self.summary}\n')
+            f.write(f'\n')
 
-            if self.description is not None:
-                # write the description
-                f.write(f'## Description\n\n')
-                f.write(f'{self.description}\n')
-                f.write(f'\n')
+            # write the description
+            f.write(f'## Description\n\n')
+            f.write(f'{self.description}\n')
+            f.write(f'\n')
 
             # write the metadata
             f.write(f'## Metadata\n\n')
