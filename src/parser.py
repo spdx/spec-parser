@@ -4,6 +4,7 @@ import sys
 import sly
 from sly import Parser, Lexer
 from utils import SpecClass, SpecProperty, SpecVocab
+from config import valid_dataprop_key, valid_metadata_key
 
 
 def get_line(text: str, t: int):
@@ -95,7 +96,7 @@ class MDClass(Parser):
     def document(self, p):
         if getattr(self, 'isError', False):
             return None
-        return SpecClass(p.name, p.summary, p.description, p.metadata, p.properties)
+        return (p.name, p.summary, p.description, p.metadata, p.properties)
 
     @_('H1 H_TEXTLINE')
     def name(self, p):
@@ -138,6 +139,9 @@ class MDClass(Parser):
 
         _key = ulista[0].strip()
         _values = re.split(r'\s', ulista[-1].strip())
+
+        if _key not in valid_metadata_key:
+            self.error(p._slice[0], f"Error: Invalid metadata key `{_key}`.")
 
         if any(map(lambda x: x.get('name', '') == _key, p[-2])):
             self.error(
@@ -197,6 +201,10 @@ class MDClass(Parser):
         # split values by whitespaces
         _values = re.split(r'\s', ulistb[-1].strip())
 
+        if _key not in valid_dataprop_key:
+            self.error(
+                p._slice[0], f"Error: Invalid DataProperty Attribute key `{_key}`.")
+
         if any(map(lambda x: x.get('name', '') == _key, p[-2])):
             self.error(
                 p._slice[0], f"Error: Attribute key \'{_key}\' already exists")
@@ -247,7 +255,7 @@ class MDProperty(Parser):
     def document(self, p):
         if getattr(self, 'isError', False):
             return None
-        return SpecProperty(p.name, p.summary, p.description, p.metadata)
+        return (p.name, p.summary, p.description, p.metadata)
 
     @_('H1 H_TEXTLINE')
     def name(self, p):
@@ -290,6 +298,9 @@ class MDProperty(Parser):
 
         _key = ulista[0].strip()
         _values = re.split(r'\s', ulista[-1].strip())
+
+        if _key not in valid_metadata_key:
+            self.error(p._slice[0], f"Error: Invalid metadata key `{_key}`.")
 
         if any(map(lambda x: x.get('name', '') == _key, p[-2])):
             self.error(
@@ -340,7 +351,7 @@ class MDVocab(MDProperty):
     def document(self, p):
         if getattr(self, 'isError', False):
             return None
-        return SpecVocab(p.name, p.summary, p.description, p.metadata, p.entries)
+        return (p.name, p.summary, p.description, p.metadata, p.entries)
 
     @_('H1 H_TEXTLINE')
     def name(self, p):
@@ -383,6 +394,9 @@ class MDVocab(MDProperty):
 
         _key = ulista[0].strip()
         _values = re.split(r'\s', ulista[-1].strip())
+
+        if _key not in valid_metadata_key:
+            self.error(p._slice[0], f"Error: Invalid metadata key `{_key}`.")
 
         if any(map(lambda x: x.get('name', '') == _key, p[-2])):
             self.error(

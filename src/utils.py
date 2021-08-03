@@ -6,9 +6,9 @@ from helper import (
     isError,
     safe_open,
     union_dict,
-    metadata_defaults,
-    property_defaults
+
 )
+from config import id_metadata_prefix, metadata_defaults, property_defaults
 from __version__ import __version__
 
 
@@ -86,9 +86,13 @@ class Spec:
 
 class SpecClass:
 
-    def __init__(self, name, summary, description, metadata, props):
+    def __init__(self, spec, namespace_name, name, summary, description, metadata, props):
 
         self.logger = logging.getLogger(self.__class__.__name__)
+
+        self.spec = spec
+        self.namespace_name = namespace_name
+
         self.name = name
         self.summary = summary
         self.description = description
@@ -98,14 +102,7 @@ class SpecClass:
 
         self.extract_metadata(metadata)
 
-        # add all default metadata fields
-        union_dict(self.metadata, metadata_defaults)
-
         self.extract_properties(props)
-
-        # add all default property fields
-        for val in self.properties.values():
-            union_dict(val, property_defaults)
 
     def extract_metadata(self, mdata_list):
 
@@ -120,6 +117,13 @@ class SpecClass:
                     f'{self.name}: Metadata key \'{_key}\' already exists')
 
             self.metadata[_key] = _values
+
+        # add all default metadata fields
+        union_dict(self.metadata, metadata_defaults)
+
+        # add id metadata
+        self.metadata['id'] = [
+            f'{id_metadata_prefix}{self.namespace_name}#{self.name}']
 
     def extract_properties(self, props_list):
 
@@ -146,6 +150,9 @@ class SpecClass:
                 # report the error
                 self.logger.error(
                     f'{self.name}: Data property `{_key}` already exists')
+
+            # add all default property fields
+            union_dict(subprops_dict, property_defaults)
 
             self.properties[name] = subprops_dict
 
@@ -189,7 +196,12 @@ class SpecClass:
 
 class SpecProperty:
 
-    def __init__(self, name, summary, description, metadata):
+    def __init__(self, spec, namespace_name, name, summary, description, metadata):
+
+        self.logger = logging.getLogger(self.__class__.__name__)
+
+        self.spec = spec
+        self.namespace_name = namespace_name
 
         self.name = name
         self.summary = summary
@@ -198,9 +210,6 @@ class SpecProperty:
         self.metadata = dict()
 
         self.extract_metadata(metadata)
-
-        # add all default metadata fields
-        union_dict(self.metadata, metadata_defaults)
 
     def extract_metadata(self, mdata_list):
 
@@ -215,6 +224,13 @@ class SpecProperty:
                     f'{self.name}: Metadata key \'{_key}\' already exists')
 
             self.metadata[_key] = _values
+
+        # add all default metadata fields
+        union_dict(self.metadata, metadata_defaults)
+
+        # add id metadata
+        self.metadata['id'] = [
+            f'{id_metadata_prefix}{self.namespace_name}#{self.name}']
 
     def dump_md(self, fname):
 
@@ -247,7 +263,12 @@ class SpecProperty:
 
 class SpecVocab:
 
-    def __init__(self, name, summary, description, metadata, entries):
+    def __init__(self, spec, namespace_name, name, summary, description, metadata, entries):
+
+        self.logger = logging.getLogger(self.__class__.__name__)
+
+        self.spec = spec
+        self.namespace_name = namespace_name
 
         self.name = name
         self.summary = summary
@@ -257,9 +278,6 @@ class SpecVocab:
         self.entries = dict()
 
         self.extract_metadata(metadata)
-
-        # add all default metadata fields
-        union_dict(self.metadata, metadata_defaults)
 
         self.extract_entries(entries)
 
@@ -276,6 +294,13 @@ class SpecVocab:
                     f'{self.name}: Metadata key \'{_key}\' already exists')
 
             self.metadata[_key] = _values
+
+        # add all default metadata fields
+        union_dict(self.metadata, metadata_defaults)
+
+        # add id metadata
+        self.metadata['id'] = [
+            f'{id_metadata_prefix}{self.namespace_name}#{self.name}']
 
     def extract_entries(self, entry_list):
 
