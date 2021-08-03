@@ -1,9 +1,11 @@
-import os
-import rdflib
 import logging
-import re
 from os import path
+import rdflib
+from rdflib import URIRef
+from rdflib.namespace import RDF, OWL, RDFS, XSD
+
 from helper import (
+    gen_rdf_id,
     isError,
     safe_open,
     union_dict,
@@ -84,21 +86,15 @@ class Spec:
             for name, vocab_obj in vocabs.items():
                 vocab_obj.dump_md(args)
 
-    def gen_rdf(self):
-
-        from rdflib.namespace import RDF, OWL, RDFS, XSD
+    def gen_rdf(self, args):
 
         g = rdflib.Graph()
 
         NS0 = rdflib.Namespace("http://www.w3.org/2003/06/sw-vocab-status/ns#")
-        g.bind('ns0', NS0)
+        g.bind('owl', OWL)
 
-        _dict = {'ns0': NS0, 'rdf': RDF, 'owl': OWL, 'rdfs': RDFS, 'xsd': XSD}
-
-        # add all custom namespaces
-        for _name in self.namespaces.keys():
-            nspace_obj = rdflib.Namespace(f'https://spdx.org/test/{_name}#')
-            _dict[_name] = nspace_obj
+        self.rdf_dict = {'ns0': NS0, 'rdf': RDF,
+                         'owl': OWL, 'rdfs': RDFS, 'xsd': XSD}
 
         # add triples starting from each namespaces
         for _namespace in self.namespaces.values():
@@ -108,32 +104,41 @@ class Spec:
             vocabs = _namespace['vocabs']
 
             for class_obj in classes.values():
-                class_obj._gen_rdf(g, _dict)
+                class_obj._gen_rdf(g)
 
             for prop_obj in properties.values():
-                prop_obj._gen_rdf(g, _dict)
+                prop_obj._gen_rdf(g)
 
             for vocab_obj in vocabs.values():
-                vocab_obj._gen_rdf(g, _dict)
+                vocab_obj._gen_rdf(g)
 
-        print(g.serialize(format="turtle"))
+        # if we have encounter error then terminate
+        if isError():
+            self.logger.warning(
+                f'Error parsing the spec. Aborting the gen_rdf...')
+            return
+
+        fname = path.join(args.out, f'tst.ttl')
+        with safe_open(fname, 'w') as f:
+            f.write(g.serialize(format="turtle"))
 
 
 class SpecClass:
 
-    def __init__(self, spec, namespace_name, name, summary, description, metadata, props):
+    def __init__(self, spec: Spec, namespace_name: str, name: str, summary: str, description: str, metadata: dict, props: dict):
 
-        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger: logging.Logger = logging.getLogger(
+            self.__class__.__name__)
 
-        self.spec = spec
-        self.namespace_name = namespace_name
+        self.spec: Spec = spec
+        self.namespace_name: str = namespace_name
 
-        self.name = name
-        self.summary = summary
-        self.description = description
+        self.name: str = name
+        self.summary: str = summary
+        self.description: str = description
 
-        self.metadata = dict()
-        self.properties = dict()
+        self.metadata: dict = dict()
+        self.properties: dict = dict()
 
         self.extract_metadata(metadata)
 
@@ -238,35 +243,16 @@ class SpecClass:
                     f.write(f'  - {_key}: {" ".join(subprop)}\n')
                 f.write('\n')
 
-    def _gen_rdf(self, graph, nspaces_dict):
+    def _gen_rdf(self, g: rdflib.Graph):
 
-        RDF = nspaces_dict['rdf']
-        RDFS = nspaces_dict['rdfs']
-        OWL = nspaces_dict['owl']
-        CUR = nspaces_dict[self.namespace_name]
+        # self.spec.rdf_dict
+        cur = URIRef(self.metadata['id'][0])
 
-        class_node = CUR[self.metadata.get('name', self.name)]
-        graph.add((class_node, RDF.type, OWL['Class']))
+        g.add((cur, RDF.type, OWL['Class']))
 
-        if 'SubclassOf' in self.metadata and self.metadata['SubclassOf'] != 'none':
-            # check if object is included in other namespace or in self
-            # self.logger.warning(f'{class_node} {self.rdf_namepace(self.metadata["SubclassOf"],nspaces_dict)}')
-            graph.add((class_node, RDFS.subClassOf, self.rdf_namepace(
-                self.metadata['SubclassOf'], nspaces_dict)))
-
-    def rdf_namepace(self, obj_str, nspaces_dict):
-
-        splitted_str = re.split(r':', obj_str)
-        if len(splitted_str) > 2:
-            self.logger.error('Invalid object')
-            return
-
-        if len(splitted_str) == 2:
-            CUR = nspaces_dict[splitted_str[0]]
-        else:
-            CUR = nspaces_dict[self.namespace_name]
-
-        return CUR[splitted_str[-1]]
+        for subclass in self.metadata.get('SubclassOf', []):
+            g.add((cur, RDFS.subClassOf, URIRef(
+                gen_rdf_id(subclass, self.namespace_name))))
 
 
 class SpecProperty:
@@ -343,46 +329,22 @@ class SpecProperty:
                 for name in self.spec.dataprop_refs.get(self.name, []):
                     f.write(f'- {name}\n')
 
-    def _gen_rdf(self, graph, nspaces_dict):
+    def _gen_rdf(self, g: rdflib.Graph):
 
-        RDF = nspaces_dict['rdf']
-        RDFS = nspaces_dict['rdfs']
-        OWL = nspaces_dict['owl']
-        CUR = nspaces_dict[self.namespace_name]
+        # self.spec.rdf_dict
+        cur = URIRef(self.metadata['id'][0])
 
-        property_node = CUR[self.metadata['name']]
-
-        nature = self.metadata.get('Nature', 'ObjectProperty')
-        if nature == 'DataProperty':
-            nature = 'DatatypeProperty'
-
-        graph.add((property_node, RDF.type, OWL[nature]))
-
-        if 'Range' in self.metadata:
-
-            # check if object is included in other namespace or in self
-            graph.add((property_node, RDFS.range, self.rdf_namepace(
-                self.metadata['Range'], nspaces_dict)))
-
-        if 'Domain' in self.metadata:
-
-            # check if object is included in other namespace or in self
-            graph.add((property_node, RDFS.domain, self.rdf_namepace(
-                self.metadata['Domain'], nspaces_dict)))
-
-    def rdf_namepace(self, obj_str, nspaces_dict):
-
-        splitted_str = re.split(r':', obj_str)
-        if len(splitted_str) > 2:
-            self.logger.error('Invalid object')
-            return
-
-        if len(splitted_str) == 2:
-            CUR = nspaces_dict[splitted_str[0]]
+        # nature of property
+        if self.metadata.get('Nature', 'ObjectProperty'):
+            g.add((cur, RDF.type, OWL['ObjectProperty']))
         else:
-            CUR = nspaces_dict[self.namespace_name]
+            g.add((cur, RDF.type, OWL['DatatypeProperty']))
 
-        return CUR[splitted_str[-1]]
+        for _val in self.metadata.get('Range', []):
+            g.add((cur, RDFS.range, URIRef(gen_rdf_id(_val, self.namespace_name))))
+
+        for _val in self.metadata.get('Domain', []):
+            g.add((cur, RDFS.domain, URIRef(gen_rdf_id(_val, self.namespace_name))))
 
 
 class SpecVocab:
@@ -475,30 +437,6 @@ class SpecVocab:
             for name, val in self.entries.items():
                 f.write(f'- {name}: {val}\n')
 
-    def _gen_rdf(self, graph, nspaces_dict):
-
-        RDF = nspaces_dict['rdf']
-        RDFS = nspaces_dict['rdfs']
-        OWL = nspaces_dict['owl']
-        CUR = nspaces_dict[self.namespace_name]
-
-        class_node = CUR[self.metadata['name']]
-        graph.add((class_node, RDF.type, OWL['Class']))
-
-        # if 'SubClassOf' in self.metadata and self.metadata['SubClassOf'] != 'none':
-        #     # check if object is included in other namespace or in self
-        #     graph.add(class_node, RDFS.subClassOf, self.rdf_namepace(self.metadata['SubClassOf'],nspaces_dict))
-
-    def rdf_namepace(self, obj_str, nspaces_dict):
-
-        splitted_str = re.split(r':', obj_str)
-        if len(splitted_str) > 2:
-            self.logger.error('Invalid object')
-            return
-
-        if len(splitted_str) == 2:
-            CUR = nspaces_dict[splitted_str[0]]
-        else:
-            CUR = nspaces_dict[self.namepace_name]
-
-        return CUR[splitted_str[-1]]
+    def _gen_rdf(self, g: rdflib.Graph):
+        cur = URIRef(self.metadata['id'][0])
+        g.add((cur, RDF.type, OWL['Class']))

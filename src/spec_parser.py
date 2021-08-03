@@ -63,8 +63,6 @@ class SpecParser:
                 if specClass is None:
                     continue
 
-                specClass.namespace_name = namespace
-                specClass.spec = self
                 classes.append(specClass)
 
             # parse all markdown files inside Properties folder
@@ -84,8 +82,6 @@ class SpecParser:
                 if specProperty is None:
                     continue
 
-                specProperty.namespace_name = namespace
-                specProperty.spec = self
                 properties.append(specProperty)
 
             # parse all markdown files inside Vocabularies folder
@@ -105,8 +101,6 @@ class SpecParser:
                 if specVocab is None:
                     continue
 
-                specVocab.namespace_name = namespace
-                specVocab.spec = self
                 vocabularies.append(specVocab)
 
             # add the namespace in spec object
