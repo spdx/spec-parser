@@ -1,4 +1,5 @@
 import os
+import re
 import os.path as path
 from parser import (
     MDClass,
@@ -7,8 +8,10 @@ from parser import (
     MDVocab
 )
 from helper import safe_listdir
-from utils import *
+import logging
+from utils import Spec, SpecClass, SpecProperty, SpecVocab
 
+logger = logging.getLogger(__name__)
 __all__ = ['SpecParser']
 
 
@@ -22,15 +25,16 @@ class SpecParser:
         self.mdProperty = MDProperty()
         self.mdVocab = MDVocab()
 
+        self.mdClass.lexer = self.lexer
+        self.mdProperty.lexer = self.lexer
+        self.mdVocab.lexer = self.lexer
 
+        self.logger = logging.getLogger(self.__class__.__name__)
 
     def parse(self, spec_dir):
 
-        # flag for error during parsing
-        isError = False
-
         # init the Spec object for storing parsed information
-        spec_obj = Spec(spec_dir)
+        self.spec_obj = Spec(spec_dir)
 
         # traverse through all namespace and parse !!
         for namespace in safe_listdir(spec_dir):
@@ -54,12 +58,9 @@ class SpecParser:
                     continue
 
                 # try parsing class markdown
-                specClass = self.parse_class(fname)
+                specClass = self.parse_class(fname, namespace)
 
-                if specClass is None:
-                    # set the error flag
-                    isError = True
-                else:
+                if specClass is not None:
                     classes.append(specClass)
 
             # parse all markdown files inside Properties folder
@@ -74,12 +75,9 @@ class SpecParser:
                     continue
 
                 # try parsing property markdown
-                specProperty = self.parse_property(fname)
+                specProperty = self.parse_property(fname, namespace)
 
-                if specProperty is None:
-                    # set the error flag
-                    isError = True
-                else:
+                if specProperty is not None:
                     properties.append(specProperty)
 
             # parse all markdown files inside Vocabularies folder
@@ -94,80 +92,91 @@ class SpecParser:
                     continue
 
                 # try parsing vacab markdown
-                specVocab = self.parse_vocab(fname)
+                specVocab = self.parse_vocab(fname, namespace)
 
-                if specVocab is None:
-                    # set the error flag
-                    isError = True
-                else:
+                if specVocab is not None:
                     vocabularies.append(specVocab)
 
             # add the namespace in spec object
-            spec_obj.add_namespace(
+            self.spec_obj.add_namespace(
                 namespace, classes, properties, vocabularies)
 
-        # if we encounter error, then return None element
-        if isError:
-            return None
+        return self.spec_obj
 
-        return spec_obj
-
-    def parse_class(self, fname: str):
+    def parse_class(self, fname: str, namespace: str):
 
         text = self.get_text(fname)
         if text is None:
-            # report to logger and return
             return None
 
-        specClass = self.mdClass.parse(self.lexer.tokenize(text))
+        self.lexer.fname = fname
+        self.mdClass.fname = fname
+        self.mdClass.text = text
 
-        if specClass is None:
-            print(fname)
-            # report to logger and return
+        parsed = self.mdClass.parse(self.lexer.tokenize(text))
+
+        if parsed is None:
+            self.logger.error(f'Unable to parse `Class` markdown: \'{fname}\'')
             return None
 
+        specClass = SpecClass(self.spec_obj, namespace, *parsed)
         return specClass
 
-    def parse_property(self, fname: str):
+    def parse_property(self, fname: str, namespace: str):
 
         text = self.get_text(fname)
         if text is None:
-            # report to logger and return
             return None
 
-        specProperty = self.mdProperty.parse(self.lexer.tokenize(text))
+        self.lexer.fname = fname
+        self.mdProperty.fname = fname
+        self.mdProperty.text = text
 
-        if specProperty is None:
+        parsed = self.mdProperty.parse(self.lexer.tokenize(text))
+
+        if parsed is None:
             print(fname)
-            # report to logger and return
+            self.logger.error(
+                f'Unable to parse `Property` markdown: \'{fname}\'')
             return None
 
+        specProperty = SpecProperty(self.spec_obj, namespace, *parsed)
         return specProperty
 
-    def parse_vocab(self, fname: str):
+    def parse_vocab(self, fname: str, namespace: str):
 
         text = self.get_text(fname)
         if text is None:
-            # report to logger and return
             return None
 
-        specVocab = self.mdVocab.parse(self.lexer.tokenize(text))
+        self.lexer.fname = fname
+        self.mdVocab.fname = fname
+        self.mdVocab.text = text
+        parsed = self.mdVocab.parse(self.lexer.tokenize(text))
 
-        if specVocab is None:
-            print(fname)
-            # report to logger and return
+        if parsed is None:
+            self.logger.error(
+                f'Unable to parse `Vocabulary` markdown: \'{fname}\'')
             return None
 
+        specVocab = SpecVocab(self.spec_obj, namespace, *parsed)
         return specVocab
 
     def isMarkdown(self, fname):
-        if path.isfile(fname) and fname.endswith('.md'):
-            return True
-        return False
+
+        if not path.isfile(fname) or not fname.endswith('.md'):
+            return False
+
+        if m := re.match(r'^_(\w*).md$', path.split(fname)[-1]):
+            self.logger.warning(f'skipping {fname}')
+            return False
+
+        return True
 
     def get_text(self, fname):
 
         if not os.path.isfile(fname):
+            self.logger(f'No such file exists: \'{fname}\'')
             return None
 
         with open(fname, "r") as f:
