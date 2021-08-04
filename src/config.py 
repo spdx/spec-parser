@@ -1,0 +1,3 @@
+id_metadata_prefix =
+metadata_defaults = {'Instantiability': ['Concrete'], 'Status': ['Stable']}
+property_defaults = {'minCount': ['0'], 'maxCount': ['*']}

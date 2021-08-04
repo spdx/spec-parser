@@ -18,6 +18,9 @@ def get_args():
     argparser.add_argument('--refs', action="store_true",
                            help='Generate References list for Property')
 
+    argparser.add_argument('--rdf', action="store_true",
+                           help='Experimental! Generate RDF in turtle format')
+
     argparser.add_argument('--out', type=str,
                            help='Output Directory for generating markdown')
 
@@ -49,3 +52,5 @@ if __name__ == '__main__':
     spec = specParser.parse(args.spec_dir)
     if args.md:
         spec.dump_md(args)
+    if args.rdf:
+        spec.gen_rdf(args)

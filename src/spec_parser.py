@@ -60,8 +60,10 @@ class SpecParser:
                 # try parsing class markdown
                 specClass = self.parse_class(fname, namespace)
 
-                if specClass is not None:
-                    classes.append(specClass)
+                if specClass is None:
+                    continue
+
+                classes.append(specClass)
 
             # parse all markdown files inside Properties folder
             props_dir = path.join(spec_dir, namespace, 'Properties')
@@ -77,8 +79,10 @@ class SpecParser:
                 # try parsing property markdown
                 specProperty = self.parse_property(fname, namespace)
 
-                if specProperty is not None:
-                    properties.append(specProperty)
+                if specProperty is None:
+                    continue
+
+                properties.append(specProperty)
 
             # parse all markdown files inside Vocabularies folder
             vocabs_dir = path.join(spec_dir, namespace, 'Vocabularies')
@@ -94,8 +98,10 @@ class SpecParser:
                 # try parsing vacab markdown
                 specVocab = self.parse_vocab(fname, namespace)
 
-                if specVocab is not None:
-                    vocabularies.append(specVocab)
+                if specVocab is None:
+                    continue
+
+                vocabularies.append(specVocab)
 
             # add the namespace in spec object
             self.spec_obj.add_namespace(
