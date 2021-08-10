@@ -32,7 +32,7 @@ def parser_error(self, p, msg=None):
     return None
 
 
-class MDLexer(Lexer):
+class MDLexerBase(Lexer):
 
     log = logging.getLogger('Parser.MDLexer')
 
@@ -50,12 +50,19 @@ class MDLexer(Lexer):
         ENTRIES,
         H_TEXTLINE,
         TEXTLINE,
+        PROP_LINE,
+        ATTR_KEY,
+        COLON,
+        ATTR_VAL,
         ULISTA,
         ULISTB,
-        NEWLINE,
+        ULISTA_INIT,
+        ULISTB_INIT,
+        NEWLINE
     }
 
-    ignore_comment = r'<!?--(?:(?!-->)(.|\n|\s))*-->\n*'
+    # ignore_comment = r'<!?--(?:(?!-->)(.|\n|\s))*-->\n*'
+    ignore_comment = r'[ \t]*<!?--(?:(?!-->)(.|\n|\s))*-->[ \t]*(\n+|$)'
 
     SUMMARY = r'((?<=\n)|^)\#{2}\s+Summary(?:(?!\n)\s)*(\n+|$)'
     DESCRIPTION = r'((?<=\n)|^)\#{2}\s+Description(?:(?!\n)\s)*(\n+|$)'
@@ -71,18 +78,93 @@ class MDLexer(Lexer):
     H1 = r'((?<=\n)|^)\s*\#{1}'
     H_TEXTLINE = r'(?<=\#)[^\n]+(\n+|$)'
 
-    ULISTA = r'((?<=\n)|^)[*+-][^\n]+(\n+|$)'
-    ULISTB = r'((?<=\n)|^)([ ]{2,4}|\t)[*+-][^\n]+(\n+|$)'
+    def METADATA(self, t):
+        self.begin(MDLexerMdata)
+        return t
+
+    def PROPERTIES(self, t):
+        self.begin(MDLexerProp)
+        return t
+
+    def ENTRIES(self, t):
+        self.begin(MDLexerEntries)
+        return t
+
+    def SUMMARY(self, t):
+        self.begin(MDLexer)
+        return t
+
+    def DESCRIPTION(self, t):
+        self.begin(MDLexer)
+        return t
+
+    def H1(self, t):
+        self.begin(MDLexer)
+        return t
+
+    def error(self, t):
+        # l, c = get_line(self.text, t)
+        # fname = getattr(self, 'fname', '<unknown>')
+        # self.log.error(
+        #     f'{fname}:Ln {l},Col {c}: Lexer Error: Illegal character {t.value[0]}')
+        print(f'error: {t}')
+        self.index += 1
+
+
+# class MDLexerDesc(MDLexerBase):
+
+#     # derived from base class
+#     tokens = {}
+
+#     TEXTLINE = r'((?<=\n)|^)[^\n]+(\n+|$)'
+#     NEWLINE = r'\n+'
+
+
+class MDLexerProp(MDLexerBase):
+
+    # derived from base class
+    tokens = MDLexerBase.tokens
+
+    ULISTA_INIT = r'((?<=\n)|^)[*+-]'
+    ULISTB_INIT = r'((?<=\n)|^)([ ]{2,4}|\t)[*+-]'
+    ATTR_KEY = r'(?<=[*+-])(?:(?!(:[ \t]))[^\n])+(?=:[ \t])'
+    PROP_LINE = r'(?<=[*+-])[^\n]+(\n+|$)'
+    COLON = r':'
+    ATTR_VAL = r'[ \t]+[^\s]+((?:(?!\n)\s)*\n+|$)?'
+    NEWLINE = r'\n+'
+
+
+class MDLexerEntries(MDLexerBase):
+
+    # derived from base class
+    tokens = MDLexerBase.tokens
+
+    ULISTA_INIT = r'((?<=\n)|^)[*+-]'
+    ATTR_KEY = r'(?<=[*+-])(?:(?!(:[ \t]))[^\n])+(?=(:[ \t]))'
+    COLON = r':[ \t]'
+    ATTR_VAL = r'(?<=(:[ \t]))[^\n]+(\n+|$)'
+    NEWLINE = r'\n+'
+
+
+class MDLexerMdata(MDLexerBase):
+
+    # derived from base class
+    tokens = MDLexerBase.tokens
+
+    ULISTA_INIT = r'((?<=\n)|^)[*+-]'
+    ATTR_KEY = r'(?<=[*+-])(?:(?!(:[ \t]))[^\n])+(?=(:[ \t]))'
+    COLON = r':[ \t]'
+    ATTR_VAL = r'[^\s]+(\s+|$)'
+    NEWLINE = r'\n+'
+
+
+class MDLexer(MDLexerBase):
+
+    # derived from base class
+    tokens = MDLexerBase.tokens
 
     TEXTLINE = r'((?<=\n)|^)[^\n]+(\n+|$)'
     NEWLINE = r'\n+'
-
-    def error(self, t):
-        l, c = get_line(self.text, t)
-        fname = getattr(self, 'fname', '<unknown>')
-        self.log.error(
-            f'{fname}:Ln {l},Col {c}: Lexer Error: Illegal character {t.value[0]}')
-        self.index += 1
 
 
 class MDClass(Parser):
@@ -121,29 +203,16 @@ class MDClass(Parser):
             return p.metadata_list+[p.metadata_line]
         return []
 
-    @_('ULISTA')
+    @_('ULISTA_INIT ATTR_KEY COLON attr_vals')
     def metadata_line(self, p):
 
-        ulista = p.ULISTA
-
-        # strip the md list identifier, ie r'[-*+]'
-        ulista = re.split(r'[-*+]', ulista, 1)[-1].strip()
-
-        # strip the key and value in metadata entry, ie. <key>: <value>
-        ulista = re.split(r'\s*:\s', ulista, 1)
-
-        if len(ulista) != 2:
-            # report the invalid syntax
-            self.error(p._slice[0], "Syntax Error: Expected `<key>: <values>`")
-            return None
-
-        _key = ulista[0].strip()
-        _values = re.split(r'\s', ulista[-1].strip())
+        _key = p.ATTR_KEY.strip()
+        _values = p.attr_vals
 
         if _key not in valid_metadata_key:
             self.error(p._slice[0], f"Error: Invalid metadata key `{_key}`.")
 
-        if any(map(lambda x: x.get('name', '') == _key, p[-2])):
+        if any(map(lambda x: x.get('name', '') == _key, p[-5])):
             self.error(
                 p._slice[0], f"Error: Metadata key `{_key}` already exists.")
 
@@ -160,15 +229,13 @@ class MDClass(Parser):
             return []
         return p.properties_list+[p.single_property]
 
-    @_('ULISTA avline_list')
+    @_('ULISTA_INIT PROP_LINE avline_list')
     def single_property(self, p):
 
-        ulista = p.ULISTA
-
         # strip the md list identifier, ie r'[-*+]'
-        ulista = re.split(r'[-*+]', ulista, 1)[-1].strip()
+        ulista = p.PROP_LINE.strip()
 
-        if any(map(lambda x: x.get('name', '') == ulista, p[-3])):
+        if any(map(lambda x: x.get('name', '') == ulista, p[-4])):
             self.error(
                 p._slice[0], f'Error: Data property `{ulista}` already exists.')
 
@@ -181,49 +248,36 @@ class MDClass(Parser):
             return []
         return p.avline_list + [p.avline]
 
-    @_('ULISTB')
+    @_('ULISTB_INIT ATTR_KEY COLON attr_vals')
     def avline(self, p):
 
-        ulistb = p.ULISTB
-
-        # strip the md list identifier, ie r'[-*+]'
-        ulistb = re.split(r'[-*+]', ulistb, 1)[-1].strip()
-
-        # strip the key and value in metadata entry, ie. <key>: <values>
-        ulistb = re.split(r'\s*:\s', ulistb, 1)
-
-        if len(ulistb) != 2:
-            # report the invalid syntax
-            self.error(p._slice[0], "Syntax Error: Expected `<key>: <values>`")
-            return None
-
-        _key = ulistb[0].strip()
+        _key = p.ATTR_KEY.strip()
         # split values by whitespaces
-        _values = re.split(r'\s', ulistb[-1].strip())
+        _values = p.attr_vals
 
         if _key not in valid_dataprop_key:
             self.error(
                 p._slice[0], f"Error: Invalid DataProperty Attribute key `{_key}`.")
 
-        if any(map(lambda x: x.get('name', '') == _key, p[-2])):
+        if any(map(lambda x: x.get('name', '') == _key, p[-5])):
             self.error(
                 p._slice[0], f"Error: Attribute key \'{_key}\' already exists")
 
         return {'name': _key, 'values': _values}
 
-    @_('para para_line',
+    @_('para TEXTLINE',
         'empty')
     def para(self, p):
         if len(p) == 1:
             return ''
-        else:
-            return f"{p.para}{p.para_line}"
+        return f"{p.para}{p.TEXTLINE}"
 
-    @_('TEXTLINE',
-        'ULISTA',
-        'ULISTB')
-    def para_line(self, p):
-        return p[0]
+    @_('attr_vals ATTR_VAL',
+        'ATTR_VAL')
+    def attr_vals(self, p):
+        if len(p) == 1:
+            return [p.ATTR_VAL.strip()]
+        return p.attr_vals+[p.ATTR_VAL.strip()]
 
     @_('NEWLINE')
     def newlines(self, p):
@@ -248,7 +302,7 @@ class MDProperty(Parser):
 
     # debugfile = 'parser.out'
     log = logging.getLogger('Parser.MDProperty')
-    tokens = MDLexer.tokens
+    tokens = MDLexerBase.tokens
     lexer = None
 
     @_('maybe_newlines name summary description metadata')
@@ -280,47 +334,34 @@ class MDProperty(Parser):
             return p.metadata_list+[p.metadata_line]
         return []
 
-    @_('ULISTA')
+    @_('ULISTA_INIT ATTR_KEY COLON attr_vals')
     def metadata_line(self, p):
 
-        ulista = p.ULISTA
-
-        # strip the md list identifier, ie r'[-*+]'
-        ulista = re.split(r'[-*+]', ulista, 1)[-1].strip()
-
-        # strip the key and value in metadata entry, ie. <key>: <value>
-        ulista = re.split(r'\s*:\s', ulista, 1)
-
-        if len(ulista) != 2:
-            # report the invalid syntax
-            self.error(p._slice[0], "Syntax Error: Expected `<key>: <values>`")
-            return None
-
-        _key = ulista[0].strip()
-        _values = re.split(r'\s', ulista[-1].strip())
+        _key = p.ATTR_KEY.strip()
+        _values = p.attr_vals
 
         if _key not in valid_metadata_key:
             self.error(p._slice[0], f"Error: Invalid metadata key `{_key}`.")
 
-        if any(map(lambda x: x.get('name', '') == _key, p[-2])):
+        if any(map(lambda x: x.get('name', '') == _key, p[-5])):
             self.error(
                 p._slice[0], f"Error: Metadata key `{_key}` already exists.")
 
         return {'name': _key, 'values': _values}
 
-    @_('para para_line',
+    @_('para TEXTLINE',
         'empty')
     def para(self, p):
         if len(p) == 1:
             return ''
-        else:
-            return f"{p.para}{p.para_line}"
+        return f"{p.para}{p.TEXTLINE}"
 
-    @_('TEXTLINE',
-        'ULISTA',
-        'ULISTB')
-    def para_line(self, p):
-        return p[0]
+    @_('attr_vals ATTR_VAL',
+        'ATTR_VAL')
+    def attr_vals(self, p):
+        if len(p) == 1:
+            return [p.ATTR_VAL.strip()]
+        return p.attr_vals+[p.ATTR_VAL.strip()]
 
     @_('NEWLINE')
     def newlines(self, p):
@@ -376,29 +417,16 @@ class MDVocab(MDProperty):
             return p.metadata_list+[p.metadata_line]
         return []
 
-    @_('ULISTA')
+    @_('ULISTA_INIT ATTR_KEY COLON attr_vals')
     def metadata_line(self, p):
 
-        ulista = p.ULISTA
-
-        # strip the md list identifier, ie r'[-*+]'
-        ulista = re.split(r'[-*+]', ulista, 1)[-1].strip()
-
-        # strip the key and value in metadata entry, ie. <key>: <value>
-        ulista = re.split(r'\s*:\s', ulista, 1)
-
-        if len(ulista) != 2:
-            # report the invalid syntax
-            self.error(p._slice[0], "Syntax Error: Expected `<key>: <values>`")
-            return None
-
-        _key = ulista[0].strip()
-        _values = re.split(r'\s', ulista[-1].strip())
+        _key = p.ATTR_KEY.strip()
+        _values = p.attr_vals
 
         if _key not in valid_metadata_key:
             self.error(p._slice[0], f"Error: Invalid metadata key `{_key}`.")
 
-        if any(map(lambda x: x.get('name', '') == _key, p[-2])):
+        if any(map(lambda x: x.get('name', '') == _key, p[-5])):
             self.error(
                 p._slice[0], f"Error: Metadata key `{_key}` already exists.")
 
@@ -415,45 +443,31 @@ class MDVocab(MDProperty):
             return p.entry_list+[p.entry_line]
         return []
 
-    @_('ULISTA')
+    @_('ULISTA_INIT ATTR_KEY COLON ATTR_VAL')
     def entry_line(self, p):
 
-        ulista = p.ULISTA
+        _key = p.ATTR_KEY.strip()
+        _value = p.ATTR_VAL.strip()
 
-        # strip the md list identifier, ie r'[-*+]'
-        ulista = re.split(r'[-*+]', ulista, 1)[-1].strip()
-
-        # strip the key and value in metadata entry, ie. <key>: <value>
-        ulista = re.split(r'\s*:\s', ulista, 1)
-
-        if len(ulista) != 2:
-            # report the invalid syntax
-            self.error(
-                p._slice[0], "Syntax Error: Expected `<key>: <description>`")
-            return None
-
-        _key = ulista[0].strip()
-        _value = ulista[-1].strip()
-
-        if any(map(lambda x: x.get('name', '') == _key, p[-2])):
+        if any(map(lambda x: x.get('name', '') == _key, p[-5])):
             self.error(
                 p._slice[0], 'Error: Entry \'{_key}\' already exists')
 
         return {'name': _key, 'value': _value}
 
-    @_('para para_line',
+    @_('para TEXTLINE',
         'empty')
     def para(self, p):
         if len(p) == 1:
             return ''
-        else:
-            return f"{p.para}{p.para_line}"
+        return f"{p.para}{p.TEXTLINE}"
 
-    @_('TEXTLINE',
-        'ULISTA',
-        'ULISTB')
-    def para_line(self, p):
-        return p[0]
+    @_('attr_vals ATTR_VAL',
+        'ATTR_VAL')
+    def attr_vals(self, p):
+        if len(p) == 1:
+            return [p.ATTR_VAL.strip()]
+        return p.attr_vals+[p.ATTR_VAL.strip()]
 
     @_('NEWLINE')
     def newlines(self, p):
@@ -492,4 +506,4 @@ if __name__ == '__main__':
 
     lexer.fname = fpath
     result = parser.parse(lexer.tokenize(inp))
-    result.dump_md('./test.md')
+    print(result)
