@@ -104,6 +104,7 @@ class Spec:
         for _name in self.namespaces.keys():
             self.rdf_dict[_name] = rdflib.Namespace(
                 f'{id_metadata_prefix}{_name}#')
+            g.bind(_name.lower(), self.rdf_dict[_name])
 
         # add triples starting from each namespaces
         for _namespace in self.namespaces.values():
@@ -448,3 +449,8 @@ class SpecVocab(SpecBase):
 
         g.add((cur, RDFS.comment, Literal(self.description)))
         g.add((cur, NS0.term_status, Literal(self.metadata.get('Status')[0])))
+
+        # add entries
+        for _entry, _desc in self.entries.items():
+            g.add((self._gen_uri(_entry), RDF.type, OWL.NamedIndividual))
+            g.add((self._gen_uri(_entry), RDF.type, cur))
