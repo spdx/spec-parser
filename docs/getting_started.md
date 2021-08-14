@@ -1,27 +1,32 @@
-# spec-parser
-
-Automagically process the specification
-
-## Sections
-
-- [Installation](#setting-up)
-
-- [Usage](#usage) 
-
-- [Internals of spec-parser](./docs/internals.md)
-
-- [Grammar specification of parser](./docs/grammar.md)
-
-- [Information on Defaults Error checking](./docs/error_checks.md)
+# Getting Started
 
 
-## Installing dependencies
+## Section
 
-```
-❯ python3 -m pip install -r requirements.txt
-```
+- [Installation](##setting-up)
+
+- [Usage](##usage) 
+
+- [Internals of spec-parser](./internals.md)
+
+- [Grammar specification of parser](./grammar.md)
+
+- [Information on Defaults Error checking](./error_checks.md)
+
+
+## Setting Up
+
+TODO
 
 ## Usage
+
+### For parsing specfication
+
+```
+❯ python src/driver [spec-folder]
+```
+
+### Detailed information about usage
 
 ```
 ❯ python src/driver.py --help
