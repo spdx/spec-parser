@@ -25,7 +25,8 @@ def isError():
 
 
 def safe_open(fname, *args):
-    ''' Open "fname" after creating neccessary nested directories as needed.
+    ''' 
+    Open "fname" after creating neccessary nested directories as needed.
     '''
 
     dname = os.path.dirname(fname) if os.path.dirname(fname) != '' else './'

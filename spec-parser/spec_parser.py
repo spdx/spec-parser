@@ -7,6 +7,7 @@ from parser import (
     MDProperty,
     MDVocab
 )
+from typing import Union
 from helper import safe_listdir
 import logging
 from utils import Spec, SpecClass, SpecProperty, SpecVocab
@@ -16,6 +17,10 @@ __all__ = ['SpecParser']
 
 
 class SpecParser:
+    """This class is use for traversing the input `spec` folder, and 
+    traversing the folder and discovering all the namespaces and all 
+    their entities. The primary task of this class is to parse the spec folder. 
+    """
 
     def __init__(self):
 
@@ -31,7 +36,15 @@ class SpecParser:
 
         self.logger = logging.getLogger(self.__class__.__name__)
 
-    def parse(self, spec_dir):
+    def parse(self, spec_dir: str) -> Spec:
+        """Returns :class:`spec-parser.utils.Spec` after parsing the `spec_dir` directory.
+
+        Args:
+            spec_dir (str): path to the top-level directory containing the specification.   
+
+        Returns:
+            Spec: 
+        """
 
         # init the Spec object for storing parsed information
         self.spec_obj = Spec(spec_dir)
@@ -109,8 +122,19 @@ class SpecParser:
 
         return self.spec_obj
 
-    def parse_class(self, fname: str, namespace: str):
+    def parse_class(self, fname: str, namespace: str) -> Union[SpecClass, None]:
+        """Returns a parsed: class: `spec-parser.utils.SpecClass`
+        if the 'Class' entity is valid, else logs error and returns
+        `None`
 
+        Args:
+            fname(str): path to the 'Class' entity
+            namespace(str): name of the namespace
+
+        Returns:
+            Union[SpecClass, None]: `SpecClass` if parsed successful, otherwise
+            `None`
+        """
         text = self.get_text(fname)
         if text is None:
             return None
@@ -128,7 +152,19 @@ class SpecParser:
         specClass = SpecClass(self.spec_obj, namespace, *parsed)
         return specClass
 
-    def parse_property(self, fname: str, namespace: str):
+    def parse_property(self, fname: str, namespace: str) -> Union[SpecProperty, None]:
+        """Returns a parsed: class: `spec-parser.utils.SpecProperty`
+        if the 'Property' entity is valid, else logs error and returns
+        `None`
+
+        Args:
+            fname(str): path to the 'Property' entity
+            namespace(str): name of the namespace
+
+        Returns:
+            Union[SpecProperty, None]: `SpecProperty` if parsed successful, otherwise
+            `None`
+        """
 
         text = self.get_text(fname)
         if text is None:
@@ -149,7 +185,19 @@ class SpecParser:
         specProperty = SpecProperty(self.spec_obj, namespace, *parsed)
         return specProperty
 
-    def parse_vocab(self, fname: str, namespace: str):
+    def parse_vocab(self, fname: str, namespace: str) -> Union[SpecVocab, None]:
+        """Returns a parsed: class: `spec-parser.utils.SpecVocab`
+        if the 'Vocab' entity is valid, else logs error and returns
+        `None`
+
+        Args:
+            fname(str): path to the 'Vocab' entity
+            namespace(str): name of the namespace
+
+        Returns:
+            Union[SpecVocab, None]: `SpecVocab` if parsed successful, otherwise
+            `None`
+        """
 
         text = self.get_text(fname)
         if text is None:
@@ -168,7 +216,17 @@ class SpecParser:
         specVocab = SpecVocab(self.spec_obj, namespace, *parsed)
         return specVocab
 
-    def isMarkdown(self, fname):
+    def isMarkdown(self, fname: str) -> bool:
+        """Check if given file exists and has `.md` extension and
+        file name doesn't start with `_`.
+
+        Args:
+            fname(str): path to the file
+
+        Returns:
+            bool: Returns `True` if all conditions are satisfied
+            otherwise `False`.
+        """
 
         if not path.isfile(fname) or not fname.endswith('.md'):
             return False
@@ -179,7 +237,16 @@ class SpecParser:
 
         return True
 
-    def get_text(self, fname):
+    def get_text(self, fname: str) -> Union[str, None]:
+        """Return the text of file, if it exists.
+
+        Args:
+            fname(str): path to the file
+
+        Returns:
+            Union[str, None]: Returns text if file exists, otherwise
+            return `None`
+        """
 
         if not os.path.isfile(fname):
             self.logger(f'No such file exists: \'{fname}\'')

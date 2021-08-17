@@ -3,9 +3,9 @@
 
 ## Section
 
-- [Installation](##setting-up)
+- [Installation](#setting-up)
 
-- [Usage](##usage) 
+- [Usage](#usage) 
 
 - [Internals of spec-parser](./internals.md)
 
