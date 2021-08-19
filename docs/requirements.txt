@@ -1,0 +1,6 @@
+sphinx
+sphinx-rtd-theme
+myst-parser
+rdflib==6.0.0
+sly==0.4
+
