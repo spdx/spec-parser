@@ -43,4 +43,8 @@ optional arguments:
 
 ## Current Roadmap
 
-TODO
+- [X] Validating and reporting all possible parsing error (in any) the incoming markdown files.
+- [X] Auto generating Pretty markdowns.
+- [X] Adding defaults and Generating cross-references.
+- [X] Generating RDF in Turtle format.
+- [ ] Adding Restrictions in RDF.
