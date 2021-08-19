@@ -24,7 +24,7 @@ Automagically process the specification
 ## Usage
 
 ```
-❯ python driver.py -h
+❯ python main.py -h
 usage: spec-parser [-h] [--gen-md] [--gen-refs] [--gen-rdf] [--use-table] [--out-dir OUT_DIR] spec_dir
 
 SPDX specification parser
