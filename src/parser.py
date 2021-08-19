@@ -55,7 +55,7 @@ class MDLexer(Lexer):
         NEWLINE,
     }
 
-    ignore_comment = r'<!?--(?:(?!-->)(.|\n|\s))*-->\n*'
+    ignore_comment = r'(?:(?!\n)\s)*<!?--(?:(?!-->)(.|\n|\s))*-->(?:(?!\n)\s)*\n*'
 
     SUMMARY = r'((?<=\n)|^)\#{2}\s+Summary(?:(?!\n)\s)*(\n+|$)'
     DESCRIPTION = r'((?<=\n)|^)\#{2}\s+Description(?:(?!\n)\s)*(\n+|$)'
