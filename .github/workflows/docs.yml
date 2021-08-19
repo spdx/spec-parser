@@ -28,7 +28,7 @@ jobs:
         git config --local user.email "actions@github.com"
         git config --local user.name "GitHub Actions"
         git add .
-        git commit --amend -m "Update documentation" -a || true
+        git commit -m "Update documentation" -a || true
         # The above command will fail if no changes were present, so we ignore
         # that.
     - name: Push changes
