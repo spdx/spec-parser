@@ -89,15 +89,3 @@ def union_dict(d1: dict, d2: dict) -> dict:
     for k, v in d2.items():
         if not k in d1:
             d1[k] = v
-
-
-def gen_rdf_id(entity, namespace_name):
-
-    splitted = re.split(r":", entity)
-
-    if len(splitted) > 2:
-        return entity
-    elif len(splitted) == 2:
-        return f"{id_metadata_prefix}{splitted[0]}#{splitted[-1]}"
-    else:
-        return f"{id_metadata_prefix}{namespace_name}#{splitted[-1]}"

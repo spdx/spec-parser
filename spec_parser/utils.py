@@ -1,12 +1,15 @@
 import logging
+import re
 from os import path
 from typing import List
+
 import rdflib
-from rdflib import URIRef
+from rdflib import URIRef, Literal
 from rdflib.namespace import RDF, OWL, RDFS, XSD
 
+NS0 = rdflib.Namespace("http://www.w3.org/2003/06/sw-vocab-status/ns#")
+
 from .helper import (
-    gen_rdf_id,
     isError,
     safe_open,
     union_dict,
@@ -132,10 +135,15 @@ class Spec:
 
         g = rdflib.Graph()
 
-        NS0 = rdflib.Namespace("http://www.w3.org/2003/06/sw-vocab-status/ns#")
         g.bind("owl", OWL)
+        g.bind("ns0", NS0)
 
         self.rdf_dict = {"ns0": NS0, "rdf": RDF, "owl": OWL, "rdfs": RDFS, "xsd": XSD}
+
+        # add all namespaces
+        for _name in self.namespaces.keys():
+            self.rdf_dict[_name] = rdflib.Namespace(f"{id_metadata_prefix}{_name}#")
+            g.bind(_name.lower(), self.rdf_dict[_name])
 
         # add triples starting from each namespaces
         for _namespace in self.namespaces.values():
@@ -155,31 +163,15 @@ class Spec:
 
         # if we have encounter error then terminate
         if isError():
-            self.logger.warning(
-                f"Specs not parsed succesfully, aborting the gen_rdf..."
-            )
+            self.logger.warning(f"Error parsing the spec. Aborting the gen_rdf...")
             return
 
-        fname = path.join(self.args["out"], f"tst.ttl")
+        fname = path.join(self.args["out_dir"], f"tst.ttl")
         with safe_open(fname, "w") as f:
             f.write(g.serialize(format="turtle"))
 
 
-class SpecClass:
-    """This class store the parsed information of `Class` entity.
-
-    .. warning:: This is not meant for direct usage.
-
-    Args:
-        spec (Spec): Parent Spec object
-        namespace_name (str): name of namespace
-        name (str): name of `Class` entity
-        summary (str): summary of this entity
-        description (str): description of this entity
-        metadata (dict): metadata of this entity
-        props (dict): properties of this entity
-    """
-
+class SpecBase:
     def __init__(
         self,
         spec: Spec,
@@ -187,26 +179,19 @@ class SpecClass:
         name: str,
         summary: str,
         description: str,
-        metadata: dict,
-        props: dict,
     ):
-        self.logger: logging.Logger = logging.getLogger(self.__class__.__name__)
 
+        self.logger: logging.Logger = None
         self.spec: Spec = spec
         self.namespace_name: str = namespace_name
-
         self.name: str = name
         self.summary: str = summary
         self.description: str = description
-
         self.metadata: dict = dict()
         self.properties: dict = dict()
+        self.entries: dict = dict()
 
-        self.extract_metadata(metadata)
-
-        self.extract_properties(props)
-
-    def extract_metadata(self, mdata_list):
+    def _extract_metadata(self, mdata_list):
 
         for _dict in mdata_list:
 
@@ -225,7 +210,7 @@ class SpecClass:
         # add id metadata
         self.metadata["id"] = [f"{id_metadata_prefix}{self.namespace_name}#{self.name}"]
 
-    def extract_properties(self, props_list):
+    def _extract_properties(self, props_list):
 
         for prop in props_list:
 
@@ -266,6 +251,80 @@ class SpecClass:
                 f"{self.namespace_name}:{self.name}"
             )
 
+    def _extract_entries(self, entry_list):
+
+        for entry in entry_list:
+
+            _key = entry["name"]
+            _value = entry["value"]
+
+            if _key in self.entries:
+                # report the error
+                self.logger.error(f"{self.name}: Entry '{_key}' already exists")
+
+            self.entries[_key] = _value
+
+    def _gen_uri(self, entity):
+
+        splitted = re.split(r":", entity)
+
+        if len(splitted) > 2:
+            return Literal(entity)
+
+        if getattr(self, "spec", None) is None:
+            return Literal(entity)
+
+        rdf_dict = self.spec.rdf_dict
+
+        if len(splitted) == 1:
+            _namespace = self.namespace_name
+        else:
+            _namespace = splitted[0]
+
+        if _namespace not in rdf_dict:
+            return Literal(entity)
+
+        return rdf_dict[_namespace][splitted[-1]]
+
+
+class SpecClass(SpecBase):
+    """This class store the parsed information of `Class` entity.
+
+    .. warning:: This is not meant for direct usage.
+
+    Args:
+        spec (Spec): Parent Spec object
+        namespace_name (str): name of namespace
+        name (str): name of `Class` entity
+        summary (str): summary of this entity
+        description (str): description of this entity
+        metadata (dict): metadata of this entity
+        props (dict): properties of this entity
+    """
+
+    def __init__(
+        self,
+        spec: Spec,
+        namespace_name: str,
+        name: str,
+        summary: str,
+        description: str,
+        metadata: dict,
+        props: dict,
+    ):
+
+        super().__init__(
+            spec,
+            namespace_name,
+            name,
+            summary,
+            description,
+        )
+
+        self.logger = logging.getLogger(self.__class__.__name__)
+        self._extract_metadata(metadata)
+        self._extract_properties(props)
+
     def _gen_md(self, args: dict) -> None:
 
         fname = path.join(
@@ -300,11 +359,26 @@ class SpecClass:
 
             # write the data_props
             f.write(f"## Properties\n\n")
-            for name, subprops in self.properties.items():
-                f.write(f"- {name}\n")
-                for _key, subprop in subprops.items():
-                    f.write(f'  - {_key}: {" ".join(subprop)}\n')
-                f.write("\n")
+            if args.get("use_table", False):
+                # generate markdown-table from properties
+                header_list = ["type", "minCount", "maxCount"]
+
+                # print the header
+                f.write("|" + "|".join(["property"] + header_list) + "|\n")
+                f.write("|" + "---|" * (len(header_list) + 1) + "\n")
+
+                for name, subprops in self.properties.items():
+                    f.write(f"|{name}")
+                    for subprop in header_list:
+                        f.write(f'|{" ".join(subprops.get(subprop, ["NA"]))}')
+                    f.write("|\n")
+            else:
+                # generate markdown-list from properties
+                for name, subprops in self.properties.items():
+                    f.write(f"- {name}\n")
+                    for _key, subprop in subprops.items():
+                        f.write(f'  - {_key}: {" ".join(subprop)}\n')
+                    f.write("\n")
 
     def _gen_rdf(self, g: rdflib.Graph) -> None:
 
@@ -314,16 +388,13 @@ class SpecClass:
         g.add((cur, RDF.type, OWL["Class"]))
 
         for subclass in self.metadata.get("SubclassOf", []):
-            g.add(
-                (
-                    cur,
-                    RDFS.subClassOf,
-                    URIRef(gen_rdf_id(subclass, self.namespace_name)),
-                )
-            )
+            g.add((cur, RDFS.subClassOf, self._gen_uri(subclass)))
+
+        g.add((cur, RDFS.comment, Literal(self.description)))
+        g.add((cur, NS0.term_status, Literal(self.metadata.get("Status")[0])))
 
 
-class SpecProperty:
+class SpecProperty(SpecBase):
     """This class store the parsed information of `Property` entity.
 
     .. warning:: This is not meant for direct usage.
@@ -347,37 +418,16 @@ class SpecProperty:
         metadata: dict,
     ):
 
+        super().__init__(
+            spec,
+            namespace_name,
+            name,
+            summary,
+            description,
+        )
+
         self.logger = logging.getLogger(self.__class__.__name__)
-
-        self.spec = spec
-        self.namespace_name = namespace_name
-
-        self.name = name
-        self.summary = summary
-        self.description = description
-
-        self.metadata = dict()
-
-        self.extract_metadata(metadata)
-
-    def extract_metadata(self, mdata_list):
-
-        for mdata_line in mdata_list:
-
-            _key = mdata_line["name"]
-            _values = mdata_line["values"]
-
-            if _key in self.metadata:
-                # report the error
-                self.logger.error(f"{self.name}: Metadata key '{_key}' already exists")
-
-            self.metadata[_key] = _values
-
-        # add all default metadata fields
-        union_dict(self.metadata, metadata_defaults)
-
-        # add id metadata
-        self.metadata["id"] = [f"{id_metadata_prefix}{self.namespace_name}#{self.name}"]
+        self._extract_metadata(metadata)
 
     def _gen_md(self, args: dict) -> None:
 
@@ -423,19 +473,28 @@ class SpecProperty:
         cur = URIRef(self.metadata["id"][0])
 
         # nature of property
-        if self.metadata.get("Nature", "ObjectProperty"):
-            g.add((cur, RDF.type, OWL["ObjectProperty"]))
-        else:
-            g.add((cur, RDF.type, OWL["DatatypeProperty"]))
+        for _nature in self.metadata.get("Nature", []):
+            if _nature == "ObjectProperty":
+                _mask = OWL["ObjectProperty"]
+            elif _nature == "DataProperty":
+                _mask = OWL["DatatypeProperty"]
+            else:
+                self.logger.error(f"Invalid Nature attribute in metadata `{_nature}`")
+                continue
+
+            g.add((cur, RDF.type, _mask))
 
         for _val in self.metadata.get("Range", []):
-            g.add((cur, RDFS.range, URIRef(gen_rdf_id(_val, self.namespace_name))))
+            g.add((cur, RDFS.range, self._gen_uri(_val)))
 
         for _val in self.metadata.get("Domain", []):
-            g.add((cur, RDFS.domain, URIRef(gen_rdf_id(_val, self.namespace_name))))
+            g.add((cur, RDFS.domain, self._gen_uri(_val)))
+
+        g.add((cur, RDFS.comment, Literal(self.description)))
+        g.add((cur, NS0.term_status, Literal(self.metadata.get("Status")[0])))
 
 
-class SpecVocab:
+class SpecVocab(SpecBase):
     """This class store the parsed information of `Vocab` entity.
 
     .. warning:: This is not meant for direct usage.
@@ -461,53 +520,17 @@ class SpecVocab:
         entries: dict,
     ):
 
+        super().__init__(
+            spec,
+            namespace_name,
+            name,
+            summary,
+            description,
+        )
+
         self.logger = logging.getLogger(self.__class__.__name__)
-
-        self.spec = spec
-        self.namespace_name = namespace_name
-
-        self.name = name
-        self.summary = summary
-        self.description = description
-
-        self.metadata = dict()
-        self.entries = dict()
-
-        self.extract_metadata(metadata)
-
-        self.extract_entries(entries)
-
-    def extract_metadata(self, mdata_list):
-
-        for mdata_line in mdata_list:
-
-            _key = mdata_line["name"]
-            _values = mdata_line["values"]
-
-            if _key in self.metadata:
-                # report the error
-                self.logger.error(f"{self.name}: Metadata key '{_key}' already exists")
-
-            self.metadata[_key] = _values
-
-        # add all default metadata fields
-        union_dict(self.metadata, metadata_defaults)
-
-        # add id metadata
-        self.metadata["id"] = [f"{id_metadata_prefix}{self.namespace_name}#{self.name}"]
-
-    def extract_entries(self, entry_list):
-
-        for entry in entry_list:
-
-            _key = entry["name"]
-            _value = entry["value"]
-
-            if _key in self.entries:
-                # report the error
-                self.logger.error(f"{self.name}: Entry '{_key}' already exists")
-
-            self.entries[_key] = _value
+        self._extract_metadata(metadata)
+        self._extract_entries(entries)
 
     def _gen_md(self, args: dict) -> None:
 
@@ -546,6 +569,15 @@ class SpecVocab:
             for name, val in self.entries.items():
                 f.write(f"- {name}: {val}\n")
 
-    def _gen_rdf(self, g: rdflib.Graph) -> None:
+    def _gen_rdf(self, g: rdflib.Graph):
+
         cur = URIRef(self.metadata["id"][0])
         g.add((cur, RDF.type, OWL["Class"]))
+
+        g.add((cur, RDFS.comment, Literal(self.description)))
+        g.add((cur, NS0.term_status, Literal(self.metadata.get("Status")[0])))
+
+        # add entries
+        for _entry, _desc in self.entries.items():
+            g.add((self._gen_uri(_entry), RDF.type, OWL.NamedIndividual))
+            g.add((self._gen_uri(_entry), RDF.type, cur))
