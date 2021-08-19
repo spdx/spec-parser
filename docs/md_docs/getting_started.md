@@ -1,6 +1,4 @@
-# spec-parser
-
-Automagically process the specification
+# Getting Started
 
 ## Sections
 
@@ -8,11 +6,11 @@ Automagically process the specification
 
 - [Usage](#usage) 
 
-- [Internals of spec-parser](./docs/md_docs/internals.md)
+- [Internals of spec-parser](./internals.md)
 
-- [Grammar specification of parser](./docs/md_docs/grammar.md)
+- [Grammar specification of parser](./grammar.md)
 
-- [Information on Defaults Error checking](./docs/md_docs/error_checks.md)
+- [Information on Defaults Error checking](./error_checks.md)
 
 
 ## Installing dependencies
@@ -40,7 +38,3 @@ optional arguments:
   --use-table        Use markdown-table to display properties in `Class` entity
   --out-dir OUT_DIR  Output Directory for generating markdown
 ```
-
-## Current Roadmap
-
-TODO

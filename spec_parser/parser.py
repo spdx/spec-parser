@@ -38,6 +38,7 @@ class MDLexer(Lexer):
     """Common Lexer for specification input files."""
 
     log = logging.getLogger("Parser.MDLexer")
+    log.setLevel(logging.ERROR)
 
     tokens = {
         H1,
@@ -94,6 +95,7 @@ class MDClass(Parser):
 
     # debugfile = 'parser.out'
     log = logging.getLogger("Parser.MDClass")
+    log.setLevel(logging.ERROR)
     tokens = MDLexer.tokens
     lexer = None
 
@@ -245,6 +247,7 @@ class MDProperty(Parser):
 
     # debugfile = 'parser.out'
     log = logging.getLogger("Parser.MDProperty")
+    log.setLevel(logging.ERROR)
     tokens = MDLexer.tokens
     lexer = None
 
@@ -337,6 +340,7 @@ class MDVocab(MDProperty):
 
     # debugfile = 'parser.out'
     log = logging.getLogger("Parser.MDVocab")
+    log.setLevel(logging.ERROR)
     tokens = MDLexer.tokens
     lexer = None
 

@@ -6,17 +6,19 @@
 Welcome to spec-parser's documentation!
 =======================================
 
+Automagically process the specification
+
+
 Contents
 ---------
 
 .. toctree::
    :maxdepth: 1
    
-   getting_started/getting_started.md
-   getting_started/grammar.md
-   getting_started/internals.md
-   getting_started/error_checks.md
-   
+   md_docs/getting_started.md
+   md_docs/grammar.md
+   md_docs/internals.md
+   md_docs/error_checks.md
 
 API Reference
 -------------
@@ -24,7 +26,7 @@ API Reference
 .. toctree::
    :maxdepth: 3
 
-   apidocs/modules
+   apidocs/spec_parser
 
 
 Indices and tables
