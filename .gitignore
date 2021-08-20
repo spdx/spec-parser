@@ -1,4 +1,21 @@
-src/__pycache__
-src/tmp
+# Temp files #
+##############
 *.out
 .vscode
+Pipfile*
+md_generated
+spdx-spec
+spec-v3-template
+tmp
+
+# sphinx build folder #
+#######################
+docs/_build
+
+# OS generated files #
+######################
+*__pycache__
+*.DS_Store?
+*ehthumbs.db
+*Icon?
+*Thumbs.db
