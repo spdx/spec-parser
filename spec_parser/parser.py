@@ -52,6 +52,7 @@ class MDLexer(Lexer):
         METADATA,
         PROPERTIES,
         ENTRIES,
+        LICENSE,
         H_TEXTLINE,
         TEXTLINE,
         ULISTA,
@@ -66,6 +67,7 @@ class MDLexer(Lexer):
     METADATA = r"((?<=\n)|^)\#{2}\s+Metadata(?:(?!\n)\s)*(\n+|$)"
     PROPERTIES = r"((?<=\n)|^)\#{2}\s+Properties(?:(?!\n)\s)*(\n+|$)"
     ENTRIES = r"((?<=\n)|^)\#{2}\s+Entries(?:(?!\n)\s)*(\n+|$)"
+    LICENSE = r"((?<=\n)|^)\s*SPDX-License-Identifier\s*:[^\n]+(?:(?!\n)\s)*(\n+|$)"
 
     H6 = r"((?<=\n)|^)\s*\#{6}"
     H5 = r"((?<=\n)|^)\s*\#{5}"
@@ -99,11 +101,15 @@ class MDClass(Parser):
     tokens = MDLexer.tokens
     lexer = None
 
-    @_("maybe_newlines name summary description metadata properties")
+    @_("maybe_newlines license_name name summary description metadata properties")
     def document(self, p):
         if getattr(self, "isError", False):
             return None
         return (p.name, p.summary, p.description, p.metadata, p.properties)
+
+    @_("LICENSE")
+    def license_name(self, p):
+        return None
 
     @_("H1 H_TEXTLINE")
     def name(self, p):
@@ -251,11 +257,15 @@ class MDProperty(Parser):
     tokens = MDLexer.tokens
     lexer = None
 
-    @_("maybe_newlines name summary description metadata")
+    @_("maybe_newlines license_name name summary description metadata")
     def document(self, p):
         if getattr(self, "isError", False):
             return None
         return (p.name, p.summary, p.description, p.metadata)
+
+    @_("LICENSE")
+    def license_name(self, p):
+        return None
 
     @_("H1 H_TEXTLINE")
     def name(self, p):
@@ -344,11 +354,15 @@ class MDVocab(MDProperty):
     tokens = MDLexer.tokens
     lexer = None
 
-    @_("maybe_newlines name summary description metadata entries")
+    @_("maybe_newlines license_name name summary description metadata entries")
     def document(self, p):
         if getattr(self, "isError", False):
             return None
         return (p.name, p.summary, p.description, p.metadata, p.entries)
+
+    @_("LICENSE")
+    def license_name(self, p):
+        return None
 
     @_("H1 H_TEXTLINE")
     def name(self, p):
@@ -469,7 +483,7 @@ if __name__ == "__main__":
     parser.lexer = lexer
 
     fpath = sys.argv[1]
-    # fpath = "spec-v3-template/model/Core/Vocabularies/HashAlgorithmVocab.md"
+    # fpath = "spec-v3-model/model/Core/Vocabularies/HashAlgorithmVocab.md"
     print(fpath)
 
     with open(fpath, "r") as f:
