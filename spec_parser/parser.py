@@ -101,11 +101,11 @@ class MDClass(Parser):
     tokens = MDLexer.tokens
     lexer = None
 
-    @_("maybe_newlines license_name name summary description metadata properties")
+    @_("maybe_newlines license_name name maybe_summary maybe_description maybe_metadata maybe_properties")
     def document(self, p):
         if getattr(self, "isError", False):
             return None
-        return (p.name, p.summary, p.description, p.metadata, p.properties)
+        return (p.name, p.maybe_summary, p.maybe_description, p.maybe_metadata, p.maybe_properties)
 
     @_("LICENSE")
     def license_name(self, p):
@@ -115,13 +115,31 @@ class MDClass(Parser):
     def name(self, p):
         return p.H_TEXTLINE.strip()
 
+    @_("empty", "summary")
+    def maybe_summary(self, p):
+        if p[0] is None:
+            return ""
+        return p[0]
+
     @_("SUMMARY para")
     def summary(self, p):
         return p.para.strip()
 
+    @_("empty", "description")
+    def maybe_description(self, p):
+        if p[0] is None:
+            return ""
+        return p[0]
+
     @_("DESCRIPTION para")
     def description(self, p):
         return p.para.strip()
+
+    @_("empty", "metadata")
+    def maybe_metadata(self, p):
+        if p[0] is None:
+            return []
+        return p[0]
 
     @_("METADATA metadata_list")
     def metadata(self, p):
@@ -159,6 +177,12 @@ class MDClass(Parser):
             self.error(p._slice[0], f"Error: Metadata key `{_key}` already exists.")
 
         return {"name": _key, "values": _values}
+
+    @_("empty", "properties")
+    def maybe_properties(self, p):
+        if p[0] is None:
+            return []
+        return p[0]
 
     @_("PROPERTIES properties_list")
     def properties(self, p):
@@ -257,11 +281,11 @@ class MDProperty(Parser):
     tokens = MDLexer.tokens
     lexer = None
 
-    @_("maybe_newlines license_name name summary description metadata")
+    @_("maybe_newlines license_name name maybe_summary maybe_description maybe_metadata")
     def document(self, p):
         if getattr(self, "isError", False):
             return None
-        return (p.name, p.summary, p.description, p.metadata)
+        return (p.name, p.maybe_summary, p.maybe_description, p.maybe_metadata)
 
     @_("LICENSE")
     def license_name(self, p):
@@ -271,13 +295,31 @@ class MDProperty(Parser):
     def name(self, p):
         return p.H_TEXTLINE.strip()
 
+    @_("empty", "summary")
+    def maybe_summary(self, p):
+        if p[0] is None:
+            return ""
+        return p[0]
+
     @_("SUMMARY para")
     def summary(self, p):
         return p.para.strip()
 
+    @_("empty", "description")
+    def maybe_description(self, p):
+        if p[0] is None:
+            return ""
+        return p[0]
+
     @_("DESCRIPTION para")
     def description(self, p):
         return p.para.strip()
+
+    @_("empty", "metadata")
+    def maybe_metadata(self, p):
+        if p[0] is None:
+            return []
+        return p[0]
 
     @_("METADATA metadata_list")
     def metadata(self, p):
@@ -354,11 +396,11 @@ class MDVocab(MDProperty):
     tokens = MDLexer.tokens
     lexer = None
 
-    @_("maybe_newlines license_name name summary description metadata entries")
+    @_("maybe_newlines license_name name maybe_summary maybe_description maybe_metadata maybe_entries")
     def document(self, p):
         if getattr(self, "isError", False):
             return None
-        return (p.name, p.summary, p.description, p.metadata, p.entries)
+        return (p.name, p.maybe_summary, p.maybe_description, p.maybe_metadata, p.maybe_entries)
 
     @_("LICENSE")
     def license_name(self, p):
@@ -368,13 +410,31 @@ class MDVocab(MDProperty):
     def name(self, p):
         return p.H_TEXTLINE.strip()
 
+    @_("empty", "summary")
+    def maybe_summary(self, p):
+        if p[0] is None:
+            return ""
+        return p[0]
+    
     @_("SUMMARY para")
     def summary(self, p):
         return p.para.strip()
 
+    @_("empty", "description")
+    def maybe_description(self, p):
+        if p[0] is None:
+            return ""
+        return p[0]
+
     @_("DESCRIPTION para")
     def description(self, p):
         return p.para.strip()
+
+    @_("empty", "metadata")
+    def maybe_metadata(self, p):
+        if p[0] is None:
+            return []
+        return p[0]
 
     @_("METADATA metadata_list")
     def metadata(self, p):
@@ -412,6 +472,12 @@ class MDVocab(MDProperty):
             self.error(p._slice[0], f"Error: Metadata key `{_key}` already exists.")
 
         return {"name": _key, "values": _values}
+
+    @_("empty", "entries")
+    def maybe_entries(self, p):
+        if p[0] is None:
+            return []
+        return p[0]
 
     @_("ENTRIES entry_list")
     def entries(self, p):
