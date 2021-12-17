@@ -179,6 +179,7 @@ class SpecBase:
         name: str,
         summary: str,
         description: str,
+        license_name: str
     ):
 
         self.logger: logging.Logger = None
@@ -187,6 +188,7 @@ class SpecBase:
         self.name: str = name
         self.summary: str = summary
         self.description: str = description
+        self.license_name: str = license_name
         self.metadata: dict = dict()
         self.properties: dict = dict()
         self.entries: dict = dict()
@@ -311,6 +313,7 @@ class SpecClass(SpecBase):
         description: str,
         metadata: dict,
         props: dict,
+        license_name: str
     ):
 
         super().__init__(
@@ -319,6 +322,7 @@ class SpecClass(SpecBase):
             name,
             summary,
             description,
+            license_name
         )
 
         self.logger = logging.getLogger(self.__class__.__name__)
@@ -336,6 +340,11 @@ class SpecClass(SpecBase):
             # write the header
             f.write(
                 f"<!-- Auto generated markdown by Spec-parser v{__version__} -->\n\n"
+            )
+
+            # write the license name
+            f.write(
+                f"<!-- SPDX-License-Identifier: {self.license_name} -->\n\n"
             )
 
             # write the topheadline
@@ -379,6 +388,9 @@ class SpecClass(SpecBase):
                     for _key, subprop in subprops.items():
                         f.write(f'  - {_key}: {" ".join(subprop)}\n')
                     f.write("\n")
+            
+            # license declaration
+            f.write(f"\nSPDX-License-Identifier: {self.license_name}")
 
     def _gen_rdf(self, g: rdflib.Graph) -> None:
 
@@ -416,6 +428,7 @@ class SpecProperty(SpecBase):
         summary: str,
         description: str,
         metadata: dict,
+        license_name: str
     ):
 
         super().__init__(
@@ -424,6 +437,7 @@ class SpecProperty(SpecBase):
             name,
             summary,
             description,
+            license_name
         )
 
         self.logger = logging.getLogger(self.__class__.__name__)
@@ -440,6 +454,11 @@ class SpecProperty(SpecBase):
             # write the header
             f.write(
                 f"<!-- Auto generated markdown by Spec-parser v{__version__} -->\n\n"
+            )
+
+            # write the license name
+            f.write(
+                f"<!-- SPDX-License-Identifier: {self.license_name} -->\n\n"
             )
 
             # write the topheadline
@@ -466,6 +485,9 @@ class SpecProperty(SpecBase):
                 f.write(f"## References\n\n")
                 for name in self.spec.dataprop_refs.get(self.name, []):
                     f.write(f"- {name}\n")
+
+            # license declaration
+            f.write(f"\nSPDX-License-Identifier: {self.license_name}")
 
     def _gen_rdf(self, g: rdflib.Graph) -> None:
 
@@ -518,6 +540,7 @@ class SpecVocab(SpecBase):
         description: str,
         metadata: dict,
         entries: dict,
+        license_name: str,
     ):
 
         super().__init__(
@@ -526,6 +549,7 @@ class SpecVocab(SpecBase):
             name,
             summary,
             description,
+            license_name,
         )
 
         self.logger = logging.getLogger(self.__class__.__name__)
@@ -543,6 +567,11 @@ class SpecVocab(SpecBase):
             # write the header
             f.write(
                 f"<!-- Auto generated markdown by Spec-parser v{__version__} -->\n\n"
+            )
+
+            # write the license name
+            f.write(
+                f"<!-- SPDX-License-Identifier: {self.license_name} -->\n\n"
             )
 
             # write the topheadline
@@ -568,6 +597,9 @@ class SpecVocab(SpecBase):
             f.write(f"## Entries\n\n")
             for name, val in self.entries.items():
                 f.write(f"- {name}: {val}\n")
+
+            # license declaration
+            f.write(f"\nSPDX-License-Identifier: {self.license_name}")
 
     def _gen_rdf(self, g: rdflib.Graph):
 

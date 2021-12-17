@@ -29,6 +29,8 @@ def parser_error(self, p, msg=None):
         self.log.error(
             f'{fname}:Ln {l},Col {c}: {msg if msg is not None else "Syntax Error"}\n\t Line no {l}: {repr(p.value)}'
         )
+    elif msg is not None:
+        self.log.error(f"{self.fname}:Ln {l},Col {c}: {p}\n\t {msg}")
     else:
         self.log.error(f"{self.fname}:Ln {l},Col {c}: {p}")
     return None
@@ -105,11 +107,22 @@ class MDClass(Parser):
     def document(self, p):
         if getattr(self, "isError", False):
             return None
-        return (p.name, p.maybe_summary, p.maybe_description, p.maybe_metadata, p.maybe_properties)
+        return (p.name, p.maybe_summary, p.maybe_description, p.maybe_metadata, p.maybe_properties, p.license_name)
 
-    @_("LICENSE")
+    @_("empty", "LICENSE")
     def license_name(self, p):
-        return None
+        if p[0] is None:
+            self.error(p._slice[0], "Error: Missing `SPDX-License-Identifier: <value>`")
+            return None
+
+        splitted = re.split(r"\s*:\s", p[0], 1)
+        if len(splitted) != 2:
+            # report the invalid syntax
+            self.error(p._slice[0], "Syntax Error: Expected `SPDX-License-Identifier: <value>`")
+            return None
+        
+        license_name = splitted[-1].strip()
+        return license_name
 
     @_("H1 H_TEXTLINE")
     def name(self, p):
@@ -285,11 +298,22 @@ class MDProperty(Parser):
     def document(self, p):
         if getattr(self, "isError", False):
             return None
-        return (p.name, p.maybe_summary, p.maybe_description, p.maybe_metadata)
+        return (p.name, p.maybe_summary, p.maybe_description, p.maybe_metadata, p.license_name)
 
-    @_("LICENSE")
+    @_("empty", "LICENSE")
     def license_name(self, p):
-        return None
+        if p[0] is None:
+            self.error(p._slice[0], "Error: Missing `SPDX-License-Identifier: <value>`")
+            return None
+
+        splitted = re.split(r"\s*:\s", p[0], 1)
+        if len(splitted) != 2:
+            # report the invalid syntax
+            self.error(p._slice[0], "Syntax Error: Expected `SPDX-License-Identifier: <value>`")
+            return None
+        
+        license_name = splitted[-1].strip()
+        return license_name
 
     @_("H1 H_TEXTLINE")
     def name(self, p):
@@ -400,11 +424,22 @@ class MDVocab(MDProperty):
     def document(self, p):
         if getattr(self, "isError", False):
             return None
-        return (p.name, p.maybe_summary, p.maybe_description, p.maybe_metadata, p.maybe_entries)
+        return (p.name, p.maybe_summary, p.maybe_description, p.maybe_metadata, p.maybe_entries, p.license_name)
 
-    @_("LICENSE")
+    @_("empty", "LICENSE")
     def license_name(self, p):
-        return None
+        if p[0] is None:
+            self.error(p._slice[0], "Error: Missing `SPDX-License-Identifier: <value>`")
+            return None
+
+        splitted = re.split(r"\s*:\s", p[0], 1)
+        if len(splitted) != 2:
+            # report the invalid syntax
+            self.error(p._slice[0], "Syntax Error: Expected `SPDX-License-Identifier: <value>`")
+            return None
+        
+        license_name = splitted[-1].strip()
+        return license_name
 
     @_("H1 H_TEXTLINE")
     def name(self, p):
