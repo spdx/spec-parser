@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>spec_parser package &mdash; spec-parser 0.0 documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Defaults and Error checking in spec-parser" href="../md_docs/error_checks.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> spec-parser
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../md_docs/getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../md_docs/grammar.html">Grammar for structured markdown input</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../md_docs/internals.html">Internals</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../md_docs/error_checks.html">Defaults and Error checking in spec-parser</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">spec_parser package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-spec_parser.helper">spec_parser.helper module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-spec_parser.parser">spec_parser.parser module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-spec_parser.spec_parser">spec_parser.spec_parser module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-spec_parser.utils">spec_parser.utils module</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">spec-parser</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>spec_parser package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/apidocs/spec_parser.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="spec-parser-package">
+<h1>spec_parser package<a class="headerlink" href="#spec-parser-package" title="Permalink to this headline"></a></h1>
+<div class="contents local topic" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#submodules" id="id1">Submodules</a></p></li>
+<li><p><a class="reference internal" href="#module-spec_parser.helper" id="id2">spec_parser.helper module</a></p></li>
+<li><p><a class="reference internal" href="#module-spec_parser.parser" id="id3">spec_parser.parser module</a></p></li>
+<li><p><a class="reference internal" href="#module-spec_parser.spec_parser" id="id4">spec_parser.spec_parser module</a></p></li>
+<li><p><a class="reference internal" href="#module-spec_parser.utils" id="id5">spec_parser.utils module</a></p></li>
+</ul>
+</div>
+<div class="section" id="submodules">
+<h2><a class="toc-backref" href="#id1">Submodules</a><a class="headerlink" href="#submodules" title="Permalink to this headline"></a></h2>
+</div>
+<div class="section" id="module-spec_parser.helper">
+<span id="spec-parser-helper-module"></span><h2><a class="toc-backref" href="#id2">spec_parser.helper module</a><a class="headerlink" href="#module-spec_parser.helper" title="Permalink to this headline"></a></h2>
+<dl class="class">
+<dt id="spec_parser.helper.ErrorFoundFilter">
+<em class="property">class </em><code class="sig-prename descclassname">spec_parser.helper.</code><code class="sig-name descname">ErrorFoundFilter</code><a class="headerlink" href="#spec_parser.helper.ErrorFoundFilter" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">logging.Filter</span></code></p>
+<p>Filter that store the most severe msg level
+of logging.</p>
+<dl class="method">
+<dt id="spec_parser.helper.ErrorFoundFilter.filter">
+<code class="sig-name descname">filter</code><span class="sig-paren">(</span><em class="sig-param">record</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.helper.ErrorFoundFilter.filter" title="Permalink to this definition"></a></dt>
+<dd><p>Determine if the specified record is to be logged.</p>
+<p>Is the specified record to be logged? Returns 0 for no, nonzero for
+yes. If deemed appropriate, the record may be modified in-place.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="spec_parser.helper.addErrorFilter">
+<code class="sig-prename descclassname">spec_parser.helper.</code><code class="sig-name descname">addErrorFilter</code><span class="sig-paren">(</span><em class="sig-param">logger: logging.Logger</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#spec_parser.helper.addErrorFilter" title="Permalink to this definition"></a></dt>
+<dd><p>Add <cite>ErrorFilter</cite> to <cite>logger</cite></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>logger</strong> (<em>logging.Logger</em>) – Add <cite>ErrorFilter</cite> to this logger</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="spec_parser.helper.isError">
+<code class="sig-prename descclassname">spec_parser.helper.</code><code class="sig-name descname">isError</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.helper.isError" title="Permalink to this definition"></a></dt>
+<dd><p>Returns <cite>True</cite> if any error was reported by logging.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><cite>True</cite> if error was reported else <cite>False</cite>.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="spec_parser.helper.safe_listdir">
+<code class="sig-prename descclassname">spec_parser.helper.</code><code class="sig-name descname">safe_listdir</code><span class="sig-paren">(</span><em class="sig-param">dname: str</em><span class="sig-paren">)</span> &#x2192; List[str]<a class="headerlink" href="#spec_parser.helper.safe_listdir" title="Permalink to this definition"></a></dt>
+<dd><p>Return a list containing the names of the files in the directory
+and returns empty list if directory doesn’t exist.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>dname</strong> (<em>str</em>) – path to directory</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list containing the names of the files in the directory</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="spec_parser.helper.safe_open">
+<code class="sig-prename descclassname">spec_parser.helper.</code><code class="sig-name descname">safe_open</code><span class="sig-paren">(</span><em class="sig-param">fname: str</em>, <em class="sig-param">*args</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.helper.safe_open" title="Permalink to this definition"></a></dt>
+<dd><p>Open “fname” after creating neccessary nested directories as needed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>fname</strong> (<em>str</em>) – path to file</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>return stream</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>FileIO</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="spec_parser.helper.union_dict">
+<code class="sig-prename descclassname">spec_parser.helper.</code><code class="sig-name descname">union_dict</code><span class="sig-paren">(</span><em class="sig-param">d1: dict</em>, <em class="sig-param">d2: dict</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#spec_parser.helper.union_dict" title="Permalink to this definition"></a></dt>
+<dd><p>Concat two dict d1, d2, inplace.
+Values in dict d1 will be given priority over dict d2.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>d1</strong> (<em>dict</em>) – Dict A</p></li>
+<li><p><strong>d2</strong> (<em>dict</em>) – Dict B</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dict A+B</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-spec_parser.parser">
+<span id="spec-parser-parser-module"></span><h2><a class="toc-backref" href="#id3">spec_parser.parser module</a><a class="headerlink" href="#module-spec_parser.parser" title="Permalink to this headline"></a></h2>
+<dl class="class">
+<dt id="spec_parser.parser.MDLexer">
+<em class="property">class </em><code class="sig-prename descclassname">spec_parser.parser.</code><code class="sig-name descname">MDLexer</code><a class="headerlink" href="#spec_parser.parser.MDLexer" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sly.lex.Lexer</span></code></p>
+<p>Common Lexer for specification input files.</p>
+<dl class="attribute">
+<dt id="spec_parser.parser.MDLexer.DESCRIPTION">
+<code class="sig-name descname">DESCRIPTION</code><em class="property"> = '((?&lt;=\\n)|^)\\#{2}\\s+Description(?:(?!\\n)\\s)*(\\n+|$)'</em><a class="headerlink" href="#spec_parser.parser.MDLexer.DESCRIPTION" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spec_parser.parser.MDLexer.ENTRIES">
+<code class="sig-name descname">ENTRIES</code><em class="property"> = '((?&lt;=\\n)|^)\\#{2}\\s+Entries(?:(?!\\n)\\s)*(\\n+|$)'</em><a class="headerlink" href="#spec_parser.parser.MDLexer.ENTRIES" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spec_parser.parser.MDLexer.H1">
+<code class="sig-name descname">H1</code><em class="property"> = '((?&lt;=\\n)|^)\\s*\\#{1}'</em><a class="headerlink" href="#spec_parser.parser.MDLexer.H1" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spec_parser.parser.MDLexer.H2">
+<code class="sig-name descname">H2</code><em class="property"> = '((?&lt;=\\n)|^)\\s*\\#{2}'</em><a class="headerlink" href="#spec_parser.parser.MDLexer.H2" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spec_parser.parser.MDLexer.H3">
+<code class="sig-name descname">H3</code><em class="property"> = '((?&lt;=\\n)|^)\\s*\\#{3}'</em><a class="headerlink" href="#spec_parser.parser.MDLexer.H3" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spec_parser.parser.MDLexer.H4">
+<code class="sig-name descname">H4</code><em class="property"> = '((?&lt;=\\n)|^)\\s*\\#{4}'</em><a class="headerlink" href="#spec_parser.parser.MDLexer.H4" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spec_parser.parser.MDLexer.H5">
+<code class="sig-name descname">H5</code><em class="property"> = '((?&lt;=\\n)|^)\\s*\\#{5}'</em><a class="headerlink" href="#spec_parser.parser.MDLexer.H5" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spec_parser.parser.MDLexer.H6">
+<code class="sig-name descname">H6</code><em class="property"> = '((?&lt;=\\n)|^)\\s*\\#{6}'</em><a class="headerlink" href="#spec_parser.parser.MDLexer.H6" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spec_parser.parser.MDLexer.H_TEXTLINE">
+<code class="sig-name descname">H_TEXTLINE</code><em class="property"> = '(?&lt;=\\#)[^\\n]+(\\n+|$)'</em><a class="headerlink" href="#spec_parser.parser.MDLexer.H_TEXTLINE" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spec_parser.parser.MDLexer.LICENSE">
+<code class="sig-name descname">LICENSE</code><em class="property"> = '((?&lt;=\\n)|^)\\s*SPDX-License-Identifier\\s*:[^\\n]+(?:(?!\\n)\\s)*(\\n+|$)'</em><a class="headerlink" href="#spec_parser.parser.MDLexer.LICENSE" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spec_parser.parser.MDLexer.METADATA">
+<code class="sig-name descname">METADATA</code><em class="property"> = '((?&lt;=\\n)|^)\\#{2}\\s+Metadata(?:(?!\\n)\\s)*(\\n+|$)'</em><a class="headerlink" href="#spec_parser.parser.MDLexer.METADATA" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spec_parser.parser.MDLexer.NEWLINE">
+<code class="sig-name descname">NEWLINE</code><em class="property"> = '\\n+'</em><a class="headerlink" href="#spec_parser.parser.MDLexer.NEWLINE" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spec_parser.parser.MDLexer.PROPERTIES">
+<code class="sig-name descname">PROPERTIES</code><em class="property"> = '((?&lt;=\\n)|^)\\#{2}\\s+Properties(?:(?!\\n)\\s)*(\\n+|$)'</em><a class="headerlink" href="#spec_parser.parser.MDLexer.PROPERTIES" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spec_parser.parser.MDLexer.SUMMARY">
+<code class="sig-name descname">SUMMARY</code><em class="property"> = '((?&lt;=\\n)|^)\\#{2}\\s+Summary(?:(?!\\n)\\s)*(\\n+|$)'</em><a class="headerlink" href="#spec_parser.parser.MDLexer.SUMMARY" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spec_parser.parser.MDLexer.TEXTLINE">
+<code class="sig-name descname">TEXTLINE</code><em class="property"> = '((?&lt;=\\n)|^)[^\\n]+(\\n+|$)'</em><a class="headerlink" href="#spec_parser.parser.MDLexer.TEXTLINE" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spec_parser.parser.MDLexer.ULISTA">
+<code class="sig-name descname">ULISTA</code><em class="property"> = '((?&lt;=\\n)|^)[*+-][^\\n]+(\\n+|$)'</em><a class="headerlink" href="#spec_parser.parser.MDLexer.ULISTA" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spec_parser.parser.MDLexer.ULISTB">
+<code class="sig-name descname">ULISTB</code><em class="property"> = '((?&lt;=\\n)|^)([ ]{2,4}|\\t)[*+-][^\\n]+(\\n+|$)'</em><a class="headerlink" href="#spec_parser.parser.MDLexer.ULISTB" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDLexer.error">
+<code class="sig-name descname">error</code><span class="sig-paren">(</span><em class="sig-param">t</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDLexer.error" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spec_parser.parser.MDLexer.ignore_comment">
+<code class="sig-name descname">ignore_comment</code><em class="property"> = '(?:(?!\\n)\\s)*&lt;!?--(?:(?!--&gt;)(.|\\n|\\s))*--&gt;(?:(?!\\n)\\s)*\\n*'</em><a class="headerlink" href="#spec_parser.parser.MDLexer.ignore_comment" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spec_parser.parser.MDLexer.log">
+<code class="sig-name descname">log</code><em class="property"> = &lt;Logger Parser.MDLexer (ERROR)&gt;</em><a class="headerlink" href="#spec_parser.parser.MDLexer.log" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spec_parser.parser.MDLexer.tokens">
+<code class="sig-name descname">tokens</code><em class="property"> = {'DESCRIPTION', 'ENTRIES', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'H_TEXTLINE', 'LICENSE', 'METADATA', 'NEWLINE', 'PROPERTIES', 'SUMMARY', 'TEXTLINE', 'ULISTA', 'ULISTB'}</em><a class="headerlink" href="#spec_parser.parser.MDLexer.tokens" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="spec_parser.parser.MDClass">
+<em class="property">class </em><code class="sig-prename descclassname">spec_parser.parser.</code><code class="sig-name descname">MDClass</code><a class="headerlink" href="#spec_parser.parser.MDClass" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sly.yacc.Parser</span></code></p>
+<p>Parser for <cite>Class</cite> entity.</p>
+<dl class="method">
+<dt id="spec_parser.parser.MDClass.avline">
+<code class="sig-name descname">avline</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDClass.avline" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDClass.avline_list">
+<code class="sig-name descname">avline_list</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDClass.avline_list" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDClass.description">
+<code class="sig-name descname">description</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDClass.description" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDClass.document">
+<code class="sig-name descname">document</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDClass.document" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDClass.empty">
+<code class="sig-name descname">empty</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDClass.empty" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDClass.error">
+<code class="sig-name descname">error</code><span class="sig-paren">(</span><em class="sig-param">p</em>, <em class="sig-param">msg=None</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDClass.error" title="Permalink to this definition"></a></dt>
+<dd><p>Default error handling function.  This may be subclassed.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="spec_parser.parser.MDClass.lexer">
+<code class="sig-name descname">lexer</code><em class="property"> = None</em><a class="headerlink" href="#spec_parser.parser.MDClass.lexer" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDClass.license_name">
+<code class="sig-name descname">license_name</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDClass.license_name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spec_parser.parser.MDClass.log">
+<code class="sig-name descname">log</code><em class="property"> = &lt;Logger Parser.MDClass (ERROR)&gt;</em><a class="headerlink" href="#spec_parser.parser.MDClass.log" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDClass.maybe_description">
+<code class="sig-name descname">maybe_description</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDClass.maybe_description" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDClass.maybe_metadata">
+<code class="sig-name descname">maybe_metadata</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDClass.maybe_metadata" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDClass.maybe_newlines">
+<code class="sig-name descname">maybe_newlines</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDClass.maybe_newlines" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDClass.maybe_properties">
+<code class="sig-name descname">maybe_properties</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDClass.maybe_properties" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDClass.maybe_summary">
+<code class="sig-name descname">maybe_summary</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDClass.maybe_summary" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDClass.metadata">
+<code class="sig-name descname">metadata</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDClass.metadata" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDClass.metadata_line">
+<code class="sig-name descname">metadata_line</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDClass.metadata_line" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDClass.metadata_list">
+<code class="sig-name descname">metadata_list</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDClass.metadata_list" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDClass.name">
+<code class="sig-name descname">name</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDClass.name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDClass.newlines">
+<code class="sig-name descname">newlines</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDClass.newlines" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDClass.para">
+<code class="sig-name descname">para</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDClass.para" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDClass.para_line">
+<code class="sig-name descname">para_line</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDClass.para_line" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDClass.properties">
+<code class="sig-name descname">properties</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDClass.properties" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDClass.properties_list">
+<code class="sig-name descname">properties_list</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDClass.properties_list" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDClass.single_property">
+<code class="sig-name descname">single_property</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDClass.single_property" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDClass.summary">
+<code class="sig-name descname">summary</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDClass.summary" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spec_parser.parser.MDClass.tokens">
+<code class="sig-name descname">tokens</code><em class="property"> = {'DESCRIPTION', 'ENTRIES', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'H_TEXTLINE', 'LICENSE', 'METADATA', 'NEWLINE', 'PROPERTIES', 'SUMMARY', 'TEXTLINE', 'ULISTA', 'ULISTB'}</em><a class="headerlink" href="#spec_parser.parser.MDClass.tokens" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="spec_parser.parser.MDProperty">
+<em class="property">class </em><code class="sig-prename descclassname">spec_parser.parser.</code><code class="sig-name descname">MDProperty</code><a class="headerlink" href="#spec_parser.parser.MDProperty" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sly.yacc.Parser</span></code></p>
+<p>Parser for <cite>Property</cite> entity.</p>
+<dl class="method">
+<dt id="spec_parser.parser.MDProperty.description">
+<code class="sig-name descname">description</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDProperty.description" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDProperty.document">
+<code class="sig-name descname">document</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDProperty.document" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDProperty.empty">
+<code class="sig-name descname">empty</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDProperty.empty" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDProperty.error">
+<code class="sig-name descname">error</code><span class="sig-paren">(</span><em class="sig-param">p</em>, <em class="sig-param">msg=None</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDProperty.error" title="Permalink to this definition"></a></dt>
+<dd><p>Default error handling function.  This may be subclassed.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="spec_parser.parser.MDProperty.lexer">
+<code class="sig-name descname">lexer</code><em class="property"> = None</em><a class="headerlink" href="#spec_parser.parser.MDProperty.lexer" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDProperty.license_name">
+<code class="sig-name descname">license_name</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDProperty.license_name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spec_parser.parser.MDProperty.log">
+<code class="sig-name descname">log</code><em class="property"> = &lt;Logger Parser.MDProperty (ERROR)&gt;</em><a class="headerlink" href="#spec_parser.parser.MDProperty.log" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDProperty.maybe_description">
+<code class="sig-name descname">maybe_description</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDProperty.maybe_description" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDProperty.maybe_metadata">
+<code class="sig-name descname">maybe_metadata</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDProperty.maybe_metadata" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDProperty.maybe_newlines">
+<code class="sig-name descname">maybe_newlines</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDProperty.maybe_newlines" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDProperty.maybe_summary">
+<code class="sig-name descname">maybe_summary</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDProperty.maybe_summary" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDProperty.metadata">
+<code class="sig-name descname">metadata</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDProperty.metadata" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDProperty.metadata_line">
+<code class="sig-name descname">metadata_line</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDProperty.metadata_line" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDProperty.metadata_list">
+<code class="sig-name descname">metadata_list</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDProperty.metadata_list" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDProperty.name">
+<code class="sig-name descname">name</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDProperty.name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDProperty.newlines">
+<code class="sig-name descname">newlines</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDProperty.newlines" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDProperty.para">
+<code class="sig-name descname">para</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDProperty.para" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDProperty.para_line">
+<code class="sig-name descname">para_line</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDProperty.para_line" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDProperty.summary">
+<code class="sig-name descname">summary</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDProperty.summary" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spec_parser.parser.MDProperty.tokens">
+<code class="sig-name descname">tokens</code><em class="property"> = {'DESCRIPTION', 'ENTRIES', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'H_TEXTLINE', 'LICENSE', 'METADATA', 'NEWLINE', 'PROPERTIES', 'SUMMARY', 'TEXTLINE', 'ULISTA', 'ULISTB'}</em><a class="headerlink" href="#spec_parser.parser.MDProperty.tokens" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="spec_parser.parser.MDVocab">
+<em class="property">class </em><code class="sig-prename descclassname">spec_parser.parser.</code><code class="sig-name descname">MDVocab</code><a class="headerlink" href="#spec_parser.parser.MDVocab" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#spec_parser.parser.MDProperty" title="spec_parser.parser.MDProperty"><code class="xref py py-class docutils literal notranslate"><span class="pre">spec_parser.parser.MDProperty</span></code></a></p>
+<p>Parser for <cite>Vocab</cite> entity.</p>
+<dl class="method">
+<dt id="spec_parser.parser.MDVocab.description">
+<code class="sig-name descname">description</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDVocab.description" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDVocab.document">
+<code class="sig-name descname">document</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDVocab.document" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDVocab.empty">
+<code class="sig-name descname">empty</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDVocab.empty" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDVocab.entries">
+<code class="sig-name descname">entries</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDVocab.entries" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDVocab.entry_line">
+<code class="sig-name descname">entry_line</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDVocab.entry_line" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDVocab.entry_list">
+<code class="sig-name descname">entry_list</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDVocab.entry_list" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDVocab.error">
+<code class="sig-name descname">error</code><span class="sig-paren">(</span><em class="sig-param">p</em>, <em class="sig-param">msg=None</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDVocab.error" title="Permalink to this definition"></a></dt>
+<dd><p>Default error handling function.  This may be subclassed.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="spec_parser.parser.MDVocab.lexer">
+<code class="sig-name descname">lexer</code><em class="property"> = None</em><a class="headerlink" href="#spec_parser.parser.MDVocab.lexer" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDVocab.license_name">
+<code class="sig-name descname">license_name</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDVocab.license_name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spec_parser.parser.MDVocab.log">
+<code class="sig-name descname">log</code><em class="property"> = &lt;Logger Parser.MDVocab (ERROR)&gt;</em><a class="headerlink" href="#spec_parser.parser.MDVocab.log" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDVocab.maybe_description">
+<code class="sig-name descname">maybe_description</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDVocab.maybe_description" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDVocab.maybe_entries">
+<code class="sig-name descname">maybe_entries</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDVocab.maybe_entries" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDVocab.maybe_metadata">
+<code class="sig-name descname">maybe_metadata</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDVocab.maybe_metadata" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDVocab.maybe_newlines">
+<code class="sig-name descname">maybe_newlines</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDVocab.maybe_newlines" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDVocab.maybe_summary">
+<code class="sig-name descname">maybe_summary</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDVocab.maybe_summary" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDVocab.metadata">
+<code class="sig-name descname">metadata</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDVocab.metadata" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDVocab.metadata_line">
+<code class="sig-name descname">metadata_line</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDVocab.metadata_line" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDVocab.metadata_list">
+<code class="sig-name descname">metadata_list</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDVocab.metadata_list" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDVocab.name">
+<code class="sig-name descname">name</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDVocab.name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDVocab.newlines">
+<code class="sig-name descname">newlines</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDVocab.newlines" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDVocab.para">
+<code class="sig-name descname">para</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDVocab.para" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDVocab.para_line">
+<code class="sig-name descname">para_line</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDVocab.para_line" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.parser.MDVocab.summary">
+<code class="sig-name descname">summary</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.parser.MDVocab.summary" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spec_parser.parser.MDVocab.tokens">
+<code class="sig-name descname">tokens</code><em class="property"> = {'DESCRIPTION', 'ENTRIES', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'H_TEXTLINE', 'LICENSE', 'METADATA', 'NEWLINE', 'PROPERTIES', 'SUMMARY', 'TEXTLINE', 'ULISTA', 'ULISTB'}</em><a class="headerlink" href="#spec_parser.parser.MDVocab.tokens" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-spec_parser.spec_parser">
+<span id="spec-parser-spec-parser-module"></span><h2><a class="toc-backref" href="#id4">spec_parser.spec_parser module</a><a class="headerlink" href="#module-spec_parser.spec_parser" title="Permalink to this headline"></a></h2>
+<dl class="class">
+<dt id="spec_parser.spec_parser.SpecParser">
+<em class="property">class </em><code class="sig-prename descclassname">spec_parser.spec_parser.</code><code class="sig-name descname">SpecParser</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.spec_parser.SpecParser" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class is use for traversing the input <cite>spec</cite> folder, and
+traversing the folder and discovering all the namespaces and all
+their entities. The primary task of this class is to parse the spec folder.</p>
+<dl class="method">
+<dt id="spec_parser.spec_parser.SpecParser.get_text">
+<code class="sig-name descname">get_text</code><span class="sig-paren">(</span><em class="sig-param">fname: str</em><span class="sig-paren">)</span> &#x2192; Optional[str]<a class="headerlink" href="#spec_parser.spec_parser.SpecParser.get_text" title="Permalink to this definition"></a></dt>
+<dd><p>Return the text of file, if it exists.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>fname</strong> (<em>str</em>) – path to the file</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Returns text if file exists, otherwise
+return <cite>None</cite></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Optional[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.spec_parser.SpecParser.isMarkdown">
+<code class="sig-name descname">isMarkdown</code><span class="sig-paren">(</span><em class="sig-param">fname: str</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#spec_parser.spec_parser.SpecParser.isMarkdown" title="Permalink to this definition"></a></dt>
+<dd><p>Check if given file exists and has <cite>.md</cite> extension and
+file name doesn’t start with <cite>_</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>fname</strong> (<em>str</em>) – path to the file</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Returns <cite>True</cite> if all conditions are satisfied
+otherwise <cite>False</cite>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.spec_parser.SpecParser.parse">
+<code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param">spec_dir: str</em><span class="sig-paren">)</span> &#x2192; spec_parser.utils.Spec<a class="headerlink" href="#spec_parser.spec_parser.SpecParser.parse" title="Permalink to this definition"></a></dt>
+<dd><p>Returns <code class="xref py py-class docutils literal notranslate"><span class="pre">spec-parser.utils.Spec</span></code> after parsing the <cite>spec_dir</cite> directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>spec_dir</strong> (<em>str</em>) – path to the top-level directory containing the specification.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#spec_parser.utils.Spec" title="spec_parser.utils.Spec">Spec</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.spec_parser.SpecParser.parse_class">
+<code class="sig-name descname">parse_class</code><span class="sig-paren">(</span><em class="sig-param">fname: str</em>, <em class="sig-param">namespace: str</em><span class="sig-paren">)</span> &#x2192; Optional[spec_parser.utils.SpecClass]<a class="headerlink" href="#spec_parser.spec_parser.SpecParser.parse_class" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a parsed: class: <cite>spec-parser.utils.SpecClass</cite>
+if the ‘Class’ entity is valid, else logs error and returns
+<cite>None</cite></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fname</strong> (<em>str</em>) – path to the ‘Class’ entity</p></li>
+<li><p><strong>namespace</strong> (<em>str</em>) – name of the namespace</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><cite>SpecClass</cite> if parsed successful, otherwise
+<cite>None</cite></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Optional[<a class="reference internal" href="#spec_parser.utils.SpecClass" title="spec_parser.utils.SpecClass">SpecClass</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.spec_parser.SpecParser.parse_property">
+<code class="sig-name descname">parse_property</code><span class="sig-paren">(</span><em class="sig-param">fname: str</em>, <em class="sig-param">namespace: str</em><span class="sig-paren">)</span> &#x2192; Optional[spec_parser.utils.SpecProperty]<a class="headerlink" href="#spec_parser.spec_parser.SpecParser.parse_property" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a parsed: class: <cite>spec-parser.utils.SpecProperty</cite>
+if the ‘Property’ entity is valid, else logs error and returns
+<cite>None</cite></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fname</strong> (<em>str</em>) – path to the ‘Property’ entity</p></li>
+<li><p><strong>namespace</strong> (<em>str</em>) – name of the namespace</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><cite>SpecProperty</cite> if parsed successful, otherwise
+<cite>None</cite></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Optional[<a class="reference internal" href="#spec_parser.utils.SpecProperty" title="spec_parser.utils.SpecProperty">SpecProperty</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.spec_parser.SpecParser.parse_vocab">
+<code class="sig-name descname">parse_vocab</code><span class="sig-paren">(</span><em class="sig-param">fname: str</em>, <em class="sig-param">namespace: str</em><span class="sig-paren">)</span> &#x2192; Optional[spec_parser.utils.SpecVocab]<a class="headerlink" href="#spec_parser.spec_parser.SpecParser.parse_vocab" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a parsed: class: <cite>spec-parser.utils.SpecVocab</cite>
+if the ‘Vocab’ entity is valid, else logs error and returns
+<cite>None</cite></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fname</strong> (<em>str</em>) – path to the ‘Vocab’ entity</p></li>
+<li><p><strong>namespace</strong> (<em>str</em>) – name of the namespace</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><cite>SpecVocab</cite> if parsed successful, otherwise
+<cite>None</cite></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Optional[<a class="reference internal" href="#spec_parser.utils.SpecVocab" title="spec_parser.utils.SpecVocab">SpecVocab</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-spec_parser.utils">
+<span id="spec-parser-utils-module"></span><h2><a class="toc-backref" href="#id5">spec_parser.utils module</a><a class="headerlink" href="#module-spec_parser.utils" title="Permalink to this headline"></a></h2>
+<dl class="class">
+<dt id="spec_parser.utils.Spec">
+<em class="property">class </em><code class="sig-prename descclassname">spec_parser.utils.</code><code class="sig-name descname">Spec</code><span class="sig-paren">(</span><em class="sig-param">spec_dir: str</em>, <em class="sig-param">args: dict</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.utils.Spec" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class for storing Specification.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This is not meant for direct usage.</p>
+</div>
+<p>This class is used to store all the namespaces
+(including all entities inside it). This class also maintain
+Spec level information like references and name of all entities
+and namespaces.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>spec_dir</strong> (<em>str</em>) – path to specs directory</p></li>
+<li><p><strong>args</strong> (<em>dict</em>) – output specific arguments</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="spec_parser.utils.Spec.add_namespace">
+<code class="sig-name descname">add_namespace</code><span class="sig-paren">(</span><em class="sig-param">name: str</em>, <em class="sig-param">classes: List</em>, <em class="sig-param">properties: List</em>, <em class="sig-param">vocabs: List</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#spec_parser.utils.Spec.add_namespace" title="Permalink to this definition"></a></dt>
+<dd><p>Add namespace information into Specfication.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – name of the namepaces</p></li>
+<li><p><strong>classes</strong> (<em>List</em>) – All <cite>Class</cite> entities inside namespace</p></li>
+<li><p><strong>properties</strong> (<em>List</em>) – All <cite>Porperty</cite> entities inside namespace</p></li>
+<li><p><strong>vocabs</strong> (<em>List</em>) – All <cite>Vocab</cite> entities inside namespace</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.utils.Spec.gen_md">
+<code class="sig-name descname">gen_md</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#spec_parser.utils.Spec.gen_md" title="Permalink to this definition"></a></dt>
+<dd><p>Generate pretty markdowns.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="spec_parser.utils.Spec.gen_rdf">
+<code class="sig-name descname">gen_rdf</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#spec_parser.utils.Spec.gen_rdf" title="Permalink to this definition"></a></dt>
+<dd><p>Generate RDF in turtle format.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="spec_parser.utils.SpecClass">
+<em class="property">class </em><code class="sig-prename descclassname">spec_parser.utils.</code><code class="sig-name descname">SpecClass</code><span class="sig-paren">(</span><em class="sig-param">spec: spec_parser.utils.Spec</em>, <em class="sig-param">namespace_name: str</em>, <em class="sig-param">name: str</em>, <em class="sig-param">summary: str</em>, <em class="sig-param">description: str</em>, <em class="sig-param">metadata: dict</em>, <em class="sig-param">props: dict</em>, <em class="sig-param">license_name: str</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.utils.SpecClass" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">spec_parser.utils.SpecBase</span></code></p>
+<p>This class store the parsed information of <cite>Class</cite> entity.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This is not meant for direct usage.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>spec</strong> (<a class="reference internal" href="#spec_parser.utils.Spec" title="spec_parser.utils.Spec"><em>Spec</em></a>) – Parent Spec object</p></li>
+<li><p><strong>namespace_name</strong> (<em>str</em>) – name of namespace</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – name of <cite>Class</cite> entity</p></li>
+<li><p><strong>summary</strong> (<em>str</em>) – summary of this entity</p></li>
+<li><p><strong>description</strong> (<em>str</em>) – description of this entity</p></li>
+<li><p><strong>metadata</strong> (<em>dict</em>) – metadata of this entity</p></li>
+<li><p><strong>props</strong> (<em>dict</em>) – properties of this entity</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="spec_parser.utils.SpecProperty">
+<em class="property">class </em><code class="sig-prename descclassname">spec_parser.utils.</code><code class="sig-name descname">SpecProperty</code><span class="sig-paren">(</span><em class="sig-param">spec: spec_parser.utils.Spec</em>, <em class="sig-param">namespace_name: str</em>, <em class="sig-param">name: str</em>, <em class="sig-param">summary: str</em>, <em class="sig-param">description: str</em>, <em class="sig-param">metadata: dict</em>, <em class="sig-param">license_name: str</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.utils.SpecProperty" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">spec_parser.utils.SpecBase</span></code></p>
+<p>This class store the parsed information of <cite>Property</cite> entity.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This is not meant for direct usage.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>spec</strong> (<a class="reference internal" href="#spec_parser.utils.Spec" title="spec_parser.utils.Spec"><em>Spec</em></a>) – Parent Spec object</p></li>
+<li><p><strong>namespace_name</strong> (<em>str</em>) – name of namespace</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – name of <cite>Class</cite> entity</p></li>
+<li><p><strong>summary</strong> (<em>str</em>) – summary of this entity</p></li>
+<li><p><strong>description</strong> (<em>str</em>) – description of this entity</p></li>
+<li><p><strong>metadata</strong> (<em>dict</em>) – metadata of this entity</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="spec_parser.utils.SpecVocab">
+<em class="property">class </em><code class="sig-prename descclassname">spec_parser.utils.</code><code class="sig-name descname">SpecVocab</code><span class="sig-paren">(</span><em class="sig-param">spec: spec_parser.utils.Spec</em>, <em class="sig-param">namespace_name: str</em>, <em class="sig-param">name: str</em>, <em class="sig-param">summary: str</em>, <em class="sig-param">description: str</em>, <em class="sig-param">metadata: dict</em>, <em class="sig-param">entries: dict</em>, <em class="sig-param">license_name: str</em><span class="sig-paren">)</span><a class="headerlink" href="#spec_parser.utils.SpecVocab" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">spec_parser.utils.SpecBase</span></code></p>
+<p>This class store the parsed information of <cite>Vocab</cite> entity.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This is not meant for direct usage.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>spec</strong> (<a class="reference internal" href="#spec_parser.utils.Spec" title="spec_parser.utils.Spec"><em>Spec</em></a>) – Parent Spec object</p></li>
+<li><p><strong>namespace_name</strong> (<em>str</em>) – name of namespace</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – name of <cite>Class</cite> entity</p></li>
+<li><p><strong>summary</strong> (<em>str</em>) – summary of this entity</p></li>
+<li><p><strong>description</strong> (<em>str</em>) – description of this entity</p></li>
+<li><p><strong>metadata</strong> (<em>dict</em>) – metadata of this entity</p></li>
+<li><p><strong>entries</strong> (<em>dict</em>) – entries of this entity</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../md_docs/error_checks.html" class="btn btn-neutral float-left" title="Defaults and Error checking in spec-parser" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, SPDX, Nirmal Suthar.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

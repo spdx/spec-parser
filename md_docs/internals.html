@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Internals &mdash; spec-parser 0.0 documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Defaults and Error checking in spec-parser" href="error_checks.html" />
+    <link rel="prev" title="Grammar for structured markdown input" href="grammar.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> spec-parser
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="grammar.html">Grammar for structured markdown input</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Internals</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#workflow">Workflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#major-components">Major Components</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#specparser-path-spec-parser-spec-parser-py">1. <code class="docutils literal notranslate"><span class="pre">SpecParser</span></code> (path: <code class="docutils literal notranslate"><span class="pre">spec_parser/spec_parser.py</span></code>)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#spec-path-spec-parser-utils-py">2. <code class="docutils literal notranslate"><span class="pre">Spec</span></code> (path: <code class="docutils literal notranslate"><span class="pre">spec_parser/utils.py</span></code>)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#specclass-path-spec-parser-utils-py">3. <code class="docutils literal notranslate"><span class="pre">SpecClass</span></code> (path: <code class="docutils literal notranslate"><span class="pre">spec_parser/utils.py</span></code>)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#specproperty-path-spec-paresr-utils-py">4. <code class="docutils literal notranslate"><span class="pre">SpecProperty</span></code> (path: <code class="docutils literal notranslate"><span class="pre">spec_paresr/utils.py</span></code>)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#specvocab-path-spec-parser-utils-py">5. <code class="docutils literal notranslate"><span class="pre">SpecVocab</span></code> (path: <code class="docutils literal notranslate"><span class="pre">spec_parser/utils.py</span></code>)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mdlexer-path-spec-parser-parser-py">6. <code class="docutils literal notranslate"><span class="pre">MDLexer</span></code> (path: <code class="docutils literal notranslate"><span class="pre">spec_parser/parser.py</span></code>)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mdclass-path-spec-parser-parser-py">7. <code class="docutils literal notranslate"><span class="pre">MDClass</span></code> (path: <code class="docutils literal notranslate"><span class="pre">spec_parser/parser.py</span></code>)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mdproperty-path-spec-parser-parser-py">8. <code class="docutils literal notranslate"><span class="pre">MDProperty</span></code> (path: <code class="docutils literal notranslate"><span class="pre">spec_parser/parser.py</span></code>)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mdvocab-path-spec-parser-parser-py">9. <code class="docutils literal notranslate"><span class="pre">MDVocab</span></code> (path: <code class="docutils literal notranslate"><span class="pre">spec_parser/parser.py</span></code>)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="error_checks.html">Defaults and Error checking in spec-parser</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../apidocs/spec_parser.html">spec_parser package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">spec-parser</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Internals</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/md_docs/internals.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="tex2jax_ignore mathjax_ignore section" id="internals">
+<h1>Internals<a class="headerlink" href="#internals" title="Permalink to this headline"></a></h1>
+<div class="section" id="workflow">
+<h2>Workflow<a class="headerlink" href="#workflow" title="Permalink to this headline"></a></h2>
+<ol class="arabic simple">
+<li><p>Given the <code class="docutils literal notranslate"><span class="pre">spec</span></code> folder, spec-parser traverse this folder and discover all <code class="docutils literal notranslate"><span class="pre">namespace</span></code> folders and extract all the <code class="docutils literal notranslate"><span class="pre">Classes</span></code>, <code class="docutils literal notranslate"><span class="pre">Properties</span></code> and <code class="docutils literal notranslate"><span class="pre">Vocabularies</span></code> inside respective <code class="docutils literal notranslate"><span class="pre">namespace</span></code> folder. [Ref: <code class="docutils literal notranslate"><span class="pre">spec_parser/spec_parser.py</span></code>]</p></li>
+<li><p>Each entity (ie. <code class="docutils literal notranslate"><span class="pre">Class</span></code>, <code class="docutils literal notranslate"><span class="pre">Property</span></code> or <code class="docutils literal notranslate"><span class="pre">Vocab</span></code>) is specified in the structured markdown format, so appropriate LALR(1) parser parse the structured markdown format, and relevant parsing errors are reported. [Ref: <code class="docutils literal notranslate"><span class="pre">spec_parser/parser.py</span></code>]</p></li>
+<li><p>When a specific entity is parsed successfully, all parsed information are passed to create object internally and references information are extracted and applied internally. [Ref: <code class="docutils literal notranslate"><span class="pre">spec_parser/utils.py</span></code>]</p></li>
+<li><p>Once, all the entities are parsed and processed, we generate pretty markdowns and RDF. [Ref: <code class="docutils literal notranslate"><span class="pre">spec_parser/utils.py</span></code>]</p></li>
+</ol>
+</div>
+<div class="section" id="major-components">
+<h2>Major Components<a class="headerlink" href="#major-components" title="Permalink to this headline"></a></h2>
+<div class="section" id="specparser-path-spec-parser-spec-parser-py">
+<h3>1. <code class="docutils literal notranslate"><span class="pre">SpecParser</span></code> (path: <code class="docutils literal notranslate"><span class="pre">spec_parser/spec_parser.py</span></code>)<a class="headerlink" href="#specparser-path-spec-parser-spec-parser-py" title="Permalink to this headline"></a></h3>
+<p>This class is used for traversing the input <code class="docutils literal notranslate"><span class="pre">spec</span></code> folder, and traversing the folder and discovering all the namespaces and all their entities. The primary task of this class is to parse the spec folder.</p>
+</div>
+<div class="section" id="spec-path-spec-parser-utils-py">
+<h3>2. <code class="docutils literal notranslate"><span class="pre">Spec</span></code> (path: <code class="docutils literal notranslate"><span class="pre">spec_parser/utils.py</span></code>)<a class="headerlink" href="#spec-path-spec-parser-utils-py" title="Permalink to this headline"></a></h3>
+<p>This class stores all the namespaces (including all entities inside it). This class also maintain Spec level information like references and name of all entities and namespaces.</p>
+</div>
+<div class="section" id="specclass-path-spec-parser-utils-py">
+<h3>3. <code class="docutils literal notranslate"><span class="pre">SpecClass</span></code> (path: <code class="docutils literal notranslate"><span class="pre">spec_parser/utils.py</span></code>)<a class="headerlink" href="#specclass-path-spec-parser-utils-py" title="Permalink to this headline"></a></h3>
+<p>This class stores the parsed information of <code class="docutils literal notranslate"><span class="pre">Class</span></code> entity. This class also consists of method such <code class="docutils literal notranslate"><span class="pre">_gen_md</span></code> and <code class="docutils literal notranslate"><span class="pre">_gen_rdf</span></code>, which generate pretty markdown and populate relevant RDF information respectively.</p>
+</div>
+<div class="section" id="specproperty-path-spec-paresr-utils-py">
+<h3>4. <code class="docutils literal notranslate"><span class="pre">SpecProperty</span></code> (path: <code class="docutils literal notranslate"><span class="pre">spec_paresr/utils.py</span></code>)<a class="headerlink" href="#specproperty-path-spec-paresr-utils-py" title="Permalink to this headline"></a></h3>
+<p>This class stores the parsed information of <code class="docutils literal notranslate"><span class="pre">Property</span></code> entity. This class also consists of method such <code class="docutils literal notranslate"><span class="pre">_gen_md</span></code> and <code class="docutils literal notranslate"><span class="pre">_gen_rdf</span></code>, which generate pretty markdown and populate relevant RDF information respectively.</p>
+</div>
+<div class="section" id="specvocab-path-spec-parser-utils-py">
+<h3>5. <code class="docutils literal notranslate"><span class="pre">SpecVocab</span></code> (path: <code class="docutils literal notranslate"><span class="pre">spec_parser/utils.py</span></code>)<a class="headerlink" href="#specvocab-path-spec-parser-utils-py" title="Permalink to this headline"></a></h3>
+<p>This class stores the parsed information of <code class="docutils literal notranslate"><span class="pre">Vocab</span></code> entity. This class also consists of method such <code class="docutils literal notranslate"><span class="pre">_gen_md</span></code> and <code class="docutils literal notranslate"><span class="pre">_gen_rdf</span></code>, which generate pretty markdown and populate relevant RDF information respectively.</p>
+</div>
+<div class="section" id="mdlexer-path-spec-parser-parser-py">
+<h3>6. <code class="docutils literal notranslate"><span class="pre">MDLexer</span></code> (path: <code class="docutils literal notranslate"><span class="pre">spec_parser/parser.py</span></code>)<a class="headerlink" href="#mdlexer-path-spec-parser-parser-py" title="Permalink to this headline"></a></h3>
+<p>This is the common lexer for all the 3 parser. This lexer has dependecy of <code class="docutils literal notranslate"><span class="pre">sly</span></code> (which is a LALR(1) parser generating python package).</p>
+</div>
+<div class="section" id="mdclass-path-spec-parser-parser-py">
+<h3>7. <code class="docutils literal notranslate"><span class="pre">MDClass</span></code> (path: <code class="docutils literal notranslate"><span class="pre">spec_parser/parser.py</span></code>)<a class="headerlink" href="#mdclass-path-spec-parser-parser-py" title="Permalink to this headline"></a></h3>
+<p>This is the parser for <code class="docutils literal notranslate"><span class="pre">Class</span></code> entity.</p>
+</div>
+<div class="section" id="mdproperty-path-spec-parser-parser-py">
+<h3>8. <code class="docutils literal notranslate"><span class="pre">MDProperty</span></code> (path: <code class="docutils literal notranslate"><span class="pre">spec_parser/parser.py</span></code>)<a class="headerlink" href="#mdproperty-path-spec-parser-parser-py" title="Permalink to this headline"></a></h3>
+<p>This is the parser for <code class="docutils literal notranslate"><span class="pre">Property</span></code> entity.</p>
+</div>
+<div class="section" id="mdvocab-path-spec-parser-parser-py">
+<h3>9. <code class="docutils literal notranslate"><span class="pre">MDVocab</span></code> (path: <code class="docutils literal notranslate"><span class="pre">spec_parser/parser.py</span></code>)<a class="headerlink" href="#mdvocab-path-spec-parser-parser-py" title="Permalink to this headline"></a></h3>
+<p>This is the parser for <code class="docutils literal notranslate"><span class="pre">Vocab</span></code> entity.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="grammar.html" class="btn btn-neutral float-left" title="Grammar for structured markdown input" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="error_checks.html" class="btn btn-neutral float-right" title="Defaults and Error checking in spec-parser" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, SPDX, Nirmal Suthar.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
