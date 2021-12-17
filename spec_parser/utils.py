@@ -388,6 +388,9 @@ class SpecClass(SpecBase):
                     for _key, subprop in subprops.items():
                         f.write(f'  - {_key}: {" ".join(subprop)}\n')
                     f.write("\n")
+            
+            # license declaration
+            f.write(f"\nSPDX-License-Identifier: {self.license_name}")
 
     def _gen_rdf(self, g: rdflib.Graph) -> None:
 
@@ -483,6 +486,9 @@ class SpecProperty(SpecBase):
                 for name in self.spec.dataprop_refs.get(self.name, []):
                     f.write(f"- {name}\n")
 
+            # license declaration
+            f.write(f"\nSPDX-License-Identifier: {self.license_name}")
+
     def _gen_rdf(self, g: rdflib.Graph) -> None:
 
         # self.spec.rdf_dict
@@ -567,7 +573,7 @@ class SpecVocab(SpecBase):
             f.write(
                 f"<!-- SPDX-License-Identifier: {self.license_name} -->\n\n"
             )
-            
+
             # write the topheadline
             f.write(f"# {self.name}\n\n")
 
@@ -591,6 +597,9 @@ class SpecVocab(SpecBase):
             f.write(f"## Entries\n\n")
             for name, val in self.entries.items():
                 f.write(f"- {name}: {val}\n")
+
+            # license declaration
+            f.write(f"\nSPDX-License-Identifier: {self.license_name}")
 
     def _gen_rdf(self, g: rdflib.Graph):
 
