@@ -179,6 +179,7 @@ class SpecBase:
         name: str,
         summary: str,
         description: str,
+        license_name: str
     ):
 
         self.logger: logging.Logger = None
@@ -187,6 +188,7 @@ class SpecBase:
         self.name: str = name
         self.summary: str = summary
         self.description: str = description
+        self.license_name: str = license_name
         self.metadata: dict = dict()
         self.properties: dict = dict()
         self.entries: dict = dict()
@@ -311,6 +313,7 @@ class SpecClass(SpecBase):
         description: str,
         metadata: dict,
         props: dict,
+        license_name: str
     ):
 
         super().__init__(
@@ -319,6 +322,7 @@ class SpecClass(SpecBase):
             name,
             summary,
             description,
+            license_name
         )
 
         self.logger = logging.getLogger(self.__class__.__name__)
@@ -336,6 +340,11 @@ class SpecClass(SpecBase):
             # write the header
             f.write(
                 f"<!-- Auto generated markdown by Spec-parser v{__version__} -->\n\n"
+            )
+
+            # write the license name
+            f.write(
+                f"<!-- SPDX-License-Identifier: {self.license_name} -->\n\n"
             )
 
             # write the topheadline
@@ -416,6 +425,7 @@ class SpecProperty(SpecBase):
         summary: str,
         description: str,
         metadata: dict,
+        license_name: str
     ):
 
         super().__init__(
@@ -424,6 +434,7 @@ class SpecProperty(SpecBase):
             name,
             summary,
             description,
+            license_name
         )
 
         self.logger = logging.getLogger(self.__class__.__name__)
@@ -440,6 +451,11 @@ class SpecProperty(SpecBase):
             # write the header
             f.write(
                 f"<!-- Auto generated markdown by Spec-parser v{__version__} -->\n\n"
+            )
+
+            # write the license name
+            f.write(
+                f"<!-- SPDX-License-Identifier: {self.license_name} -->\n\n"
             )
 
             # write the topheadline
@@ -518,6 +534,7 @@ class SpecVocab(SpecBase):
         description: str,
         metadata: dict,
         entries: dict,
+        license_name: str,
     ):
 
         super().__init__(
@@ -526,6 +543,7 @@ class SpecVocab(SpecBase):
             name,
             summary,
             description,
+            license_name,
         )
 
         self.logger = logging.getLogger(self.__class__.__name__)
@@ -545,6 +563,11 @@ class SpecVocab(SpecBase):
                 f"<!-- Auto generated markdown by Spec-parser v{__version__} -->\n\n"
             )
 
+            # write the license name
+            f.write(
+                f"<!-- SPDX-License-Identifier: {self.license_name} -->\n\n"
+            )
+            
             # write the topheadline
             f.write(f"# {self.name}\n\n")
 
