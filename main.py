@@ -25,6 +25,12 @@ def get_args():
     )
 
     argparser.add_argument(
+        "--gen-shacl",
+        action="store_true",
+        help="Experimental! Generate SHACL in turtle format",
+    )
+
+    argparser.add_argument(
         "--use-table",
         action="store_true",
         help="Use markdown-table to display properties in `Class` entity",
@@ -58,3 +64,5 @@ if __name__ == "__main__":
         spec.gen_md()
     if args.gen_rdf:
         spec.gen_rdf()
+    if args.gen_shacl:
+        spec.gen_shacl()

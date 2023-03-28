@@ -4,7 +4,7 @@ from os import path
 from typing import List
 
 import rdflib
-from rdflib import URIRef, Literal
+from rdflib import URIRef, Literal, SH, BNode
 from rdflib.namespace import RDF, OWL, RDFS, XSD
 
 NS0 = rdflib.Namespace("http://www.w3.org/2003/06/sw-vocab-status/ns#")
@@ -167,6 +167,39 @@ class Spec:
             return
 
         fname = path.join(self.args["out_dir"], f"tst.ttl")
+        with safe_open(fname, "w") as f:
+            f.write(g.serialize(format="turtle"))
+
+    def gen_shacl(self) -> None:
+        """Generate SHACL in turtle format."""
+
+        g = rdflib.Graph()
+
+        g.bind("owl", OWL)
+        g.bind("ns0", NS0)
+        g.bind("sh", SH)
+
+        self.rdf_dict = {"ns0": NS0, "rdf": RDF, "owl": OWL, "rdfs": RDFS, "xsd": XSD, "sh": SH}
+
+        # add all namespaces
+        for _name in self.namespaces.keys():
+            self.rdf_dict[_name] = rdflib.Namespace(f"{id_metadata_prefix}{_name}#")
+            g.bind(_name.lower(), self.rdf_dict[_name])
+
+        # add triples starting from each namespaces
+        for _namespace in self.namespaces.values():
+
+            classes = _namespace["classes"]
+
+            for class_obj in classes.values():
+                class_obj._gen_shacl(g)
+
+        # if we have encounter error then terminate
+        if isError():
+            self.logger.warning(f"Error parsing the spec. Aborting the gen_shacl...")
+            return
+
+        fname = path.join(self.args["out_dir"], f"model_shacl.ttl")
         with safe_open(fname, "w") as f:
             f.write(g.serialize(format="turtle"))
 
@@ -404,6 +437,31 @@ class SpecClass(SpecBase):
 
         g.add((cur, RDFS.comment, Literal(self.description)))
         g.add((cur, NS0.term_status, Literal(self.metadata.get("Status")[0])))
+
+    def _gen_shacl(self, g: rdflib.Graph) -> None:
+
+        class_uri = URIRef(self.metadata["id"][0])
+        shape_uri = URIRef(self.metadata["id"][0] + "Shape")
+
+        g.add((shape_uri, RDF.type, SH.NodeShape))
+        g.add((shape_uri, SH.targetClass, class_uri))
+
+        for prop_name, prop_value in self.properties.items():
+            property_uri = self._gen_uri(prop_name)
+            property_type_uri = self._gen_uri(prop_value["type"][0])
+            min_count: str = prop_value["minCount"][0]
+            max_count: str = prop_value["maxCount"][0]
+
+            restriction_node = BNode()
+            g.add((restriction_node, SH.path, property_uri))
+            g.add((restriction_node, SH.datatype, property_type_uri))
+            g.add((restriction_node, SH.name, Literal(prop_name)))
+            if min_count != "0":
+                g.add((restriction_node, SH.minCount, Literal(int(min_count))))
+            if max_count != "*":
+                g.add((restriction_node, SH.maxCount, Literal(int(max_count))))
+
+            g.add((shape_uri, SH.property, restriction_node))
 
 
 class SpecProperty(SpecBase):
