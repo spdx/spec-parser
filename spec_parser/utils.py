@@ -313,6 +313,7 @@ class SpecClass(SpecBase):
         description: str,
         metadata: dict,
         props: dict,
+        ext_props: dict,
         license_name: str
     ):
 
@@ -328,6 +329,7 @@ class SpecClass(SpecBase):
         self.logger = logging.getLogger(self.__class__.__name__)
         self._extract_metadata(metadata)
         self._extract_properties(props)
+# TODO: handle ext_props in some way -- for now, silently ignored
 
     def _gen_md(self, args: dict) -> None:
 
