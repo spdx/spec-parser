@@ -313,7 +313,8 @@ class SpecClass(SpecBase):
         description: str,
         metadata: dict,
         props: dict,
-        license_name: str
+        license_name: str,
+        external_properties_restrictions: dict
     ):
 
         super().__init__(

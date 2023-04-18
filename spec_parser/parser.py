@@ -53,6 +53,7 @@ class MDLexer(Lexer):
         SUMMARY,
         METADATA,
         PROPERTIES,
+        EXTERNAL_PROPERTIES_RESTRICTIONS,
         ENTRIES,
         LICENSE,
         H_TEXTLINE,
@@ -68,6 +69,7 @@ class MDLexer(Lexer):
     DESCRIPTION = r"((?<=\n)|^)\#{2}\s+Description(?:(?!\n)\s)*(\n+|$)"
     METADATA = r"((?<=\n)|^)\#{2}\s+Metadata(?:(?!\n)\s)*(\n+|$)"
     PROPERTIES = r"((?<=\n)|^)\#{2}\s+Properties(?:(?!\n)\s)*(\n+|$)"
+    EXTERNAL_PROPERTIES_RESTRICTIONS = r"((?<=\n)|^)\#{2}\s+External properties restrictions(?:(?!\n)\s)*(\n+|$)"
     ENTRIES = r"((?<=\n)|^)\#{2}\s+Entries(?:(?!\n)\s)*(\n+|$)"
     LICENSE = r"((?<=\n)|^)\s*SPDX-License-Identifier\s*:[^\n]+(?:(?!\n)\s)*(\n+|$)"
 
@@ -103,11 +105,11 @@ class MDClass(Parser):
     tokens = MDLexer.tokens
     lexer = None
 
-    @_("maybe_newlines license_name name maybe_summary maybe_description maybe_metadata maybe_properties")
+    @_("maybe_newlines license_name name maybe_summary maybe_description maybe_metadata maybe_properties maybe_external_properties_restrictions")
     def document(self, p):
         if getattr(self, "isError", False):
             return None
-        return (p.name, p.maybe_summary, p.maybe_description, p.maybe_metadata, p.maybe_properties, p.license_name)
+        return (p.name, p.maybe_summary, p.maybe_description, p.maybe_metadata, p.maybe_properties, p.license_name, p.maybe_external_properties_restrictions)
 
     @_("empty", "LICENSE")
     def license_name(self, p):
@@ -206,6 +208,22 @@ class MDClass(Parser):
         if len(p) == 1:
             return []
         return p.properties_list + [p.single_property]
+
+    @_("empty", "external_properties_restrictions")
+    def maybe_external_properties_restrictions(self, p):
+        if p[0] is None:
+            return []
+        return p[0]
+
+    @_("EXTERNAL_PROPERTIES_RESTRICTIONS external_properties_restrictions_list")
+    def external_properties_restrictions(self, p):
+        return p.external_properties_restrictions_list
+
+    @_("external_properties_restrictions_list single_property", "empty")
+    def external_properties_restrictions_list(self, p):
+        if len(p) == 1:
+            return []
+        return p.external_properties_restrictions_list + [p.single_property]
 
     @_("ULISTA avline_list")
     def single_property(self, p):
