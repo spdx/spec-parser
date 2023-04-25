@@ -50,6 +50,7 @@ class MDLexer(Lexer):
         H5,
         H6,
         DESCRIPTION,
+        EXT_PROPERTIES,
         SUMMARY,
         METADATA,
         PROPERTIES,
@@ -70,6 +71,7 @@ class MDLexer(Lexer):
     PROPERTIES = r"((?<=\n)|^)\#{2}\s+Properties(?:(?!\n)\s)*(\n+|$)"
     ENTRIES = r"((?<=\n)|^)\#{2}\s+Entries(?:(?!\n)\s)*(\n+|$)"
     LICENSE = r"((?<=\n)|^)\s*SPDX-License-Identifier\s*:[^\n]+(?:(?!\n)\s)*(\n+|$)"
+    EXT_PROPERTIES = r"((?<=\n)|^)\#{2}\s+External properties restrictions(?:(?!\n)\s)*(\n+|$)"
 
     H6 = r"((?<=\n)|^)\s*\#{6}"
     H5 = r"((?<=\n)|^)\s*\#{5}"
@@ -103,11 +105,11 @@ class MDClass(Parser):
     tokens = MDLexer.tokens
     lexer = None
 
-    @_("maybe_newlines license_name name maybe_summary maybe_description maybe_metadata maybe_properties")
+    @_("maybe_newlines license_name name maybe_summary maybe_description maybe_metadata maybe_properties maybe_ext_properties")
     def document(self, p):
         if getattr(self, "isError", False):
             return None
-        return (p.name, p.maybe_summary, p.maybe_description, p.maybe_metadata, p.maybe_properties, p.license_name)
+        return (p.name, p.maybe_summary, p.maybe_description, p.maybe_metadata, p.maybe_properties, p.maybe_ext_properties, p.license_name)
 
     @_("empty", "LICENSE")
     def license_name(self, p):
@@ -255,6 +257,16 @@ class MDClass(Parser):
             self.error(p._slice[0], f"Error: Attribute key '{_key}' already exists")
 
         return {"name": _key, "values": _values}
+
+    @_("empty", "ext_properties")
+    def maybe_ext_properties(self, p):
+        if p[0] is None:
+            return []
+        return p[0]
+
+    @_("EXT_PROPERTIES properties_list")
+    def ext_properties(self, p):
+        return p.properties_list
 
     @_("para para_line", "empty")
     def para(self, p):
