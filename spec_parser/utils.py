@@ -166,7 +166,7 @@ class Spec:
             self.logger.warning(f"Error parsing the spec. Aborting the gen_rdf...")
             return
 
-        fname = path.join(self.args["out_dir"], f"tst.ttl")
+        fname = path.join(self.args["out_dir"], f"model.ttl")
         with safe_open(fname, "w") as f:
             f.write(g.serialize(format="turtle"))
 
