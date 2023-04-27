@@ -268,26 +268,28 @@ class SpecBase:
             self.entries[_key] = _value
 
     def _gen_uri(self, entity):
-
-        splitted = re.split(r":", entity)
-
-        if len(splitted) > 2:
+        if getattr(self, "spec", None) is None:
             return Literal(entity)
 
-        if getattr(self, "spec", None) is None:
+        if ":" in entity:
+            namespace_and_entity = re.split(r":", entity)
+        elif "/" in entity:
+            namespace_and_entity = re.split(r"/", entity)[1:]
+        else:
+            namespace_and_entity = [self.namespace_name,  entity]
+
+        if len(namespace_and_entity) > 2:
+            self.logger.warning(f"Unrecognized reference: {entity}")
             return Literal(entity)
 
         rdf_dict = self.spec.rdf_dict
 
-        if len(splitted) == 1:
-            _namespace = self.namespace_name
-        else:
-            _namespace = splitted[0]
+        _namespace = namespace_and_entity[0]
 
         if _namespace not in rdf_dict:
             return Literal(entity)
 
-        return rdf_dict[_namespace][splitted[-1]]
+        return rdf_dict[_namespace][namespace_and_entity[-1]]
 
 
 class SpecClass(SpecBase):
