@@ -4,7 +4,7 @@ from os import path
 from typing import List
 
 import rdflib
-from rdflib import URIRef, Literal
+from rdflib import URIRef, Literal, BNode, SH
 from rdflib.namespace import RDF, OWL, RDFS, XSD
 
 NS0 = rdflib.Namespace("http://www.w3.org/2003/06/sw-vocab-status/ns#")
@@ -137,8 +137,9 @@ class Spec:
 
         g.bind("owl", OWL)
         g.bind("ns0", NS0)
+        g.bind("sh", SH)
 
-        self.rdf_dict = {"ns0": NS0, "rdf": RDF, "owl": OWL, "rdfs": RDFS, "xsd": XSD}
+        self.rdf_dict = {"ns0": NS0, "rdf": RDF, "owl": OWL, "rdfs": RDFS, "xsd": XSD, "sh": SH}
 
         # add all namespaces
         for _name in self.namespaces.keys():
@@ -390,22 +391,39 @@ class SpecClass(SpecBase):
                     for _key, subprop in subprops.items():
                         f.write(f'  - {_key}: {" ".join(subprop)}\n')
                     f.write("\n")
-            
+
             # license declaration
             f.write(f"\nSPDX-License-Identifier: {self.license_name}")
 
     def _gen_rdf(self, g: rdflib.Graph) -> None:
 
-        # self.spec.rdf_dict
         cur = URIRef(self.metadata["id"][0])
 
         g.add((cur, RDF.type, OWL["Class"]))
+        g.add((cur, RDF.type, SH.NodeShape))
 
         for subclass in self.metadata.get("SubclassOf", []):
             g.add((cur, RDFS.subClassOf, self._gen_uri(subclass)))
 
         g.add((cur, RDFS.comment, Literal(self.description)))
         g.add((cur, NS0.term_status, Literal(self.metadata.get("Status")[0])))
+
+        for prop_name, prop_value in self.properties.items():
+            property_uri = self._gen_uri(prop_name)
+            property_type_uri = self._gen_uri(prop_value["type"][0])
+            min_count: str = prop_value["minCount"][0]
+            max_count: str = prop_value["maxCount"][0]
+
+            restriction_node = BNode()
+            g.add((restriction_node, SH.path, property_uri))
+            g.add((restriction_node, SH.datatype, property_type_uri))
+            g.add((restriction_node, SH.name, Literal(prop_name)))
+            if min_count != "0":
+                g.add((restriction_node, SH.minCount, Literal(int(min_count))))
+            if max_count != "*":
+                g.add((restriction_node, SH.maxCount, Literal(int(max_count))))
+
+            g.add((cur, SH.property, restriction_node))
 
 
 class SpecProperty(SpecBase):
