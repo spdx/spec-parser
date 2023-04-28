@@ -143,7 +143,7 @@ class Spec:
 
         # add all namespaces
         for _name in self.namespaces.keys():
-            self.rdf_dict[_name] = rdflib.Namespace(f"{id_metadata_prefix}{_name}#")
+            self.rdf_dict[_name] = rdflib.Namespace(f"{id_metadata_prefix}{_name}/")
             g.bind(_name.lower(), self.rdf_dict[_name])
 
         # add triples starting from each namespaces
@@ -211,7 +211,7 @@ class SpecBase:
         union_dict(self.metadata, metadata_defaults)
 
         # add id metadata
-        self.metadata["id"] = [f"{id_metadata_prefix}{self.namespace_name}#{self.name}"]
+        self.metadata["id"] = [f"{id_metadata_prefix}{self.namespace_name}/{self.name}"]
 
     def _extract_properties(self, props_list):
 
