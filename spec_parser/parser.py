@@ -4,7 +4,7 @@ import sys
 import sly
 from sly import Parser, Lexer
 
-from spec_parser.helper import reg_ex_for_section
+from spec_parser.helper import determine_section_title, reg_ex_for_section
 from .config import valid_dataprop_key, valid_metadata_key
 
 __all__ = ["MDLexer", "MDClass", "MDProperty", "MDVocab"]
@@ -162,19 +162,19 @@ class MDClass(Parser):
             return []
         return p[0]
 
-    @_("METADATA metadata_list")
+    @_("METADATA list_of_attribute_value_pairs")
     def metadata(self, p):
-        return p.metadata_list
+        return p.list_of_attribute_value_pairs
 
-    @_("metadata_list metadata_line", "empty")
-    def metadata_list(self, p):
+    @_("list_of_attribute_value_pairs attribute_value_line", "empty")
+    def list_of_attribute_value_pairs(self, p):
         if len(p) == 2:
-            return p.metadata_list + [p.metadata_line]
+            return p.list_of_attribute_value_pairs + [p.attribute_value_line]
         return []
 
     @_("ULISTA")
-    def metadata_line(self, p):
-
+    def attribute_value_line(self, p):
+        valid_keys, section_title = determine_section_title(p[-3])
         ulista = p.ULISTA
 
         # strip the md list identifier, ie r'[-*+]'
@@ -191,11 +191,11 @@ class MDClass(Parser):
         _key = ulista[0].strip()
         _values = re.split(r"\s", ulista[-1].strip())
 
-        if _key not in valid_metadata_key:
-            self.error(p._slice[0], f"Error: Invalid metadata key `{_key}`.")
+        if _key not in valid_keys:
+            self.error(p._slice[0], f"Error: Invalid {section_title} key `{_key}`.")
 
         if any(map(lambda x: x.get("name", "") == _key, p[-2])):
-            self.error(p._slice[0], f"Error: Metadata key `{_key}` already exists.")
+            self.error(p._slice[0], f"Error: {section_title} key `{_key}` already exists.")
 
         return {"name": _key, "values": _values}
 
@@ -280,21 +280,9 @@ class MDClass(Parser):
             return []
         return p[0]
 
-    @_("FORMAT format_pattern")
+    @_("FORMAT list_of_attribute_value_pairs")
     def format(self, p):
-        return p.format_pattern
-
-    @_("ULISTA")
-    def format_pattern(self, p):
-        ulista = p.ULISTA
-
-        # strip the md list identifier, ie r'[-*+]'
-        ulista = re.split(r"[-*+]", ulista, 1)[-1].strip()
-
-        # strip the pattern key to get only the specified regex
-        format_regex = re.split(r"pattern:\s", ulista, 1)[1]
-
-        return {"pattern": format_regex}
+        return p.list_of_attribute_value_pairs
 
     @_("para para_line", "empty")
     def para(self, p):

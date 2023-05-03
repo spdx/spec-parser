@@ -329,11 +329,12 @@ class SpecClass(SpecBase):
             description,
             license_name
         )
+        self.format_pattern = dict()
 
         self.logger = logging.getLogger(self.__class__.__name__)
         self._extract_metadata(metadata)
         self._extract_properties(props)
-        self.format_pattern = format_pattern
+        self._extract_format(format_pattern)
         self.ext_props = ext_props
         if ext_props:
             self.logger.warning("External property restrictions aren't yet handled properly, they are added to the "
@@ -343,13 +344,25 @@ class SpecClass(SpecBase):
                     self.description += f"\nExternal property restriction on {ext_prop['name']}: {value['name']}: " \
                                         f"{' '.join(value['values'])}"
 
-        if format_pattern:
+        if self.format_pattern:
             self.logger.warning("Format restrictions aren't yet handled properly, they are added to the "
                                 "description of the class.")
-            self.description += f"\nFormat pattern: {self.format_pattern['pattern']}"
+            for name, value in self.format_pattern.items():
+                self.description += f"\nFormat restriction: {name}: {' '.join(value)}"
 
     # TODO: handle ext_props in some way -- for now, silently ignored
-    # TODO: handle format_pattern in some way -- for now, silently ignored
+    # TODO: add format_pattern to generated rdf in some way
+
+    def _extract_format(self, format_list):
+        for _dict in format_list:
+            _key = _dict["name"]
+            _values = _dict["values"]
+
+            if _key in self.format_pattern:
+                # report the error
+                self.logger.error(f"{self.name}: Format key '{_key}' already exists")
+
+            self.format_pattern[_key] = _values
 
     def _gen_md(self, args: dict) -> None:
 
@@ -412,7 +425,8 @@ class SpecClass(SpecBase):
                     f.write("\n")
             if self.format_pattern:
                 f.write(f"## Format\n\n")
-                f.write(f"- pattern: {self.format_pattern['pattern']}\n")
+                for name, vals in self.format_pattern.items():
+                    f.write(f'- {name}: {" ".join(vals)}\n')
 
             # license declaration
             f.write(f"\nSPDX-License-Identifier: {self.license_name}")
