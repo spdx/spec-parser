@@ -107,10 +107,6 @@ class Spec:
 
     def gen_md(self) -> None:
         """Generate pretty markdowns."""
-        # if we have encounter error then terminate
-        if isError():
-            self.logger.warning(f"Specs not parsed succesfully, aborting the gen_md...")
-            return
 
         if path.isdir(self.args["out_dir"]):
             self.logger.warning(f"Overwriting out_dir `{self.args['out_dir']}`")
@@ -161,11 +157,6 @@ class Spec:
 
             for vocab_obj in vocabs.values():
                 vocab_obj._gen_rdf(g)
-
-        # if we have encounter error then terminate
-        if isError():
-            self.logger.warning(f"Error parsing the spec. Aborting the gen_rdf...")
-            return
 
         fname = path.join(self.args["out_dir"], f"model.ttl")
         with safe_open(fname, "w") as f:

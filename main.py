@@ -1,7 +1,8 @@
 import os
 import logging
+import sys
 from argparse import ArgumentParser
-from spec_parser import SpecParser
+from spec_parser import SpecParser, isError
 
 
 def get_args():
@@ -54,6 +55,9 @@ if __name__ == "__main__":
 
     specParser = SpecParser(**vars(args))
     spec = specParser.parse(args.spec_dir)
+    if isError():
+        logging.error(f"Spec not parsed successfully.")
+        exit(1)
     if args.gen_md:
         spec.gen_md()
     if args.gen_rdf:
