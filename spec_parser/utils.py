@@ -303,20 +303,13 @@ class SpecClass(SpecBase):
         description (str): description of this entity
         metadata (dict): metadata of this entity
         props (dict): properties of this entity
+        format_pattern (dict): format specification of this entity
+        ext_props (dict): restrictions on external properties for this entity
+        license_name (str): license provided through SPDX-License-Identifier
     """
 
-    def __init__(
-        self,
-        spec: Spec,
-        namespace_name: str,
-        name: str,
-        summary: str,
-        description: str,
-        metadata: dict,
-        props: dict,
-        ext_props: dict,
-        license_name: str
-    ):
+    def __init__(self, spec: Spec, namespace_name: str, name: str, summary: str, description: str, metadata: dict,
+                 props: dict, format_pattern: dict, ext_props: dict, license_name: str):
 
         super().__init__(
             spec,
@@ -330,6 +323,8 @@ class SpecClass(SpecBase):
         self.logger = logging.getLogger(self.__class__.__name__)
         self._extract_metadata(metadata)
         self._extract_properties(props)
+        self.format_pattern = format_pattern
+        self.ext_props = ext_props
 # TODO: handle ext_props in some way -- for now, silently ignored
 
     def _gen_md(self, args: dict) -> None:
@@ -391,6 +386,10 @@ class SpecClass(SpecBase):
                     for _key, subprop in subprops.items():
                         f.write(f'  - {_key}: {" ".join(subprop)}\n')
                     f.write("\n")
+            if self.format_pattern:
+                f.write(f"## Format\n\n")
+                f.write(f"- pattern: {self.format_pattern['pattern']}\n")
+
 
             # license declaration
             f.write(f"\nSPDX-License-Identifier: {self.license_name}")

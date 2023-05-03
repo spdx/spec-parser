@@ -54,6 +54,7 @@ class MDLexer(Lexer):
         SUMMARY,
         METADATA,
         PROPERTIES,
+        FORMAT,
         ENTRIES,
         LICENSE,
         H_TEXTLINE,
@@ -69,6 +70,7 @@ class MDLexer(Lexer):
     DESCRIPTION = r"((?<=\n)|^)\#{2}\s+Description(?:(?!\n)\s)*(\n+|$)"
     METADATA = r"((?<=\n)|^)\#{2}\s+Metadata(?:(?!\n)\s)*(\n+|$)"
     PROPERTIES = r"((?<=\n)|^)\#{2}\s+Properties(?:(?!\n)\s)*(\n+|$)"
+    FORMAT = r"((?<=\n)|^)\#{2}\s+Format(?:(?!\n)\s)*(\n+|$)"
     ENTRIES = r"((?<=\n)|^)\#{2}\s+Entries(?:(?!\n)\s)*(\n+|$)"
     LICENSE = r"((?<=\n)|^)\s*SPDX-License-Identifier\s*:[^\n]+(?:(?!\n)\s)*(\n+|$)"
     EXT_PROPERTIES = r"((?<=\n)|^)\#{2}\s+External properties restrictions(?:(?!\n)\s)*(\n+|$)"
@@ -105,11 +107,13 @@ class MDClass(Parser):
     tokens = MDLexer.tokens
     lexer = None
 
-    @_("maybe_newlines license_name name maybe_summary maybe_description maybe_metadata maybe_properties maybe_ext_properties")
+    @_("maybe_newlines license_name name maybe_summary maybe_description maybe_metadata maybe_properties maybe_format "
+       "maybe_ext_properties")
     def document(self, p):
         if getattr(self, "isError", False):
             return None
-        return (p.name, p.maybe_summary, p.maybe_description, p.maybe_metadata, p.maybe_properties, p.maybe_ext_properties, p.license_name)
+        return (p.name, p.maybe_summary, p.maybe_description, p.maybe_metadata, p.maybe_properties, p.maybe_format,
+                p.maybe_ext_properties, p.license_name)
 
     @_("empty", "LICENSE")
     def license_name(self, p):
@@ -268,6 +272,27 @@ class MDClass(Parser):
     def ext_properties(self, p):
         return p.properties_list
 
+    @_("empty", "format")
+    def maybe_format(self, p):
+        if p[0] is None:
+            return []
+        return p[0]
+
+    @_("FORMAT format_pattern")
+    def format(self, p):
+        return p.format_pattern
+
+    @_("ULISTA")
+    def format_pattern(self, p):
+        ulista = p.ULISTA
+
+        # strip the md list identifier, ie r'[-*+]'
+        ulista = re.split(r"[-*+]", ulista, 1)[-1].strip()
+
+        # strip the pattern key to get only the specified regex
+        format_regex = re.split(r"pattern:\s", ulista, 1)[1]
+
+        return {"pattern": format_regex}
     @_("para para_line", "empty")
     def para(self, p):
         if len(p) == 1:
