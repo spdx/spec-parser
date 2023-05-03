@@ -89,3 +89,7 @@ def union_dict(d1: dict, d2: dict) -> dict:
     for k, v in d2.items():
         if not k in d1:
             d1[k] = v
+
+
+def reg_ex_for_section(title: str) -> str:
+    return r"((?<=\n)|^)\#{2}\s+" + title + r"(?:(?!\n)\s)*(\n+|$)"

@@ -51,7 +51,7 @@ class Spec:
         self.args.setdefault("out_dir", "md_generated")
 
     def add_namespace(
-        self, name: str, classes: List, properties: List, vocabs: List
+            self, name: str, classes: List, properties: List, vocabs: List
     ) -> None:
         """Add namespace information into Specfication.
 
@@ -174,13 +174,13 @@ class Spec:
 
 class SpecBase:
     def __init__(
-        self,
-        spec: Spec,
-        namespace_name: str,
-        name: str,
-        summary: str,
-        description: str,
-        license_name: str
+            self,
+            spec: Spec,
+            namespace_name: str,
+            name: str,
+            summary: str,
+            description: str,
+            license_name: str
     ):
 
         self.logger: logging.Logger = None
@@ -308,8 +308,18 @@ class SpecClass(SpecBase):
         license_name (str): license provided through SPDX-License-Identifier
     """
 
-    def __init__(self, spec: Spec, namespace_name: str, name: str, summary: str, description: str, metadata: dict,
-                 props: dict, format_pattern: dict, ext_props: dict, license_name: str):
+    def __init__(
+            self,
+            spec: Spec,
+            namespace_name: str,
+            name: str,
+            summary: str,
+            description: str,
+            metadata: dict,
+            props: dict,
+            format_pattern: dict,
+            ext_props: dict,
+            license_name: str):
 
         super().__init__(
             spec,
@@ -325,7 +335,8 @@ class SpecClass(SpecBase):
         self._extract_properties(props)
         self.format_pattern = format_pattern
         self.ext_props = ext_props
-# TODO: handle ext_props in some way -- for now, silently ignored
+
+    # TODO: handle ext_props in some way -- for now, silently ignored
 
     def _gen_md(self, args: dict) -> None:
 
@@ -390,7 +401,6 @@ class SpecClass(SpecBase):
                 f.write(f"## Format\n\n")
                 f.write(f"- pattern: {self.format_pattern['pattern']}\n")
 
-
             # license declaration
             f.write(f"\nSPDX-License-Identifier: {self.license_name}")
 
@@ -440,14 +450,14 @@ class SpecProperty(SpecBase):
     """
 
     def __init__(
-        self,
-        spec: Spec,
-        namespace_name: str,
-        name: str,
-        summary: str,
-        description: str,
-        metadata: dict,
-        license_name: str
+            self,
+            spec: Spec,
+            namespace_name: str,
+            name: str,
+            summary: str,
+            description: str,
+            metadata: dict,
+            license_name: str
     ):
 
         super().__init__(
@@ -551,15 +561,15 @@ class SpecVocab(SpecBase):
     """
 
     def __init__(
-        self,
-        spec: Spec,
-        namespace_name: str,
-        name: str,
-        summary: str,
-        description: str,
-        metadata: dict,
-        entries: dict,
-        license_name: str,
+            self,
+            spec: Spec,
+            namespace_name: str,
+            name: str,
+            summary: str,
+            description: str,
+            metadata: dict,
+            entries: dict,
+            license_name: str,
     ):
 
         super().__init__(

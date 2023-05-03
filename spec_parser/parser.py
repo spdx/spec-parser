@@ -3,6 +3,8 @@ import re
 import sys
 import sly
 from sly import Parser, Lexer
+
+from spec_parser.helper import reg_ex_for_section
 from .config import valid_dataprop_key, valid_metadata_key
 
 __all__ = ["MDLexer", "MDClass", "MDProperty", "MDVocab"]
@@ -66,14 +68,14 @@ class MDLexer(Lexer):
 
     ignore_comment = r"(?:(?!\n)\s)*<!?--(?:(?!-->)(.|\n|\s))*-->(?:(?!\n)\s)*\n*"
 
-    SUMMARY = r"((?<=\n)|^)\#{2}\s+Summary(?:(?!\n)\s)*(\n+|$)"
-    DESCRIPTION = r"((?<=\n)|^)\#{2}\s+Description(?:(?!\n)\s)*(\n+|$)"
-    METADATA = r"((?<=\n)|^)\#{2}\s+Metadata(?:(?!\n)\s)*(\n+|$)"
-    PROPERTIES = r"((?<=\n)|^)\#{2}\s+Properties(?:(?!\n)\s)*(\n+|$)"
-    FORMAT = r"((?<=\n)|^)\#{2}\s+Format(?:(?!\n)\s)*(\n+|$)"
-    ENTRIES = r"((?<=\n)|^)\#{2}\s+Entries(?:(?!\n)\s)*(\n+|$)"
+    SUMMARY = reg_ex_for_section("Summary")
+    DESCRIPTION = reg_ex_for_section("Description")
+    METADATA = reg_ex_for_section("Metadata")
+    PROPERTIES = reg_ex_for_section("Properties")
+    FORMAT = reg_ex_for_section("Format")
+    ENTRIES = reg_ex_for_section("Entries")
     LICENSE = r"((?<=\n)|^)\s*SPDX-License-Identifier\s*:[^\n]+(?:(?!\n)\s)*(\n+|$)"
-    EXT_PROPERTIES = r"((?<=\n)|^)\#{2}\s+External properties restrictions(?:(?!\n)\s)*(\n+|$)"
+    EXT_PROPERTIES = reg_ex_for_section("External properties restrictions")
 
     H6 = r"((?<=\n)|^)\s*\#{6}"
     H5 = r"((?<=\n)|^)\s*\#{5}"
@@ -126,7 +128,7 @@ class MDClass(Parser):
             # report the invalid syntax
             self.error(p._slice[0], "Syntax Error: Expected `SPDX-License-Identifier: <value>`")
             return None
-        
+
         license_name = splitted[-1].strip()
         return license_name
 
@@ -293,6 +295,7 @@ class MDClass(Parser):
         format_regex = re.split(r"pattern:\s", ulista, 1)[1]
 
         return {"pattern": format_regex}
+
     @_("para para_line", "empty")
     def para(self, p):
         if len(p) == 1:
@@ -348,7 +351,7 @@ class MDProperty(Parser):
             # report the invalid syntax
             self.error(p._slice[0], "Syntax Error: Expected `SPDX-License-Identifier: <value>`")
             return None
-        
+
         license_name = splitted[-1].strip()
         return license_name
 
@@ -474,7 +477,7 @@ class MDVocab(MDProperty):
             # report the invalid syntax
             self.error(p._slice[0], "Syntax Error: Expected `SPDX-License-Identifier: <value>`")
             return None
-        
+
         license_name = splitted[-1].strip()
         return license_name
 
@@ -487,7 +490,7 @@ class MDVocab(MDProperty):
         if p[0] is None:
             return ""
         return p[0]
-    
+
     @_("SUMMARY para")
     def summary(self, p):
         return p.para.strip()
