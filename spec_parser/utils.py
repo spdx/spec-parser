@@ -274,7 +274,9 @@ class SpecBase:
         if ":" in entity:
             namespace_and_entity = re.split(r":", entity)
         elif "/" in entity:
-            namespace_and_entity = re.split(r"/", entity)[1:]
+            entity_split_in_single_elements = re.split(r"/", entity)
+            namespace_and_entity = entity_split_in_single_elements if entity_split_in_single_elements[0] else \
+                entity_split_in_single_elements[1:]
         else:
             namespace_and_entity = [self.namespace_name,  entity]
 
