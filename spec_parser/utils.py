@@ -272,26 +272,21 @@ class SpecBase:
             return Literal(entity)
 
         if ":" in entity:
-            namespace_and_entity = re.split(r":", entity)
-        elif "/" in entity:
-            entity_split_in_single_elements = re.split(r"/", entity)
-            namespace_and_entity = entity_split_in_single_elements if entity_split_in_single_elements[0] else \
-                entity_split_in_single_elements[1:]
+            [_namespace, _entity] = re.split(r":", entity)
         else:
-            namespace_and_entity = [self.namespace_name,  entity]
-
-        if len(namespace_and_entity) > 2:
-            self.logger.warning(f"Unrecognized reference: {entity}")
-            return Literal(entity)
+            namespace_and_entity = entity.lstrip('/').rsplit('/', 1)
+            if len(namespace_and_entity) == 1:
+                _entity = namespace_and_entity[0]
+                _namespace = self.namespace_name
+            else:
+                [_namespace, _entity] = namespace_and_entity
 
         rdf_dict = self.spec.rdf_dict
-
-        _namespace = namespace_and_entity[0]
 
         if _namespace not in rdf_dict:
             return Literal(entity)
 
-        return rdf_dict[_namespace][namespace_and_entity[-1]]
+        return rdf_dict[_namespace][_entity]
 
 
 class SpecClass(SpecBase):
