@@ -205,10 +205,8 @@ class SpecBase:
                 # report the error
                 self.logger.error(f"{self.name}: Metadata key '{_key}' already exists")
 
-            if _values == ["none"]:  # for some classes subClass is set to none, skip these
-                continue
-
-            self.metadata[_key] = _values
+            if _values != ["none"]:  # for some classes subClass is set to none
+                self.metadata[_key] = _values
 
         # add all default metadata fields
         union_dict(self.metadata, metadata_defaults)
