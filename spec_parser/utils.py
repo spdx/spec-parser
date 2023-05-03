@@ -335,8 +335,21 @@ class SpecClass(SpecBase):
         self._extract_properties(props)
         self.format_pattern = format_pattern
         self.ext_props = ext_props
+        if ext_props:
+            self.logger.warning("External property restrictions aren't yet handled properly, they are added to the "
+                                "description of the class.")
+            for ext_prop in self.ext_props:
+                for value in ext_prop["values"]:
+                    self.description += f"\nExternal property restriction on {ext_prop['name']}: {value['name']}: " \
+                                        f"{' '.join(value['values'])}"
+
+        if format_pattern:
+            self.logger.warning("Format restrictions aren't yet handled properly, they are added to the "
+                                "description of the class.")
+            self.description += f"\nFormat pattern: {self.format_pattern['pattern']}"
 
     # TODO: handle ext_props in some way -- for now, silently ignored
+    # TODO: handle format_pattern in some way -- for now, silently ignored
 
     def _gen_md(self, args: dict) -> None:
 
