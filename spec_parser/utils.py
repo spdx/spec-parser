@@ -260,26 +260,25 @@ class SpecBase:
             self.entries[_key] = _value
 
     def _gen_uri(self, entity):
-
-        splitted = re.split(r":", entity)
-
-        if len(splitted) > 2:
-            return Literal(entity)
-
         if getattr(self, "spec", None) is None:
             return Literal(entity)
 
-        rdf_dict = self.spec.rdf_dict
-
-        if len(splitted) == 1:
-            _namespace = self.namespace_name
+        if ":" in entity:
+            [_namespace, _entity] = re.split(r":", entity)
         else:
-            _namespace = splitted[0]
+            namespace_and_entity = entity.lstrip('/').rsplit('/', 1)
+            if len(namespace_and_entity) == 1:
+                _entity = namespace_and_entity[0]
+                _namespace = self.namespace_name
+            else:
+                [_namespace, _entity] = namespace_and_entity
+
+        rdf_dict = self.spec.rdf_dict
 
         if _namespace not in rdf_dict:
             return Literal(entity)
 
-        return rdf_dict[_namespace][splitted[-1]]
+        return rdf_dict[_namespace][_entity]
 
 
 class SpecClass(SpecBase):
