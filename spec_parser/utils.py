@@ -51,7 +51,7 @@ class Spec:
         self.args.setdefault("out_dir", "md_generated")
 
     def add_namespace(
-        self, name: str, classes: List, properties: List, vocabs: List
+            self, name: str, classes: List, properties: List, vocabs: List
     ) -> None:
         """Add namespace information into Specfication.
 
@@ -165,13 +165,13 @@ class Spec:
 
 class SpecBase:
     def __init__(
-        self,
-        spec: Spec,
-        namespace_name: str,
-        name: str,
-        summary: str,
-        description: str,
-        license_name: str
+            self,
+            spec: Spec,
+            namespace_name: str,
+            name: str,
+            summary: str,
+            description: str,
+            license_name: str
     ):
 
         self.logger: logging.Logger = None
@@ -295,20 +295,23 @@ class SpecClass(SpecBase):
         description (str): description of this entity
         metadata (dict): metadata of this entity
         props (dict): properties of this entity
+        format_pattern (dict): format specification of this entity
+        ext_props (dict): restrictions on external properties for this entity
+        license_name (str): license provided through SPDX-License-Identifier
     """
 
     def __init__(
-        self,
-        spec: Spec,
-        namespace_name: str,
-        name: str,
-        summary: str,
-        description: str,
-        metadata: dict,
-        props: dict,
-        ext_props: dict,
-        license_name: str
-    ):
+            self,
+            spec: Spec,
+            namespace_name: str,
+            name: str,
+            summary: str,
+            description: str,
+            metadata: dict,
+            props: dict,
+            format_pattern: dict,
+            ext_props: dict,
+            license_name: str):
 
         super().__init__(
             spec,
@@ -318,11 +321,40 @@ class SpecClass(SpecBase):
             description,
             license_name
         )
+        self.format_pattern = dict()
 
         self.logger = logging.getLogger(self.__class__.__name__)
         self._extract_metadata(metadata)
         self._extract_properties(props)
-# TODO: handle ext_props in some way -- for now, silently ignored
+        self._extract_format(format_pattern)
+        self.ext_props = ext_props
+        if ext_props:
+            self.logger.warning("External property restrictions aren't yet handled properly, they are added to the "
+                                "description of the class.")
+            for ext_prop in self.ext_props:
+                for value in ext_prop["values"]:
+                    self.description += f"\nExternal property restriction on {ext_prop['name']}: {value['name']}: " \
+                                        f"{' '.join(value['values'])}"
+
+        if self.format_pattern:
+            self.logger.warning("Format restrictions aren't yet handled properly, they are added to the "
+                                "description of the class.")
+            for name, value in self.format_pattern.items():
+                self.description += f"\nFormat restriction: {name}: {' '.join(value)}"
+
+    # TODO: handle ext_props in some way -- for now, silently ignored
+    # TODO: add format_pattern to generated rdf in some way
+
+    def _extract_format(self, format_list):
+        for _dict in format_list:
+            _key = _dict["name"]
+            _values = _dict["values"]
+
+            if _key in self.format_pattern:
+                # report the error
+                self.logger.error(f"{self.name}: Format key '{_key}' already exists")
+
+            self.format_pattern[_key] = _values
 
     def _gen_md(self, args: dict) -> None:
 
@@ -383,6 +415,10 @@ class SpecClass(SpecBase):
                     for _key, subprop in subprops.items():
                         f.write(f'  - {_key}: {" ".join(subprop)}\n')
                     f.write("\n")
+            if self.format_pattern:
+                f.write(f"## Format\n\n")
+                for name, vals in self.format_pattern.items():
+                    f.write(f'- {name}: {" ".join(vals)}\n')
 
             # license declaration
             f.write(f"\nSPDX-License-Identifier: {self.license_name}")
@@ -433,14 +469,14 @@ class SpecProperty(SpecBase):
     """
 
     def __init__(
-        self,
-        spec: Spec,
-        namespace_name: str,
-        name: str,
-        summary: str,
-        description: str,
-        metadata: dict,
-        license_name: str
+            self,
+            spec: Spec,
+            namespace_name: str,
+            name: str,
+            summary: str,
+            description: str,
+            metadata: dict,
+            license_name: str
     ):
 
         super().__init__(
@@ -544,15 +580,15 @@ class SpecVocab(SpecBase):
     """
 
     def __init__(
-        self,
-        spec: Spec,
-        namespace_name: str,
-        name: str,
-        summary: str,
-        description: str,
-        metadata: dict,
-        entries: dict,
-        license_name: str,
+            self,
+            spec: Spec,
+            namespace_name: str,
+            name: str,
+            summary: str,
+            description: str,
+            metadata: dict,
+            entries: dict,
+            license_name: str,
     ):
 
         super().__init__(

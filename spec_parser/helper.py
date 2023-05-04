@@ -2,8 +2,8 @@ import os
 import re
 import logging
 from os import path
-from typing import List
-from .config import id_metadata_prefix
+from typing import List, Tuple
+from .config import valid_metadata_key, valid_format_key
 
 
 def addErrorFilter(logger: logging.Logger) -> None:
@@ -89,3 +89,16 @@ def union_dict(d1: dict, d2: dict) -> dict:
     for k, v in d2.items():
         if not k in d1:
             d1[k] = v
+
+
+def reg_ex_for_section(title: str) -> str:
+    return r"((?<=\n)|^)\#{2}\s+" + title + r"(?:(?!\n)\s)*(\n+|$)"
+
+
+def determine_section_title(parsed_title: str) -> Tuple[List[str], str]:
+    if "Metadata" in parsed_title:
+        return valid_metadata_key, "metadata"
+    elif "Format" in parsed_title:
+        return valid_format_key, "format"
+    else:
+        logging.error("Parsed section is neither metadata nor format.")

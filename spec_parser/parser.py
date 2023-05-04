@@ -3,6 +3,8 @@ import re
 import sys
 import sly
 from sly import Parser, Lexer
+
+from spec_parser.helper import determine_section_title, reg_ex_for_section
 from .config import valid_dataprop_key, valid_metadata_key
 
 __all__ = ["MDLexer", "MDClass", "MDProperty", "MDVocab"]
@@ -54,6 +56,7 @@ class MDLexer(Lexer):
         SUMMARY,
         METADATA,
         PROPERTIES,
+        FORMAT,
         ENTRIES,
         LICENSE,
         H_TEXTLINE,
@@ -65,13 +68,14 @@ class MDLexer(Lexer):
 
     ignore_comment = r"(?:(?!\n)\s)*<!?--(?:(?!-->)(.|\n|\s))*-->(?:(?!\n)\s)*\n*"
 
-    SUMMARY = r"((?<=\n)|^)\#{2}\s+Summary(?:(?!\n)\s)*(\n+|$)"
-    DESCRIPTION = r"((?<=\n)|^)\#{2}\s+Description(?:(?!\n)\s)*(\n+|$)"
-    METADATA = r"((?<=\n)|^)\#{2}\s+Metadata(?:(?!\n)\s)*(\n+|$)"
-    PROPERTIES = r"((?<=\n)|^)\#{2}\s+Properties(?:(?!\n)\s)*(\n+|$)"
-    ENTRIES = r"((?<=\n)|^)\#{2}\s+Entries(?:(?!\n)\s)*(\n+|$)"
+    SUMMARY = reg_ex_for_section("Summary")
+    DESCRIPTION = reg_ex_for_section("Description")
+    METADATA = reg_ex_for_section("Metadata")
+    PROPERTIES = reg_ex_for_section("Properties")
+    FORMAT = reg_ex_for_section("Format")
+    ENTRIES = reg_ex_for_section("Entries")
     LICENSE = r"((?<=\n)|^)\s*SPDX-License-Identifier\s*:[^\n]+(?:(?!\n)\s)*(\n+|$)"
-    EXT_PROPERTIES = r"((?<=\n)|^)\#{2}\s+External properties restrictions(?:(?!\n)\s)*(\n+|$)"
+    EXT_PROPERTIES = reg_ex_for_section("External properties restrictions")
 
     H6 = r"((?<=\n)|^)\s*\#{6}"
     H5 = r"((?<=\n)|^)\s*\#{5}"
@@ -105,11 +109,13 @@ class MDClass(Parser):
     tokens = MDLexer.tokens
     lexer = None
 
-    @_("maybe_newlines license_name name maybe_summary maybe_description maybe_metadata maybe_properties maybe_ext_properties")
+    @_("maybe_newlines license_name name maybe_summary maybe_description maybe_metadata maybe_properties maybe_format "
+       "maybe_ext_properties")
     def document(self, p):
         if getattr(self, "isError", False):
             return None
-        return (p.name, p.maybe_summary, p.maybe_description, p.maybe_metadata, p.maybe_properties, p.maybe_ext_properties, p.license_name)
+        return (p.name, p.maybe_summary, p.maybe_description, p.maybe_metadata, p.maybe_properties, p.maybe_format,
+                p.maybe_ext_properties, p.license_name)
 
     @_("empty", "LICENSE")
     def license_name(self, p):
@@ -122,7 +128,7 @@ class MDClass(Parser):
             # report the invalid syntax
             self.error(p._slice[0], "Syntax Error: Expected `SPDX-License-Identifier: <value>`")
             return None
-        
+
         license_name = splitted[-1].strip()
         return license_name
 
@@ -156,19 +162,19 @@ class MDClass(Parser):
             return []
         return p[0]
 
-    @_("METADATA metadata_list")
+    @_("METADATA list_of_attribute_value_pairs")
     def metadata(self, p):
-        return p.metadata_list
+        return p.list_of_attribute_value_pairs
 
-    @_("metadata_list metadata_line", "empty")
-    def metadata_list(self, p):
+    @_("list_of_attribute_value_pairs attribute_value_line", "empty")
+    def list_of_attribute_value_pairs(self, p):
         if len(p) == 2:
-            return p.metadata_list + [p.metadata_line]
+            return p.list_of_attribute_value_pairs + [p.attribute_value_line]
         return []
 
     @_("ULISTA")
-    def metadata_line(self, p):
-
+    def attribute_value_line(self, p):
+        valid_keys, section_title = determine_section_title(p[-3])
         ulista = p.ULISTA
 
         # strip the md list identifier, ie r'[-*+]'
@@ -185,11 +191,11 @@ class MDClass(Parser):
         _key = ulista[0].strip()
         _values = re.split(r"\s", ulista[-1].strip())
 
-        if _key not in valid_metadata_key:
-            self.error(p._slice[0], f"Error: Invalid metadata key `{_key}`.")
+        if _key not in valid_keys:
+            self.error(p._slice[0], f"Error: Invalid {section_title} key `{_key}`.")
 
         if any(map(lambda x: x.get("name", "") == _key, p[-2])):
-            self.error(p._slice[0], f"Error: Metadata key `{_key}` already exists.")
+            self.error(p._slice[0], f"Error: {section_title} key `{_key}` already exists.")
 
         return {"name": _key, "values": _values}
 
@@ -268,6 +274,16 @@ class MDClass(Parser):
     def ext_properties(self, p):
         return p.properties_list
 
+    @_("empty", "format")
+    def maybe_format(self, p):
+        if p[0] is None:
+            return []
+        return p[0]
+
+    @_("FORMAT list_of_attribute_value_pairs")
+    def format(self, p):
+        return p.list_of_attribute_value_pairs
+
     @_("para para_line", "empty")
     def para(self, p):
         if len(p) == 1:
@@ -323,7 +339,7 @@ class MDProperty(Parser):
             # report the invalid syntax
             self.error(p._slice[0], "Syntax Error: Expected `SPDX-License-Identifier: <value>`")
             return None
-        
+
         license_name = splitted[-1].strip()
         return license_name
 
@@ -449,7 +465,7 @@ class MDVocab(MDProperty):
             # report the invalid syntax
             self.error(p._slice[0], "Syntax Error: Expected `SPDX-License-Identifier: <value>`")
             return None
-        
+
         license_name = splitted[-1].strip()
         return license_name
 
@@ -462,7 +478,7 @@ class MDVocab(MDProperty):
         if p[0] is None:
             return ""
         return p[0]
-    
+
     @_("SUMMARY para")
     def summary(self, p):
         return p.para.strip()
