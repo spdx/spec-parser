@@ -34,3 +34,4 @@ If the Data-property attribute key doesn't match the following list, error is re
 - `type`
 - `minCount`
 - `maxCount`
+- `value`
