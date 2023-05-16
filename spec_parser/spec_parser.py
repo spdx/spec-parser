@@ -259,9 +259,9 @@ class SpecParser:
         return inp
 
 
-def assign_domain_to_property(specProperty: SpecProperty, classes: List[SpecClass]):
+def assign_domain_to_property(spec_property: SpecProperty, classes: List[SpecClass]):
     for spec_class in classes:
-        for _property in spec_class.properties:
-            if _property == specProperty.name:
-                specProperty.metadata.setdefault("Domain", []).append(spec_class.name)
+        _property = spec_class.properties.get(spec_property.name)
+        if _property:
+            spec_property.metadata.setdefault("Domain", []).append(spec_class.name)
 
