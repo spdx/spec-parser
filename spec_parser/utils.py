@@ -1,6 +1,7 @@
 import json
 import logging
 import re
+from copy import copy
 from os import path
 from typing import List
 
@@ -12,7 +13,6 @@ from rdflib.namespace import RDF, OWL, RDFS, XSD
 NS0 = rdflib.Namespace("http://www.w3.org/2003/06/sw-vocab-status/ns#")
 
 from .helper import (
-    isError,
     safe_open,
     union_dict,
 )
@@ -182,6 +182,122 @@ class Spec:
     def gen_json_dump(self) -> None:
         with safe_open(path.join(self.args["out_dir"], f"model_dump.json"), "w") as f:
             f.write(json.dumps(self.namespaces, default=spec_to_json_encoder))
+
+    def gen_schema(self) -> None:
+        schema = {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "https://spdx.org/spdx3/json_schema_id",  # TODO: insert correct resource URI
+            "title": "SPDX 3 Model schema",
+            "description": "The SPDX 3 model",
+            "type": "array",
+            "items": {},
+            "definitions": {}
+        }
+
+        class_dict = {}
+        vocab_dict = {}
+
+        for namespace in self.namespaces.values():
+            for class_name, class_data in namespace["classes"].items():
+                individual_class_dict = {
+                    "Instantiability": class_data.metadata["Instantiability"],
+                    "SubclassOf": class_data.metadata["SubclassOf"].split("/")[-1] if "SubclassOf" in class_data.metadata.keys() else None,
+                    "properties": {},
+                }
+                for prop_name, prop_data in class_data.properties.items():
+                    individual_class_dict["properties"][prop_name] = {
+                        "minCount": prop_data["minCount"],
+                        "maxCount": prop_data["maxCount"],
+                        "type": prop_data["type"]
+                    }
+                class_dict[class_name] = individual_class_dict
+
+            for vocab_name, vocab_data in namespace["vocabs"].items():
+                entries = []
+                for entry in vocab_data.entries.keys():
+                    entries.append(entry)
+                vocab_dict[vocab_name] = entries
+
+        for class_name, class_data in class_dict.items():
+            if class_data["Instantiability"] == "Abstract":
+                continue
+
+            class_data["allProperties"] = self._get_all_properties_from_super_classes(class_name, class_dict)
+            schema["definitions"][class_name] = {
+                "type": "object",
+                "required": [],
+                "properties": {"type": {"type": "string"},
+                               "spdxId": {"type": "string"}},
+                "additionalProperties": False
+            }
+            # TODO: add descriptions to classes and properties; this means including all properties in definitions and referencing them with $ref
+            for property_name, property_data in class_data["allProperties"].items():
+                property_type = property_data["type"].split("/")[-1]
+                if property_type in vocab_dict.keys():
+                    property_dict = {
+                        "type": "string",
+                        "enum": vocab_dict[property_type]
+                    }
+                elif property_type in class_dict.keys():
+                    subclasses = self._get_all_subclasses_of(property_type, class_dict)
+                    if len(subclasses) == 1:
+                        property_dict = {
+                            "$ref": subclasses[0]
+                        }
+                    else:
+                        property_dict = {
+                            "anyOf": [{"$ref": subclass} for subclass in subclasses]
+                        }
+                else:
+                    property_type = self._spdx_type_to_json_type(property_type)
+                    property_dict = {"type": property_type}
+
+                schema["definitions"][class_name]["properties"][property_name] = property_dict
+
+                if int(property_data["minCount"]) > 0:
+                    schema["definitions"][class_name]["required"].append(property_name)
+
+        schema["items"] = {
+            "anyOf": [{"$ref": subclass} for subclass in self._get_all_subclasses_of("Element", class_dict)]
+        }
+
+        fname = path.join(self.args["out_dir"], f"schema.json")
+        with safe_open(fname, "w") as f:
+            json.dump(schema, f)
+
+    def _get_all_properties_from_super_classes(self, class_name, class_dict):
+        property_dict = copy(class_dict[class_name]["properties"])
+        superclass = class_dict[class_name]["SubclassOf"]
+        if superclass is None:
+            return property_dict
+        superclass = superclass.split("/")[-1]
+        if superclass in ["Payload", "xsd:string", "none"]:
+            return property_dict
+
+        property_dict.update(self._get_all_properties_from_super_classes(superclass, class_dict))
+
+        return property_dict
+
+    def _get_all_subclasses_of(self, superclass_name, class_dict):
+        list_of_subclasses = []
+        if class_dict[superclass_name]["Instantiability"] == "Concrete":
+            list_of_subclasses.append(f"#/definitions/{superclass_name}")
+
+        for class_name, class_data in class_dict.items():
+            if class_data["SubclassOf"] == superclass_name:
+                list_of_subclasses.extend(self._get_all_subclasses_of(class_name, class_dict))
+        return list_of_subclasses
+
+
+    def _spdx_type_to_json_type(self, type_name: str) -> str:
+        if type_name in ["xsd:string", "xsd:anyURI"]:
+            return "string"
+        if type_name in ["xsd:nonNegativeInteger", "xsd:positiveInteger", "xsd:decimal"]:
+            return "number"
+        if type_name in ["xsd:boolean"]:
+            return "boolean"
+
+        print("No conversion to json type implemented for " + type_name)  # TODO: raise an error here with exit code 1
 
 
 class SpecBase:
