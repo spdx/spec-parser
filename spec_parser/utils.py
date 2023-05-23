@@ -658,5 +658,7 @@ class SpecVocab(SpecBase):
 
         # add entries
         for _entry, _desc in self.entries.items():
-            g.add((self._gen_uri(_entry), RDF.type, OWL.NamedIndividual))
-            g.add((self._gen_uri(_entry), RDF.type, cur))
+            uri = cur + "/" + _entry
+            print("Vocab entry", _entry, uri)
+            g.add((uri, RDF.type, OWL.NamedIndividual))
+            g.add((uri, RDF.type, cur))
