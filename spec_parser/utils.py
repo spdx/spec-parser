@@ -149,14 +149,14 @@ class Spec:
             properties = _namespace["properties"]
             vocabs = _namespace["vocabs"]
 
+            for vocab_obj in vocabs.values():
+                vocab_obj._gen_rdf(g)
+
             for class_obj in classes.values():
                 class_obj._gen_rdf(g)
 
             for prop_obj in properties.values():
                 prop_obj._gen_rdf(g)
-
-            for vocab_obj in vocabs.values():
-                vocab_obj._gen_rdf(g)
 
         fname = path.join(self.args["out_dir"], f"model.ttl")
         with safe_open(fname, "w") as f:
@@ -435,6 +435,9 @@ class SpecClass(SpecBase):
         g.add((cur, RDFS.comment, Literal(self.description)))
         g.add((cur, NS0.term_status, Literal(self.metadata.get("Status")[0])))
 
+        existing_types = g.subjects(RDF.type, OWL.Class)
+        vocab_types = [t for t in existing_types if (t, RDF.type, SH.NodeShape) not in g]
+
         for prop_name, prop_value in self.properties.items():
             property_uri = self._gen_uri(prop_name)
             property_type_uri = self._gen_uri(prop_value["type"][0])
@@ -443,7 +446,10 @@ class SpecClass(SpecBase):
 
             restriction_node = BNode()
             g.add((restriction_node, SH.path, property_uri))
-            g.add((restriction_node, SH.datatype, property_type_uri))
+            if property_type_uri in vocab_types:
+                g.add((restriction_node, URIRef("http://www.w3.org/ns/shacl#class"), property_type_uri))
+            else:
+                g.add((restriction_node, SH.datatype, property_type_uri))
             g.add((restriction_node, SH.name, Literal(prop_name)))
             if min_count != "0":
                 g.add((restriction_node, SH.minCount, Literal(int(min_count))))
