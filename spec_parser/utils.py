@@ -131,7 +131,7 @@ class Spec:
         for _namespace in self.namespaces.values():
             classes = _namespace["classes"]
             vocabs = _namespace["vocabs"]
-            class_types += [URIRef(c.metadata["id"][0]) for c in classes.values()]
+            class_types += [URIRef(c.metadata["id"][0]) for c in classes.values() if not c.is_literal()]
             class_types += [URIRef(v.metadata["id"][0]) for v in vocabs.values()]
 
         return class_types
@@ -468,6 +468,9 @@ class SpecClass(SpecBase):
                 g.add((restriction_node, SH.maxCount, Literal(int(max_count))))
 
             g.add((cur, SH.property, restriction_node))
+
+    def is_literal(self) -> bool:
+        return len(self.properties) == 0 and "xsd:string" in self.metadata.get("SubclassOf", [])
 
 
 class SpecProperty(SpecBase):
