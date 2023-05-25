@@ -126,6 +126,16 @@ class Spec:
             for vocab_obj in vocabs.values():
                 vocab_obj._gen_md(self.args)
 
+    def _get_defined_class_types(self) -> List[URIRef]:
+        class_types = []
+        for _namespace in self.namespaces.values():
+            classes = _namespace["classes"]
+            vocabs = _namespace["vocabs"]
+            class_types += [URIRef(c.metadata["id"][0]) for c in classes.values()]
+            class_types += [URIRef(v.metadata["id"][0]) for v in vocabs.values()]
+
+        return class_types
+
     def gen_rdf(self) -> None:
         """Generate RDF in turtle format."""
 
@@ -142,6 +152,8 @@ class Spec:
             self.rdf_dict[_name] = rdflib.Namespace(f"{id_metadata_prefix}{_name}/")
             g.bind(_name.lower(), self.rdf_dict[_name])
 
+        class_types = self._get_defined_class_types()
+
         # add triples starting from each namespaces
         for _namespace in self.namespaces.values():
 
@@ -149,14 +161,14 @@ class Spec:
             properties = _namespace["properties"]
             vocabs = _namespace["vocabs"]
 
-            for vocab_obj in vocabs.values():
-                vocab_obj._gen_rdf(g)
-
             for class_obj in classes.values():
-                class_obj._gen_rdf(g)
+                class_obj._gen_rdf(g, class_types)
 
             for prop_obj in properties.values():
                 prop_obj._gen_rdf(g)
+
+            for vocab_obj in vocabs.values():
+                vocab_obj._gen_rdf(g)
 
         fname = path.join(self.args["out_dir"], f"model.ttl")
         with safe_open(fname, "w") as f:
@@ -422,7 +434,7 @@ class SpecClass(SpecBase):
             # license declaration
             f.write(f"\nSPDX-License-Identifier: {self.license_name}")
 
-    def _gen_rdf(self, g: rdflib.Graph) -> None:
+    def _gen_rdf(self, g: rdflib.Graph, class_types: List[URIRef]) -> None:
 
         cur = URIRef(self.metadata["id"][0])
 
@@ -435,8 +447,7 @@ class SpecClass(SpecBase):
         g.add((cur, RDFS.comment, Literal(self.description)))
         g.add((cur, NS0.term_status, Literal(self.metadata.get("Status")[0])))
 
-        existing_types = g.subjects(RDF.type, OWL.Class)
-        vocab_types = [t for t in existing_types if (t, RDF.type, SH.NodeShape) not in g]
+        sh_class = URIRef("http://www.w3.org/ns/shacl#class")
 
         for prop_name, prop_value in self.properties.items():
             property_uri = self._gen_uri(prop_name)
@@ -446,8 +457,8 @@ class SpecClass(SpecBase):
 
             restriction_node = BNode()
             g.add((restriction_node, SH.path, property_uri))
-            if property_type_uri in vocab_types:
-                g.add((restriction_node, URIRef("http://www.w3.org/ns/shacl#class"), property_type_uri))
+            if property_type_uri in class_types:
+                g.add((restriction_node, sh_class, property_type_uri))
             else:
                 g.add((restriction_node, SH.datatype, property_type_uri))
             g.add((restriction_node, SH.name, Literal(prop_name)))
