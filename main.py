@@ -1,12 +1,11 @@
-import os
 import logging
-import sys
+import os
 from argparse import ArgumentParser
+
 from spec_parser import SpecParser, isError
 
 
 def get_args():
-
     argparser = ArgumentParser(
         prog="spec-parser", description="SPDX specification parser"
     )
@@ -17,6 +16,12 @@ def get_args():
 
     argparser.add_argument(
         "--gen-refs", action="store_true", help="Generate References list for Property"
+    )
+
+    argparser.add_argument(
+        "--json-dump",
+        action="store_true",
+        help="Dump the JSON representation of the markdown files.",
     )
 
     argparser.add_argument(
@@ -58,6 +63,8 @@ if __name__ == "__main__":
     if isError():
         logging.error(f"Spec not parsed successfully.")
         exit(1)
+    if args.json_dump:
+        spec.gen_json_dump()
     if args.gen_md:
         spec.gen_md()
     if args.gen_rdf:
