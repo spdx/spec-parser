@@ -450,6 +450,9 @@ class SpecClass(SpecBase):
         sh_class = URIRef("http://www.w3.org/ns/shacl#class")
 
         for prop_name, prop_value in self.properties.items():
+            if prop_name == "spdxId":
+                # the @id field in RDF already fulfils the function of this field
+                continue
             property_uri = self._gen_uri(prop_name)
             property_type_uri = self._gen_uri(prop_value["type"][0])
             min_count: str = prop_value["minCount"][0]
@@ -679,6 +682,5 @@ class SpecVocab(SpecBase):
         # add entries
         for _entry, _desc in self.entries.items():
             uri = cur + "/" + _entry
-            print("Vocab entry", _entry, uri)
             g.add((uri, RDF.type, OWL.NamedIndividual))
             g.add((uri, RDF.type, cur))
