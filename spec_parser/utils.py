@@ -165,6 +165,9 @@ class Spec:
                 class_obj._gen_rdf(g, class_types)
 
             for prop_obj in properties.values():
+                if prop_obj.name == "spdxId":
+                    # the @id field in RDF already fulfils the function of this field
+                    continue
                 prop_obj._gen_rdf(g)
 
             for vocab_obj in vocabs.values():
