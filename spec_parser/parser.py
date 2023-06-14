@@ -322,11 +322,11 @@ class MDProperty(Parser):
     tokens = MDLexer.tokens
     lexer = None
 
-    @_("maybe_newlines license_name name maybe_summary maybe_description maybe_metadata")
+    @_("maybe_newlines license_name name maybe_summary maybe_description maybe_metadata maybe_format")
     def document(self, p):
         if getattr(self, "isError", False):
             return None
-        return (p.name, p.maybe_summary, p.maybe_description, p.maybe_metadata, p.license_name)
+        return (p.name, p.maybe_summary, p.maybe_description, p.maybe_metadata, p.maybe_format, p.license_name)
 
     @_("empty", "LICENSE")
     def license_name(self, p):
@@ -407,6 +407,49 @@ class MDProperty(Parser):
 
         if any(map(lambda x: x.get("name", "") == _key, p[-2])):
             self.error(p._slice[0], f"Error: Metadata key `{_key}` already exists.")
+
+        return {"name": _key, "values": _values}
+
+    @_("empty", "format")
+    def maybe_format(self, p):
+        if p[0] is None:
+            return []
+        return p[0]
+
+    @_("FORMAT list_of_attribute_value_pairs")
+    def format(self, p):
+        return p.list_of_attribute_value_pairs
+
+    @_("list_of_attribute_value_pairs attribute_value_line", "empty")
+    def list_of_attribute_value_pairs(self, p):
+        if len(p) == 2:
+            return p.list_of_attribute_value_pairs + [p.attribute_value_line]
+        return []
+
+    @_("ULISTA")
+    def attribute_value_line(self, p):
+        valid_keys, section_title = determine_section_title(p[-3])
+        ulista = p.ULISTA
+
+        # strip the md list identifier, ie r'[-*+]'
+        ulista = re.split(r"[-*+]", ulista, 1)[-1].strip()
+
+        # strip the key and value in metadata entry, ie. <key>: <value>
+        ulista = re.split(r"\s*:\s", ulista, 1)
+
+        if len(ulista) != 2:
+            # report the invalid syntax
+            self.error(p._slice[0], "Syntax Error: Expected `<key>: <values>`")
+            return None
+
+        _key = ulista[0].strip()
+        _values = re.split(r"\s", ulista[-1].strip())
+
+        if _key not in valid_keys:
+            self.error(p._slice[0], f"Error: Invalid {section_title} key `{_key}`.")
+
+        if any(map(lambda x: x.get("name", "") == _key, p[-2])):
+            self.error(p._slice[0], f"Error: {section_title} key `{_key}` already exists.")
 
         return {"name": _key, "values": _values}
 

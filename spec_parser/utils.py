@@ -342,7 +342,6 @@ class SpecClass(SpecBase):
                 self.description += f"\nFormat restriction: {name}: {' '.join(value)}"
 
     # TODO: handle ext_props in some way -- for now, silently ignored
-    # TODO: add format_pattern to generated rdf in some way
 
     def _extract_format(self, format_list):
         for _dict in format_list:
@@ -441,6 +440,9 @@ class SpecClass(SpecBase):
             min_count: str = prop_value["minCount"][0]
             max_count: str = prop_value["maxCount"][0]
 
+            property_namespace = property_uri.split("/")[-2]
+            pattern = self.spec.namespaces[property_namespace]["properties"][prop_name].format_pattern.get("pattern", None)
+
             restriction_node = BNode()
             g.add((restriction_node, SH.path, property_uri))
             g.add((restriction_node, SH.datatype, property_type_uri))
@@ -449,7 +451,8 @@ class SpecClass(SpecBase):
                 g.add((restriction_node, SH.minCount, Literal(int(min_count))))
             if max_count != "*":
                 g.add((restriction_node, SH.maxCount, Literal(int(max_count))))
-
+            if pattern:
+                g.add((restriction_node, SH.pattern, Literal(pattern[0])))
             g.add((cur, SH.property, restriction_node))
 
 
@@ -475,6 +478,7 @@ class SpecProperty(SpecBase):
             summary: str,
             description: str,
             metadata: dict,
+            format_pattern: dict,
             license_name: str
     ):
 
@@ -486,9 +490,22 @@ class SpecProperty(SpecBase):
             description,
             license_name
         )
+        self.format_pattern = dict()
 
         self.logger = logging.getLogger(self.__class__.__name__)
         self._extract_metadata(metadata)
+        self._extract_format(format_pattern)
+
+    def _extract_format(self, format_list):
+        for _dict in format_list:
+            _key = _dict["name"]
+            _values = _dict["values"]
+
+            if _key in self.format_pattern:
+                # report the error
+                self.logger.error(f"{self.name}: Format key '{_key}' already exists")
+
+            self.format_pattern[_key] = _values
 
     def _gen_md(self, args: dict) -> None:
 
