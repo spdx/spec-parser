@@ -36,7 +36,7 @@ optional arguments:
   -h, --help         show this help message and exit
   --gen-md           Dumps markdown
   --gen-refs         Generate References list for Property
-  --gen-rdf          Experimental! Generate RDF in turtle format
+  --gen-rdf          Experimental! Generate RDF in turtle and json-ld format, along with the json-ld context
   --use-table        Use markdown-table to display properties in `Class` entity
   --out-dir OUT_DIR  Output Directory for generating markdown
 ```

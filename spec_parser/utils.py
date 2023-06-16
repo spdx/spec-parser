@@ -9,6 +9,8 @@ from rdflib import URIRef, Literal, BNode, SH
 from rdflib.extras.infixowl import EnumeratedClass
 from rdflib.namespace import RDF, OWL, RDFS, XSD
 
+from .owl_to_context import convert_spdx_owl_to_jsonld_context
+
 NS0 = rdflib.Namespace("http://www.w3.org/2003/06/sw-vocab-status/ns#")
 
 from .helper import (
@@ -175,9 +177,15 @@ class Spec:
             for vocab_obj in vocabs.values():
                 vocab_obj._gen_rdf(g)
 
-        fname = path.join(self.args["out_dir"], f"model.ttl")
-        with safe_open(fname, "w") as f:
+        ttl_file_name = path.join(self.args["out_dir"], f"model.ttl")
+        with safe_open(ttl_file_name, "w") as f:
             f.write(g.serialize(format="turtle"))
+
+        jsonld_file_name = path.join(self.args["out_dir"], "model.jsonld")
+        with safe_open(jsonld_file_name, "w") as f:
+            f.write(g.serialize(format="json-ld", auto_compact=True))
+
+        convert_spdx_owl_to_jsonld_context(jsonld_file_name, self.args["out_dir"])
 
     def gen_json_dump(self) -> None:
         with safe_open(path.join(self.args["out_dir"], f"model_dump.json"), "w") as f:
