@@ -126,6 +126,16 @@ class Spec:
             for vocab_obj in vocabs.values():
                 vocab_obj._gen_md(self.args)
 
+    def _get_defined_class_types(self) -> List[URIRef]:
+        class_types = []
+        for _namespace in self.namespaces.values():
+            classes = _namespace["classes"]
+            vocabs = _namespace["vocabs"]
+            class_types += [URIRef(c.metadata["id"][0]) for c in classes.values() if not c.is_literal()]
+            class_types += [URIRef(v.metadata["id"][0]) for v in vocabs.values()]
+
+        return class_types
+
     def gen_rdf(self) -> None:
         """Generate RDF in turtle format."""
 
@@ -142,6 +152,8 @@ class Spec:
             self.rdf_dict[_name] = rdflib.Namespace(f"{id_metadata_prefix}{_name}/")
             g.bind(_name.lower(), self.rdf_dict[_name])
 
+        class_types = self._get_defined_class_types()
+
         # add triples starting from each namespaces
         for _namespace in self.namespaces.values():
 
@@ -150,9 +162,12 @@ class Spec:
             vocabs = _namespace["vocabs"]
 
             for class_obj in classes.values():
-                class_obj._gen_rdf(g)
+                class_obj._gen_rdf(g, class_types)
 
             for prop_obj in properties.values():
+                if prop_obj.name == "spdxId":
+                    # the @id field in RDF already fulfils the function of this field
+                    continue
                 prop_obj._gen_rdf(g)
 
             for vocab_obj in vocabs.values():
@@ -422,7 +437,7 @@ class SpecClass(SpecBase):
             # license declaration
             f.write(f"\nSPDX-License-Identifier: {self.license_name}")
 
-    def _gen_rdf(self, g: rdflib.Graph) -> None:
+    def _gen_rdf(self, g: rdflib.Graph, class_types: List[URIRef]) -> None:
 
         cur = URIRef(self.metadata["id"][0])
 
@@ -435,7 +450,12 @@ class SpecClass(SpecBase):
         g.add((cur, RDFS.comment, Literal(self.description)))
         g.add((cur, NS0.term_status, Literal(self.metadata.get("Status")[0])))
 
+        sh_class = URIRef("http://www.w3.org/ns/shacl#class")
+
         for prop_name, prop_value in self.properties.items():
+            if prop_name == "spdxId":
+                # the @id field in RDF already fulfils the function of this field
+                continue
             property_uri = self._gen_uri(prop_name)
             property_type_uri = self._gen_uri(prop_value["type"][0])
             min_count: str = prop_value["minCount"][0]
@@ -443,7 +463,10 @@ class SpecClass(SpecBase):
 
             restriction_node = BNode()
             g.add((restriction_node, SH.path, property_uri))
-            g.add((restriction_node, SH.datatype, property_type_uri))
+            if property_type_uri in class_types:
+                g.add((restriction_node, sh_class, property_type_uri))
+            else:
+                g.add((restriction_node, SH.datatype, property_type_uri))
             g.add((restriction_node, SH.name, Literal(prop_name)))
             if min_count != "0":
                 g.add((restriction_node, SH.minCount, Literal(int(min_count))))
@@ -451,6 +474,9 @@ class SpecClass(SpecBase):
                 g.add((restriction_node, SH.maxCount, Literal(int(max_count))))
 
             g.add((cur, SH.property, restriction_node))
+
+    def is_literal(self) -> bool:
+        return len(self.properties) == 0 and "xsd:string" in self.metadata.get("SubclassOf", [])
 
 
 class SpecProperty(SpecBase):
@@ -658,5 +684,6 @@ class SpecVocab(SpecBase):
 
         # add entries
         for _entry, _desc in self.entries.items():
-            g.add((self._gen_uri(_entry), RDF.type, OWL.NamedIndividual))
-            g.add((self._gen_uri(_entry), RDF.type, cur))
+            uri = cur + "/" + _entry
+            g.add((uri, RDF.type, OWL.NamedIndividual))
+            g.add((uri, RDF.type, cur))
