@@ -582,8 +582,17 @@ class SpecProperty(SpecBase):
         for _val in self.metadata.get("Range", []):
             g.add((cur, RDFS.range, self._gen_uri(_val)))
 
-        for _val in self.metadata.get("Domain", []):
-            g.add((cur, RDFS.domain, self._gen_uri(_val)))
+        if len(self.metadata.get("Domain", [])) > 1:
+            orNode = BNode()
+            g.add((cur, SH["or"], orNode))
+            first_node = BNode()
+            g.add((orNode, RDF.first, first_node))
+            g.add((orNode, RDF.rest, RDF.nil))
+            for _val in self.metadata.get("Domain", []):
+                g.add((first_node, RDFS.domain, self._gen_uri(_val)))
+        else:
+            for _val in self.metadata.get("Domain", []):
+                g.add((cur, RDFS.domain, self._gen_uri(_val)))
 
         g.add((cur, RDFS.comment, Literal(self.description)))
         g.add((cur, NS0.term_status, Literal(self.metadata.get("Status")[0])))

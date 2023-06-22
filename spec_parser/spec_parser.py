@@ -2,7 +2,7 @@ import os
 import re
 import os.path as path
 from .parser import MDClass, MDLexer, MDProperty, MDVocab
-from typing import Optional, Union
+from typing import Optional, List
 from .helper import safe_listdir
 import logging
 from .utils import Spec, SpecClass, SpecProperty, SpecVocab
@@ -95,6 +95,9 @@ class SpecParser:
 
                 if specProperty is None:
                     continue
+
+                # add domain to property according to the definitions in class objects
+                assign_domain_to_property(specProperty, classes)
 
                 properties.append(specProperty)
 
@@ -254,3 +257,11 @@ class SpecParser:
             inp = f.read()
 
         return inp
+
+
+def assign_domain_to_property(spec_property: SpecProperty, classes: List[SpecClass]):
+    for spec_class in classes:
+        _property = spec_class.properties.get(spec_property.name)
+        if _property:
+            spec_property.metadata.setdefault("Domain", []).append(spec_class.name)
+
