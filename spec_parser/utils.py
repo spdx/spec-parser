@@ -131,8 +131,8 @@ class Spec:
         for _namespace in self.namespaces.values():
             classes = _namespace["classes"]
             vocabs = _namespace["vocabs"]
-            class_types += [URIRef(c.metadata["id"][0]) for c in classes.values() if not c.is_literal()]
-            class_types += [URIRef(v.metadata["id"][0]) for v in vocabs.values()]
+            class_types += [URIRef(c.metadata["id"]) for c in classes.values() if not c.is_literal()]
+            class_types += [URIRef(v.metadata["id"]) for v in vocabs.values()]
 
         return class_types
 
@@ -218,7 +218,7 @@ class SpecBase:
         union_dict(self.metadata, metadata_defaults)
 
         # add id metadata
-        self.metadata["id"] = [f"{id_metadata_prefix}{self.namespace_name}/{self.name}"]
+        self.metadata["id"] = f"{id_metadata_prefix}{self.namespace_name}/{self.name}"
 
     def _extract_properties(self, props_list):
 
@@ -354,7 +354,7 @@ class SpecClass(SpecBase):
             self.logger.warning("Format restrictions aren't yet handled properly, they are added to the "
                                 "description of the class.")
             for name, value in self.format_pattern.items():
-                self.description += f"\nFormat restriction: {name}: {' '.join(value)}"
+                self.description += f"\nFormat restriction: {name}: {value}"
 
     # TODO: handle ext_props in some way -- for now, silently ignored
     # TODO: add format_pattern to generated rdf in some way
@@ -439,16 +439,17 @@ class SpecClass(SpecBase):
 
     def _gen_rdf(self, g: rdflib.Graph, class_types: List[URIRef]) -> None:
 
-        cur = URIRef(self.metadata["id"][0])
+        cur = URIRef(self.metadata["id"])
 
         g.add((cur, RDF.type, OWL["Class"]))
         g.add((cur, RDF.type, SH.NodeShape))
 
-        for subclass in self.metadata.get("SubclassOf", []):
-            g.add((cur, RDFS.subClassOf, self._gen_uri(subclass)))
+        subclass_of = self.metadata.get("SubclassOf", None)
+        if subclass_of:
+            g.add((cur, RDFS.subClassOf, self._gen_uri(subclass_of)))
 
         g.add((cur, RDFS.comment, Literal(self.description)))
-        g.add((cur, NS0.term_status, Literal(self.metadata.get("Status")[0])))
+        g.add((cur, NS0.term_status, Literal(self.metadata.get("Status"))))
 
         sh_class = URIRef("http://www.w3.org/ns/shacl#class")
 
@@ -457,9 +458,9 @@ class SpecClass(SpecBase):
                 # the @id field in RDF already fulfils the function of this field
                 continue
             property_uri = self._gen_uri(prop_name)
-            property_type_uri = self._gen_uri(prop_value["type"][0])
-            min_count: str = prop_value["minCount"][0]
-            max_count: str = prop_value["maxCount"][0]
+            property_type_uri = self._gen_uri(prop_value["type"])
+            min_count: str = prop_value["minCount"]
+            max_count: str = prop_value["maxCount"]
 
             restriction_node = BNode()
             g.add((restriction_node, SH.path, property_uri))
@@ -565,37 +566,36 @@ class SpecProperty(SpecBase):
     def _gen_rdf(self, g: rdflib.Graph) -> None:
 
         # self.spec.rdf_dict
-        cur = URIRef(self.metadata["id"][0])
+        cur = URIRef(self.metadata["id"])
 
         # nature of property
-        for _nature in self.metadata.get("Nature", []):
-            if _nature == "ObjectProperty":
-                _mask = OWL["ObjectProperty"]
-            elif _nature == "DataProperty":
-                _mask = OWL["DatatypeProperty"]
-            else:
-                self.logger.error(f"Invalid Nature attribute in metadata `{_nature}`")
-                continue
+        _nature = self.metadata.get("Nature", None)
+        if _nature == "ObjectProperty":
+            g.add((cur, RDF.type, OWL["ObjectProperty"]))
+        elif _nature == "DataProperty":
+            g.add((cur, RDF.type, OWL["DatatypeProperty"]))
+        else:
+            self.logger.error(f"Invalid Nature attribute in metadata `{_nature}`")
 
-            g.add((cur, RDF.type, _mask))
+        _range = self.metadata.get("Range", None)
+        if _range:
+            g.add((cur, RDFS.range, self._gen_uri(_range)))
 
-        for _val in self.metadata.get("Range", []):
-            g.add((cur, RDFS.range, self._gen_uri(_val)))
-
-        if len(self.metadata.get("Domain", [])) > 1:
+        _domain = self.metadata.get("Domain", [])
+        if len(_domain) > 1:
             orNode = BNode()
             g.add((cur, SH["or"], orNode))
             first_node = BNode()
             g.add((orNode, RDF.first, first_node))
             g.add((orNode, RDF.rest, RDF.nil))
-            for _val in self.metadata.get("Domain", []):
+            for _val in _domain:
                 g.add((first_node, RDFS.domain, self._gen_uri(_val)))
         else:
-            for _val in self.metadata.get("Domain", []):
+            for _val in _domain:
                 g.add((cur, RDFS.domain, self._gen_uri(_val)))
 
         g.add((cur, RDFS.comment, Literal(self.description)))
-        g.add((cur, NS0.term_status, Literal(self.metadata.get("Status")[0])))
+        g.add((cur, NS0.term_status, Literal(self.metadata.get("Status"))))
 
 
 class SpecVocab(SpecBase):
@@ -685,11 +685,11 @@ class SpecVocab(SpecBase):
 
     def _gen_rdf(self, g: rdflib.Graph):
 
-        cur = URIRef(self.metadata["id"][0])
+        cur = URIRef(self.metadata["id"])
         g.add((cur, RDF.type, OWL["Class"]))
 
         g.add((cur, RDFS.comment, Literal(self.description)))
-        g.add((cur, NS0.term_status, Literal(self.metadata.get("Status")[0])))
+        g.add((cur, NS0.term_status, Literal(self.metadata.get("Status"))))
 
         # add entries
         for _entry, _desc in self.entries.items():
