@@ -404,7 +404,10 @@ class SpecClass(SpecBase):
             # write the metadata
             f.write(f"## Metadata\n\n")
             for name, vals in self.metadata.items():
-                f.write(f'- {name}: {" ".join(vals)}\n')
+                if isinstance(vals, list):
+                    f.write(f'- {name}: {" ".join(vals)}\n')
+                else:
+                    f.write(f'- {name}: {vals}\n')
             f.write("\n")
 
             # write the data_props
@@ -427,12 +430,18 @@ class SpecClass(SpecBase):
                 for name, subprops in self.properties.items():
                     f.write(f"- {name}\n")
                     for _key, subprop in subprops.items():
-                        f.write(f'  - {_key}: {" ".join(subprop)}\n')
+                        if isinstance(subprop, list):
+                            f.write(f'  - {_key}: {" ".join(subprop)}\n')
+                        else:
+                            f.write(f'  - {_key}: {subprop}\n')
                     f.write("\n")
             if self.format_pattern:
                 f.write(f"## Format\n\n")
                 for name, vals in self.format_pattern.items():
-                    f.write(f'- {name}: {" ".join(vals)}\n')
+                    if isinstance(vals, list):
+                        f.write(f'- {name}: {" ".join(vals)}\n')
+                    else:
+                        f.write(f'- {name}: {vals}\n')
 
             # license declaration
             f.write(f"\nSPDX-License-Identifier: {self.license_name}")
@@ -550,8 +559,11 @@ class SpecProperty(SpecBase):
 
             # write the metadata
             f.write(f"## Metadata\n\n")
-            for name, val in self.metadata.items():
-                f.write(f'- {name}: {" ".join(val)}\n')
+            for name, vals in self.metadata.items():
+                if isinstance(vals, list):
+                    f.write(f'- {name}: {" ".join(vals)}\n')
+                else:
+                    f.write(f'- {name}: {vals}\n')
             f.write(f"\n")
 
             if args.get("gen_refs", False):
@@ -671,8 +683,11 @@ class SpecVocab(SpecBase):
 
             # write the metadata
             f.write(f"## Metadata\n\n")
-            for name, val in self.metadata.items():
-                f.write(f'- {name}: {" ".join(val)}\n')
+            for name, vals in self.metadata.items():
+                if isinstance(vals, list):
+                    f.write(f'- {name}: {" ".join(vals)}\n')
+                else:
+                    f.write(f'- {name}: {vals}\n')
             f.write("\n")
 
             # write the entries
