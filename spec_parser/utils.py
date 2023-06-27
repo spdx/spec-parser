@@ -1,3 +1,4 @@
+import json
 import logging
 import re
 from os import path
@@ -176,6 +177,10 @@ class Spec:
         fname = path.join(self.args["out_dir"], f"model.ttl")
         with safe_open(fname, "w") as f:
             f.write(g.serialize(format="turtle"))
+
+    def gen_json_dump(self) -> None:
+        with safe_open(path.join(self.args["out_dir"], f"model_dump.json"), "w") as f:
+            f.write(json.dumps(self.namespaces, default=spec_to_json_encoder))
 
 
 class SpecBase:
@@ -711,3 +716,21 @@ class SpecVocab(SpecBase):
             uri = cur + "/" + _entry
             g.add((uri, RDF.type, OWL.NamedIndividual))
             g.add((uri, RDF.type, cur))
+
+
+def spec_to_json_encoder(spec_obj):
+    if isinstance(spec_obj, SpecClass):
+        return {"summary": spec_obj.summary,
+                "description": spec_obj.description,
+                "metadata": spec_obj.metadata,
+                "properties": spec_obj.properties}
+    if isinstance(spec_obj, SpecProperty):
+        return {"summary": spec_obj.summary,
+                "description": spec_obj.description,
+                "metadata": spec_obj.metadata}
+    if isinstance(spec_obj, SpecVocab):
+        return {"summary": spec_obj.summary,
+                "description": spec_obj.description,
+                "metadata": spec_obj.metadata,
+                "entries": spec_obj.entries}
+    return spec_obj
