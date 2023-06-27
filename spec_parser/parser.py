@@ -189,7 +189,7 @@ class MDClass(Parser):
             return None
 
         _key = ulista[0].strip()
-        _values = re.split(r"\s", ulista[-1].strip())
+        _value = ulista[-1].strip()
 
         if _key not in valid_keys:
             self.error(p._slice[0], f"Error: Invalid {section_title} key `{_key}`.")
@@ -197,7 +197,7 @@ class MDClass(Parser):
         if any(map(lambda x: x.get("name", "") == _key, p[-2])):
             self.error(p._slice[0], f"Error: {section_title} key `{_key}` already exists.")
 
-        return {"name": _key, "values": _values}
+        return {"name": _key, "values": _value}
 
     @_("empty", "properties")
     def maybe_properties(self, p):
@@ -251,8 +251,7 @@ class MDClass(Parser):
             return None
 
         _key = ulistb[0].strip()
-        # split values by whitespaces
-        _values = re.split(r"\s", ulistb[-1].strip())
+        _value = ulistb[-1].strip()
 
         if _key not in valid_dataprop_key:
             self.error(
@@ -262,7 +261,7 @@ class MDClass(Parser):
         if any(map(lambda x: x.get("name", "") == _key, p[-2])):
             self.error(p._slice[0], f"Error: Attribute key '{_key}' already exists")
 
-        return {"name": _key, "values": _values}
+        return {"name": _key, "values": _value}
 
     @_("empty", "ext_properties")
     def maybe_ext_properties(self, p):
@@ -400,7 +399,7 @@ class MDProperty(Parser):
             return None
 
         _key = ulista[0].strip()
-        _values = re.split(r"\s", ulista[-1].strip())
+        _value = ulista[-1].strip()
 
         if _key not in valid_metadata_key:
             self.error(p._slice[0], f"Error: Invalid metadata key `{_key}`.")
@@ -408,7 +407,7 @@ class MDProperty(Parser):
         if any(map(lambda x: x.get("name", "") == _key, p[-2])):
             self.error(p._slice[0], f"Error: Metadata key `{_key}` already exists.")
 
-        return {"name": _key, "values": _values}
+        return {"name": _key, "values": _value}
 
     @_("para para_line", "empty")
     def para(self, p):
@@ -526,7 +525,7 @@ class MDVocab(MDProperty):
             return None
 
         _key = ulista[0].strip()
-        _values = re.split(r"\s", ulista[-1].strip())
+        _value = ulista[-1].strip()
 
         if _key not in valid_metadata_key:
             self.error(p._slice[0], f"Error: Invalid metadata key `{_key}`.")
@@ -534,7 +533,7 @@ class MDVocab(MDProperty):
         if any(map(lambda x: x.get("name", "") == _key, p[-2])):
             self.error(p._slice[0], f"Error: Metadata key `{_key}` already exists.")
 
-        return {"name": _key, "values": _values}
+        return {"name": _key, "values": _value}
 
     @_("empty", "entries")
     def maybe_entries(self, p):
