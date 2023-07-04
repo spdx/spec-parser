@@ -4,16 +4,6 @@
 import json
 from os import path
 
-# properties with Enum range should look like this (probably), so that their values are automatically appended
-# with the Enum URI:
-# "annotationType": {
-#     "@id": "core:annotationType",
-#     "@type": "@vocab",
-#     "@context": {
-#         "@vocab": "core:AnnotationType/"
-#     }
-# },
-
 PROPERTIES_WITH_ENUM_RANGE = [
     "safetyRiskAssessment",
     "sensitivePersonalInformation",
@@ -41,6 +31,18 @@ REFERENCE_PROPERTY_TYPES = [
     "core:Agent",
 ]
 
+LOCAL_PROFILE_CONTEXT = {
+    "core": "https://spdx.org/rdf/Core/ProfileIdentifierType/core",
+    "software": "https://spdx.org/rdf/Core/ProfileIdentifierType/software",
+    "licensing": "https://spdx.org/rdf/Core/ProfileIdentifierType/licensing",
+    "security": "https://spdx.org/rdf/Core/ProfileIdentifierType/security",
+    "build": "https://spdx.org/rdf/Core/ProfileIdentifierType/build",
+    "ai": "https://spdx.org/rdf/Core/ProfileIdentifierType/ai",
+    "dataset": "https://spdx.org/rdf/Core/ProfileIdentifierType/dataset",
+    "usage": "https://spdx.org/rdf/Core/ProfileIdentifierType/usage",
+    "extension": "https://spdx.org/rdf/Core/ProfileIdentifierType/extension",
+}
+
 
 def convert_spdx_owl_to_jsonld_context(spdx_owl: str, out_dir: str):
     # spdx_owl must point to the OWL in json-ld format
@@ -50,16 +52,17 @@ def convert_spdx_owl_to_jsonld_context(spdx_owl: str, out_dir: str):
     context_dict = owl_dict["@context"]
 
     for node in owl_dict["@graph"]:
-        # print(node)
         node_type = node.get("@type")
         if not node_type:
-            # print(node)
             continue
 
         if "owl:NamedIndividual" in node_type:
             continue
-        elif node_type in ["owl:DatatypeProperty", "owl:ObjectProperty"]:
-            name = node["@id"].split(":")[-1]
+
+        node_id = node["@id"]
+        name = get_name_from_node_id(node_id)
+
+        if node_type in ["owl:DatatypeProperty", "owl:ObjectProperty"]:
             type_id = node["rdfs:range"]["@id"]
 
             if name in context_dict and context_dict[name]["@id"].startswith("core"):
@@ -70,43 +73,33 @@ def convert_spdx_owl_to_jsonld_context(spdx_owl: str, out_dir: str):
                 if name == "profile":
                     # FIXME: since the allowed values for the profile enum collide with
                     # our namespaces, we need to explicitly remap their meaning in the context
-                    context_dict[name] = {
-                        "@id": node["@id"],
-                        "@type": "@vocab",
-                        "@context": {
-                            "core": "https://spdx.org/rdf/Core/ProfileIdentifierType/core",
-                            "software": "https://spdx.org/rdf/Core/ProfileIdentifierType/software",
-                            "licensing": "https://spdx.org/rdf/Core/ProfileIdentifierType/licensing",
-                            "security": "https://spdx.org/rdf/Core/ProfileIdentifierType/security",
-                            "build": "https://spdx.org/rdf/Core/ProfileIdentifierType/build",
-                            "ai": "https://spdx.org/rdf/Core/ProfileIdentifierType/ai",
-                            "dataset": "https://spdx.org/rdf/Core/ProfileIdentifierType/dataset",
-                            "usage": "https://spdx.org/rdf/Core/ProfileIdentifierType/usage",
-                            "extension": "https://spdx.org/rdf/Core/ProfileIdentifierType/extension",
-                        },
-                    }
+                    local_context = LOCAL_PROFILE_CONTEXT
                 else:
-                    context_dict[name] = {
-                        "@id": node["@id"],
-                        "@type": "@vocab",
-                        "@context": {"@vocab": type_id + "/"},
-                    }
+                    local_context = {"@vocab": type_id + "/"}
+
+                node_context = {
+                    "@id": node_id,
+                    "@type": "@vocab",
+                    "@context": local_context,
+                }
             elif node_type == "owl:ObjectProperty" and type_id in REFERENCE_PROPERTY_TYPES:
-                context_dict[name] = {"@id": node["@id"], "@type": "@id"}
+                node_context = {"@id": node_id, "@type": "@id"}
             else:
-                context_dict[name] = {"@id": node["@id"], "@type": type_id}
+                node_context = {"@id": node_id, "@type": type_id}
 
-        elif node_type == "owl:Class":
-            name = node["@id"].split(":")[-1]
-            context_dict[name] = node["@id"]
-
-        elif isinstance(node_type, list):
-            name = node["@id"].split(":")[-1]
-            context_dict[name] = node["@id"]
+        elif node_type == "owl:Class" or isinstance(node_type, list):
+            node_context = node_id
 
         else:
             print(f"unknown node_type: {node_type}")
+            continue
+
+        context_dict[name] = node_context
 
     fname = path.join(out_dir, "context.json")
     with open(fname, "w") as f:
         json.dump(context_dict, f)
+
+
+def get_name_from_node_id(node_id) -> str:
+    return node_id.split(":")[-1]
