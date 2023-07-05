@@ -1,4 +1,4 @@
-id_metadata_prefix = 'https://spdx.org/rdf/'
+id_metadata_prefix = 'https://spdx.org/rdf/v3/'
 
 valid_metadata_key = ['name', 'SubclassOf',
                       'Nature', 'Range', 'Instantiability', 'Status']
