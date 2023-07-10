@@ -26,12 +26,17 @@ PROPERTIES_WITH_ENUM_RANGE = [
     "purpose",
 ]
 
+# We decided to not support inlining/embedding of Elements in JSON-LD.
+# Instead, the spdxId has to used to reference Element objects.
+# Properties with the following types therefore have to get "@type: @id" instead.
 REFERENCE_PROPERTY_TYPES = [
     "core:Element",
     "core:Agent",
 ]
 
-LOCAL_PROFILE_CONTEXT = {
+# Since the allowed values for the profile enum collide with
+# the profile namespaces, we need to explicitly remap their meaning in the context.
+PROFILE_LOCAL_CONTEXT = {
     "core": "https://spdx.org/rdf/Core/ProfileIdentifierType/core",
     "software": "https://spdx.org/rdf/Core/ProfileIdentifierType/software",
     "licensing": "https://spdx.org/rdf/Core/ProfileIdentifierType/licensing",
@@ -71,9 +76,7 @@ def convert_spdx_owl_to_jsonld_context(spdx_owl: str, out_dir: str):
 
             if name in PROPERTIES_WITH_ENUM_RANGE:
                 if name == "profile":
-                    # FIXME: since the allowed values for the profile enum collide with
-                    # our namespaces, we need to explicitly remap their meaning in the context
-                    local_context = LOCAL_PROFILE_CONTEXT
+                    local_context = PROFILE_LOCAL_CONTEXT
                 else:
                     local_context = {"@vocab": type_id + "/"}
 
