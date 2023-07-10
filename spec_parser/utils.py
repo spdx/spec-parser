@@ -6,6 +6,7 @@ from typing import List
 
 import rdflib
 from rdflib import URIRef, Literal, BNode, SH
+from rdflib.extras.infixowl import EnumeratedClass
 from rdflib.namespace import RDF, OWL, RDFS, XSD
 
 NS0 = rdflib.Namespace("http://www.w3.org/2003/06/sw-vocab-status/ns#")
@@ -706,16 +707,19 @@ class SpecVocab(SpecBase):
     def _gen_rdf(self, g: rdflib.Graph):
 
         cur = URIRef(self.metadata["id"])
-        g.add((cur, RDF.type, OWL["Class"]))
 
         g.add((cur, RDFS.comment, Literal(self.description)))
         g.add((cur, NS0.term_status, Literal(self.metadata.get("Status"))))
 
         # add entries
+        entries = set()
         for _entry, _desc in self.entries.items():
             uri = cur + "/" + _entry
+            entries.add(uri)
             g.add((uri, RDF.type, OWL.NamedIndividual))
             g.add((uri, RDF.type, cur))
+
+        EnumeratedClass(cur, entries, g)
 
 
 def spec_to_json_encoder(spec_obj):
