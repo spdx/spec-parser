@@ -4,28 +4,6 @@
 import json
 from os import path
 
-PROPERTIES_WITH_ENUM_RANGE = [
-    "safetyRiskAssessment",
-    "sensitivePersonalInformation",
-    "annotationType",
-    "externalIdentifierType",
-    "externalReferenceType",
-    "algorithm",
-    "scope",
-    "profile",
-    "completeness",
-    "relationshipType",
-    "confidentialityLevel",
-    "datasetAvailability",
-    "decisionType",
-    "justificationType",
-    "catalogType",
-    "conditionality",
-    "sbomType",
-    "softwareLinkage",
-    "purpose",
-]
-
 # We decided to not support inlining/embedding of Elements in JSON-LD.
 # Instead, the spdxId has to used to reference Element objects.
 # Properties with the following types therefore have to get "@type: @id" instead.
@@ -74,7 +52,9 @@ def convert_spdx_owl_to_jsonld_context(spdx_owl: str, out_dir: str):
                 # if in doubt, prioritize core properties
                 continue
 
-            if name in PROPERTIES_WITH_ENUM_RANGE:
+            # first check if the property range is an Enum (by checking for the "owl:oneOf" key)
+            range_node_from_owl = get_range_node_from_owl(node, owl_dict)
+            if range_node_from_owl and "owl:oneOf" in range_node_from_owl:
                 if name == "profile":
                     local_context = PROFILE_LOCAL_CONTEXT
                 else:
@@ -109,3 +89,11 @@ def convert_spdx_owl_to_jsonld_context(spdx_owl: str, out_dir: str):
 
 def get_name_from_node_id(node_id) -> str:
     return node_id.split(":")[-1]
+
+
+def get_range_node_from_owl(node, owl_dict):
+    range_node_id = node["rdfs:range"]["@id"]
+    for owl_node in owl_dict["@graph"]:
+        if owl_node["@id"] == range_node_id:
+            return owl_node
+
