@@ -10,6 +10,7 @@ from os import path
 REFERENCE_PROPERTY_TYPES = [
     "core:Element",
     "core:Agent",
+    "core:CreationInfo"
 ]
 
 # Since the allowed values for the profile enum collide with
