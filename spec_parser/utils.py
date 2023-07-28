@@ -457,8 +457,6 @@ class SpecClass(SpecBase):
                     else:
                         f.write(f'- {name}: {vals}\n')
 
-            # license declaration
-            f.write(f"\nSPDX-License-Identifier: {self.license_name}")
 
     def _gen_rdf(self, g: rdflib.Graph, class_types: List[URIRef]) -> None:
 
@@ -586,8 +584,6 @@ class SpecProperty(SpecBase):
                 for name in self.spec.dataprop_refs.get(self.name, []):
                     f.write(f"- {name}\n")
 
-            # license declaration
-            f.write(f"\nSPDX-License-Identifier: {self.license_name}")
 
     def _gen_rdf(self, g: rdflib.Graph) -> None:
 
@@ -709,8 +705,6 @@ class SpecVocab(SpecBase):
             for name, val in self.entries.items():
                 f.write(f"- {name}: {val}\n")
 
-            # license declaration
-            f.write(f"\nSPDX-License-Identifier: {self.license_name}")
 
     def _gen_rdf(self, g: rdflib.Graph):
 
