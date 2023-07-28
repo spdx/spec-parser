@@ -177,7 +177,7 @@ class Spec:
             for vocab_obj in vocabs.values():
                 vocab_obj._gen_rdf(g)
 
-        ttl_file_name = path.join(self.args["out_dir"], f"model.ttl")
+        ttl_file_name = path.join(self.args["out_dir"], "model.ttl")
         with safe_open(ttl_file_name, "w") as f:
             f.write(g.serialize(format="turtle"))
 
@@ -188,7 +188,7 @@ class Spec:
         convert_spdx_owl_to_jsonld_context(jsonld_file_name, self.args["out_dir"])
 
     def gen_json_dump(self) -> None:
-        with safe_open(path.join(self.args["out_dir"], f"model_dump.json"), "w") as f:
+        with safe_open(path.join(self.args["out_dir"], "model_dump.json"), "w") as f:
             f.write(json.dumps(self.namespaces, default=spec_to_json_encoder))
 
 
@@ -406,17 +406,17 @@ class SpecClass(SpecBase):
             f.write(f"# {self.name}\n\n")
 
             # write the summary
-            f.write(f"## Summary\n\n")
+            f.write("## Summary\n\n")
             f.write(f"{self.summary}\n")
-            f.write(f"\n")
+            f.write("\n")
 
             # write the description
-            f.write(f"## Description\n\n")
+            f.write("## Description\n\n")
             f.write(f"{self.description}\n")
-            f.write(f"\n")
+            f.write("\n")
 
             # write the metadata
-            f.write(f"## Metadata\n\n")
+            f.write("## Metadata\n\n")
             for name, vals in self.metadata.items():
                 if isinstance(vals, list):
                     f.write(f'- {name}: {" ".join(vals)}\n')
@@ -425,7 +425,7 @@ class SpecClass(SpecBase):
             f.write("\n")
 
             # write the data_props
-            f.write(f"## Properties\n\n")
+            f.write("## Properties\n\n")
             if args.get("use_table", False):
                 # generate markdown-table from properties
                 header_list = ["type", "minCount", "maxCount"]
@@ -450,7 +450,7 @@ class SpecClass(SpecBase):
                             f.write(f'  - {_key}: {subprop}\n')
                     f.write("\n")
             if self.format_pattern:
-                f.write(f"## Format\n\n")
+                f.write("## Format\n\n")
                 for name, vals in self.format_pattern.items():
                     if isinstance(vals, list):
                         f.write(f'- {name}: {" ".join(vals)}\n')
@@ -562,27 +562,27 @@ class SpecProperty(SpecBase):
             f.write(f"# {self.name}\n\n")
 
             # write the summary
-            f.write(f"## Summary\n\n")
+            f.write("## Summary\n\n")
             f.write(f"{self.summary}\n")
-            f.write(f"\n")
+            f.write("\n")
 
             # write the description
-            f.write(f"## Description\n\n")
+            f.write("## Description\n\n")
             f.write(f"{self.description}\n")
-            f.write(f"\n")
+            f.write("\n")
 
             # write the metadata
-            f.write(f"## Metadata\n\n")
+            f.write("## Metadata\n\n")
             for name, vals in self.metadata.items():
                 if isinstance(vals, list):
                     f.write(f'- {name}: {" ".join(vals)}\n')
                 else:
                     f.write(f'- {name}: {vals}\n')
-            f.write(f"\n")
+            f.write("\n")
 
             if args.get("gen_refs", False):
                 # Class references
-                f.write(f"## References\n\n")
+                f.write("## References\n\n")
                 for name in self.spec.dataprop_refs.get(self.name, []):
                     f.write(f"- {name}\n")
 
@@ -686,17 +686,17 @@ class SpecVocab(SpecBase):
             f.write(f"# {self.name}\n\n")
 
             # write the summary
-            f.write(f"## Summary\n\n")
+            f.write("## Summary\n\n")
             f.write(f"{self.summary}\n")
-            f.write(f"\n")
+            f.write("\n")
 
             # write the description
-            f.write(f"## Description\n\n")
+            f.write("## Description\n\n")
             f.write(f"{self.description}\n")
-            f.write(f"\n")
+            f.write("\n")
 
             # write the metadata
-            f.write(f"## Metadata\n\n")
+            f.write("## Metadata\n\n")
             for name, vals in self.metadata.items():
                 if isinstance(vals, list):
                     f.write(f'- {name}: {" ".join(vals)}\n')
@@ -705,7 +705,7 @@ class SpecVocab(SpecBase):
             f.write("\n")
 
             # write the entries
-            f.write(f"## Entries\n\n")
+            f.write("## Entries\n\n")
             for name, val in self.entries.items():
                 f.write(f"- {name}: {val}\n")
 
