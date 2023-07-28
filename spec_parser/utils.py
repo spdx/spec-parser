@@ -441,9 +441,9 @@ class SpecClass(SpecBase):
                     f.write("|\n")
             else:
                 # generate markdown-list from properties
-                for name, subprops in self.properties.items():
+                for name, subprops in sorted(self.properties.items()):
                     f.write(f"- {name}\n")
-                    for _key, subprop in subprops.items():
+                    for _key, subprop in sorted(subprops.items()):
                         if isinstance(subprop, list):
                             f.write(f'  - {_key}: {" ".join(subprop)}\n')
                         else:
@@ -451,7 +451,7 @@ class SpecClass(SpecBase):
                     f.write("\n")
             if self.format_pattern:
                 f.write("## Format\n\n")
-                for name, vals in self.format_pattern.items():
+                for name, vals in sorted(self.format_pattern.items()):
                     if isinstance(vals, list):
                         f.write(f'- {name}: {" ".join(vals)}\n')
                     else:
@@ -571,7 +571,7 @@ class SpecProperty(SpecBase):
 
             # write the metadata
             f.write("## Metadata\n\n")
-            for name, vals in self.metadata.items():
+            for name, vals in sorted(self.metadata.items()):
                 if isinstance(vals, list):
                     f.write(f'- {name}: {" ".join(vals)}\n')
                 else:
@@ -693,7 +693,7 @@ class SpecVocab(SpecBase):
 
             # write the metadata
             f.write("## Metadata\n\n")
-            for name, vals in self.metadata.items():
+            for name, vals in sorted(self.metadata.items()):
                 if isinstance(vals, list):
                     f.write(f'- {name}: {" ".join(vals)}\n')
                 else:
@@ -702,7 +702,7 @@ class SpecVocab(SpecBase):
 
             # write the entries
             f.write("## Entries\n\n")
-            for name, val in self.entries.items():
+            for name, val in sorted(self.entries.items()):
                 f.write(f"- {name}: {val}\n")
 
 
