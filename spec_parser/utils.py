@@ -419,7 +419,7 @@ class SpecClass(SpecBase):
 
             # write the metadata
             f.write("## Metadata\n\n")
-            for name, vals in self.metadata.items():
+            for name, vals in sorted(self.metadata.items()):
                 if isinstance(vals, list):
                     f.write(f'- {name}: {" ".join(vals)}\n')
                 else:
@@ -436,7 +436,7 @@ class SpecClass(SpecBase):
                 f.write("|" + "|".join(["property"] + header_list) + "|\n")
                 f.write("|" + "---|" * (len(header_list) + 1) + "\n")
 
-                for name, subprops in self.properties.items():
+                for name, subprops in sorted(self.properties.items()):
                     f.write(f"|{name}")
                     for subprop in header_list:
                         f.write(f'|{" ".join(subprops.get(subprop, ["NA"]))}')
@@ -583,7 +583,7 @@ class SpecProperty(SpecBase):
             if args.get("gen_refs", False):
                 # Class references
                 f.write("## References\n\n")
-                for name in self.spec.dataprop_refs.get(self.name, []):
+                for name in sorted(self.spec.dataprop_refs.get(self.name, [])):
                     f.write(f"- {name}\n")
 
 
