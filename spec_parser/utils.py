@@ -225,8 +225,10 @@ class SpecBase:
                 # report the error
                 self.logger.error(f"{self.name}: Metadata key '{_key}' already exists")
 
-            if _values != ["none"]:  # for some classes subClass is set to none
+            if _values != "none":  # "none" values are ignored
                 self.metadata[_key] = _values
+            elif _key == "SubclassOf": # ... except in denoting parent class
+                self.metadata[_key] = "owl:Thing"
 
         # add all default metadata fields
         union_dict(self.metadata, metadata_defaults)
@@ -417,7 +419,7 @@ class SpecClass(SpecBase):
 
             # write the metadata
             f.write("## Metadata\n\n")
-            for name, vals in self.metadata.items():
+            for name, vals in sorted(self.metadata.items()):
                 if isinstance(vals, list):
                     f.write(f'- {name}: {" ".join(vals)}\n')
                 else:
@@ -434,16 +436,16 @@ class SpecClass(SpecBase):
                 f.write("|" + "|".join(["property"] + header_list) + "|\n")
                 f.write("|" + "---|" * (len(header_list) + 1) + "\n")
 
-                for name, subprops in self.properties.items():
+                for name, subprops in sorted(self.properties.items()):
                     f.write(f"|{name}")
                     for subprop in header_list:
                         f.write(f'|{" ".join(subprops.get(subprop, ["NA"]))}')
                     f.write("|\n")
             else:
                 # generate markdown-list from properties
-                for name, subprops in self.properties.items():
+                for name, subprops in sorted(self.properties.items()):
                     f.write(f"- {name}\n")
-                    for _key, subprop in subprops.items():
+                    for _key, subprop in sorted(subprops.items()):
                         if isinstance(subprop, list):
                             f.write(f'  - {_key}: {" ".join(subprop)}\n')
                         else:
@@ -451,14 +453,12 @@ class SpecClass(SpecBase):
                     f.write("\n")
             if self.format_pattern:
                 f.write("## Format\n\n")
-                for name, vals in self.format_pattern.items():
+                for name, vals in sorted(self.format_pattern.items()):
                     if isinstance(vals, list):
                         f.write(f'- {name}: {" ".join(vals)}\n')
                     else:
                         f.write(f'- {name}: {vals}\n')
 
-            # license declaration
-            f.write(f"\nSPDX-License-Identifier: {self.license_name}")
 
     def _gen_rdf(self, g: rdflib.Graph, class_types: List[URIRef]) -> None:
 
@@ -573,7 +573,7 @@ class SpecProperty(SpecBase):
 
             # write the metadata
             f.write("## Metadata\n\n")
-            for name, vals in self.metadata.items():
+            for name, vals in sorted(self.metadata.items()):
                 if isinstance(vals, list):
                     f.write(f'- {name}: {" ".join(vals)}\n')
                 else:
@@ -583,11 +583,9 @@ class SpecProperty(SpecBase):
             if args.get("gen_refs", False):
                 # Class references
                 f.write("## References\n\n")
-                for name in self.spec.dataprop_refs.get(self.name, []):
+                for name in sorted(self.spec.dataprop_refs.get(self.name, [])):
                     f.write(f"- {name}\n")
 
-            # license declaration
-            f.write(f"\nSPDX-License-Identifier: {self.license_name}")
 
     def _gen_rdf(self, g: rdflib.Graph) -> None:
 
@@ -697,7 +695,7 @@ class SpecVocab(SpecBase):
 
             # write the metadata
             f.write("## Metadata\n\n")
-            for name, vals in self.metadata.items():
+            for name, vals in sorted(self.metadata.items()):
                 if isinstance(vals, list):
                     f.write(f'- {name}: {" ".join(vals)}\n')
                 else:
@@ -706,11 +704,9 @@ class SpecVocab(SpecBase):
 
             # write the entries
             f.write("## Entries\n\n")
-            for name, val in self.entries.items():
+            for name, val in sorted(self.entries.items()):
                 f.write(f"- {name}: {val}\n")
 
-            # license declaration
-            f.write(f"\nSPDX-License-Identifier: {self.license_name}")
 
     def _gen_rdf(self, g: rdflib.Graph):
 
