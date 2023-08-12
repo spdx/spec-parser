@@ -253,7 +253,7 @@ class SpecParser:
             self.logger(f"No such file exists: '{fname}'")
             return None
 
-        with open(fname, "r") as f:
+        with open(fname, "r", encoding="utf-8") as f:
             inp = f.read()
 
         return inp
