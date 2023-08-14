@@ -19,3 +19,7 @@ docs/_build
 *ehthumbs.db
 *Icon?
 *Thumbs.db
+
+# Virtual Env        #
+######################
+venv
