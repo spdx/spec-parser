@@ -4,6 +4,8 @@ import re
 from os import path
 from typing import List
 
+from jinja2 import Environment, PackageLoader, select_autoescape
+
 import rdflib
 from rdflib import URIRef, Literal, BNode, SH
 from rdflib.extras.infixowl import EnumeratedClass
@@ -115,6 +117,11 @@ class Spec:
         if path.isdir(self.args["out_dir"]):
             self.logger.warning(f"Overwriting out_dir `{self.args['out_dir']}`")
 
+        env = Environment(
+            loader=PackageLoader("spec_parser", package_path="templates/default"),
+            autoescape=False
+        )
+
         for namespace in self.namespaces.values():
 
             classes = namespace["classes"]
@@ -122,13 +129,13 @@ class Spec:
             vocabs = namespace["vocabs"]
 
             for class_obj in classes.values():
-                class_obj._gen_md(self.args)
+                class_obj._gen_md(env, self.args)
 
             for prop_obj in properties.values():
-                prop_obj._gen_md(self.args)
+                prop_obj._gen_md(env, self.args)
 
             for vocab_obj in vocabs.values():
-                vocab_obj._gen_md(self.args)
+                vocab_obj._gen_md(env, self.args)
 
     def _get_defined_class_types(self) -> List[URIRef]:
         class_types = []
@@ -386,78 +393,17 @@ class SpecClass(SpecBase):
 
             self.format_pattern[_key] = _values
 
-    def _gen_md(self, args: dict) -> None:
+    def _gen_md(self, env, args: dict) -> None:
 
         fname = path.join(
             args["out_dir"], self.namespace_name, "Classes", f"{self.name}.md"
         )
 
+        template = env.get_template("class.md.j2")
+        result = template.render({'__version__': __version__, 'args': args} | vars(self))
+
         with safe_open(fname, "w") as f:
-
-            # write the header
-            f.write(
-                f"<!-- Auto generated markdown by Spec-parser v{__version__} -->\n\n"
-            )
-
-            # write the license name
-            f.write(
-                f"<!-- SPDX-License-Identifier: {self.license_name} -->\n\n"
-            )
-
-            # write the topheadline
-            f.write(f"# {self.name}\n\n")
-
-            # write the summary
-            f.write("## Summary\n\n")
-            f.write(f"{self.summary}\n")
-            f.write("\n")
-
-            # write the description
-            f.write("## Description\n\n")
-            f.write(f"{self.description}\n")
-            f.write("\n")
-
-            # write the metadata
-            f.write("## Metadata\n\n")
-            for name, vals in sorted(self.metadata.items()):
-                if isinstance(vals, list):
-                    f.write(f'- {name}: {" ".join(vals)}\n')
-                else:
-                    f.write(f'- {name}: {vals}\n')
-            f.write("\n")
-
-            # write the data_props
-            f.write("## Properties\n\n")
-            if args.get("use_table", False):
-                # generate markdown-table from properties
-                header_list = ["type", "minCount", "maxCount"]
-
-                # print the header
-                f.write("|" + "|".join(["property"] + header_list) + "|\n")
-                f.write("|" + "---|" * (len(header_list) + 1) + "\n")
-
-                for name, subprops in sorted(self.properties.items()):
-                    f.write(f"|{name}")
-                    for subprop in header_list:
-                        f.write(f'|{" ".join(subprops.get(subprop, ["NA"]))}')
-                    f.write("|\n")
-            else:
-                # generate markdown-list from properties
-                for name, subprops in sorted(self.properties.items()):
-                    f.write(f"- {name}\n")
-                    for _key, subprop in sorted(subprops.items()):
-                        if isinstance(subprop, list):
-                            f.write(f'  - {_key}: {" ".join(subprop)}\n')
-                        else:
-                            f.write(f'  - {_key}: {subprop}\n')
-                    f.write("\n")
-            if self.format_pattern:
-                f.write("## Format\n\n")
-                for name, vals in sorted(self.format_pattern.items()):
-                    if isinstance(vals, list):
-                        f.write(f'- {name}: {" ".join(vals)}\n')
-                    else:
-                        f.write(f'- {name}: {vals}\n')
+            f.write(result)
 
 
     def _gen_rdf(self, g: rdflib.Graph, class_types: List[URIRef]) -> None:
@@ -540,51 +486,17 @@ class SpecProperty(SpecBase):
         self.logger = logging.getLogger(self.__class__.__name__)
         self._extract_metadata(metadata)
 
-    def _gen_md(self, args: dict) -> None:
+    def _gen_md(self, env, args: dict) -> None:
 
         fname = path.join(
             args["out_dir"], self.namespace_name, "Properties", f"{self.name}.md"
         )
 
+        template = env.get_template("property.md.j2")
+        result = template.render({'__version__': __version__, 'args': args} | vars(self))
+
         with safe_open(fname, "w") as f:
-
-            # write the header
-            f.write(
-                f"<!-- Auto generated markdown by Spec-parser v{__version__} -->\n\n"
-            )
-
-            # write the license name
-            f.write(
-                f"<!-- SPDX-License-Identifier: {self.license_name} -->\n\n"
-            )
-
-            # write the topheadline
-            f.write(f"# {self.name}\n\n")
-
-            # write the summary
-            f.write("## Summary\n\n")
-            f.write(f"{self.summary}\n")
-            f.write("\n")
-
-            # write the description
-            f.write("## Description\n\n")
-            f.write(f"{self.description}\n")
-            f.write("\n")
-
-            # write the metadata
-            f.write("## Metadata\n\n")
-            for name, vals in sorted(self.metadata.items()):
-                if isinstance(vals, list):
-                    f.write(f'- {name}: {" ".join(vals)}\n')
-                else:
-                    f.write(f'- {name}: {vals}\n')
-            f.write("\n")
-
-            if args.get("gen_refs", False):
-                # Class references
-                f.write("## References\n\n")
-                for name in sorted(self.spec.dataprop_refs.get(self.name, [])):
-                    f.write(f"- {name}\n")
+            f.write(result)
 
 
     def _gen_rdf(self, g: rdflib.Graph) -> None:
@@ -662,51 +574,17 @@ class SpecVocab(SpecBase):
         self._extract_metadata(metadata)
         self._extract_entries(entries)
 
-    def _gen_md(self, args: dict) -> None:
+    def _gen_md(self, env, args: dict) -> None:
 
         fname = path.join(
             args["out_dir"], self.namespace_name, "Vocabularies", f"{self.name}.md"
         )
 
+        template = env.get_template("vocab.md.j2")
+        result = template.render({'__version__': __version__, 'args': args} | vars(self))
+
         with safe_open(fname, "w") as f:
-
-            # write the header
-            f.write(
-                f"<!-- Auto generated markdown by Spec-parser v{__version__} -->\n\n"
-            )
-
-            # write the license name
-            f.write(
-                f"<!-- SPDX-License-Identifier: {self.license_name} -->\n\n"
-            )
-
-            # write the topheadline
-            f.write(f"# {self.name}\n\n")
-
-            # write the summary
-            f.write("## Summary\n\n")
-            f.write(f"{self.summary}\n")
-            f.write("\n")
-
-            # write the description
-            f.write("## Description\n\n")
-            f.write(f"{self.description}\n")
-            f.write("\n")
-
-            # write the metadata
-            f.write("## Metadata\n\n")
-            for name, vals in sorted(self.metadata.items()):
-                if isinstance(vals, list):
-                    f.write(f'- {name}: {" ".join(vals)}\n')
-                else:
-                    f.write(f'- {name}: {vals}\n')
-            f.write("\n")
-
-            # write the entries
-            f.write("## Entries\n\n")
-            for name, val in sorted(self.entries.items()):
-                f.write(f"- {name}: {val}\n")
-
+            f.write(result)
 
     def _gen_rdf(self, g: rdflib.Graph):
 

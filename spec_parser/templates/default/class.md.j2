@@ -1,0 +1,48 @@
+<!-- Auto generated markdown by Spec-parser {{__version__}} -->
+
+<!-- SPDX-License-Identifier: {{license_name}} -->
+
+# {{name}}
+
+## Summary
+{{summary}}
+
+## Description
+{{description}}
+
+## Metadata
+{% for name, vals in metadata | dictsort %}
+    - {{name}}: {{vals | list | join(" ")}}
+{% endfor %}
+
+## Properties
+{% if args.get("use_table", False) %}
+    header_list = ["type", "minCount", "maxCount"]
+
+    # print the header
+    f.write("|" + "|".join(["property"] + header_list) + "|\n")
+    f.write("|" + "---|" * (len(header_list) + 1) + "\n")
+
+    {% for name, subprops in properties | dictsort %}
+        |{{name}}
+        {% for subprop in header_list %}
+            |{{subprops.get(subprop, ["NA"]) | join(" ")}}
+        {% endfor %}
+        |
+    {% endfor %}
+{% else %}
+    {% for name, subprops in properties | dictsort %}
+        - {{name}}
+        {% for _key, subprop in subprops | dictsort %}
+            - {{_key}}: {{subprop | list | join(" ")}}
+        {% endfor %}
+    {% endfor %}
+{% endif %}
+
+{% if format_pattern %}
+    ## Format
+
+    {% for name, vals in format_pattern | dictsort %}
+        - {{name}}: {{vals | list | join(" ")}}
+    {% endfor %}
+{% endif %}

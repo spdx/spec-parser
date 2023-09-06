@@ -1,0 +1,21 @@
+<!-- Auto generated markdown by Spec-parser v{{__version__}} -->
+
+<!-- SPDX-License-Identifier: {{license_name}} -->
+
+# {{name}}
+
+## Summary
+{{summary}}
+
+## Description
+{{description}}
+
+## Metadata
+{% for name, vals in metadata | dictsort %}
+    - {{name}}: {{vals | list | join(" ")}}
+{% endfor %}
+
+## Entries
+{% for name, val in entries | dictsort %}
+    - {{name}}: {{val}}
+{% endfor %}
