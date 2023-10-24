@@ -1,27 +1,3 @@
-[project]
-name = "spec-parser"
-packages = [
-  { include = "spec_parser" },
-]
-version = "0.0.1"
-authors = [
-    { name="Alexios Zavras", email="github@zvr.gr" },
-    { name="Armin Tänzer", email="armin.taenzer@tngtech.com" },
-    { name="Gary O'Neall", email="gary@sourceauditor.com" },
-    { name="Meret Behrens", email="meret.behrens@tngtech.com" },
-    { name="Nirmal Suthar", email="nirmalps@iitk.ac.in" },
-    { name="Holger Frydrych", email="holger.frydrych@tngtech.com" },
-    { name="William Bartholomew", email="wdb@willbar.com" },
-]
-description = "Automagically process the specification"
-readme = "README.md"
-requires-python = ">=3.7"
-classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: Apache Software License",
-    "Operating System :: OS Independent",
-]
-
-[project.urls]
-"Homepage" = "https://github.com/spdx/spec-parser"
-"Bug Tracker" = "https://github.com/spdx/spec-parser/issues"
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools", "wheel"]
