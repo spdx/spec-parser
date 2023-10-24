@@ -1,5 +1,8 @@
 [project]
 name = "spec-parser"
+packages = [
+  { include = "spec_parser" },
+]
 version = "0.0.1"
 authors = [
     { name="Alexios Zavras", email="github@zvr.gr" },
