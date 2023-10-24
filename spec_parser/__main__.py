@@ -47,9 +47,7 @@ def get_args():
 
     return args
 
-
-if __name__ == "__main__":
-
+def main():
     args = get_args()
 
     if not os.path.isdir(args.spec_dir):
@@ -69,3 +67,6 @@ if __name__ == "__main__":
         spec.gen_md()
     if args.gen_rdf:
         spec.gen_rdf()
+
+if __name__ == "__main__":
+    main()
