@@ -85,7 +85,7 @@ def convert_spdx_owl_to_jsonld_context(spdx_owl: str, out_dir: str):
 
     fname = path.join(out_dir, "context.json")
     with open(fname, "w") as f:
-        json.dump(context_dict, f)
+        json.dump({ "@context": context_dict}, f)
 
 
 def get_name_from_node_id(node_id) -> str:
