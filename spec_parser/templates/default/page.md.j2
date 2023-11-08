@@ -1,0 +1,24 @@
+<!-- {{autogen_header}} -->
+<!-- SPDX-License-Identifier: {{license}} -->
+
+# {{name}}
+
+## Summary
+
+{{summary}}
+
+
+## Description
+
+{{description}}
+
+
+## Metadata
+
+{% for key, val in metadata | dictsort %}
+    - {{key}}: {{val}}
+{% endfor %}
+
+
+{% block extra %}
+{% endblock %}

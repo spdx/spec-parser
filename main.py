@@ -1,71 +1,16 @@
-import logging
-import os
-from argparse import ArgumentParser
+# main script called on the command-line
 
-from spec_parser import SpecParser, isError
+# SPDX-License-Identifier: Apache-2.0
 
-
-def get_args():
-    argparser = ArgumentParser(
-        prog="spec-parser", description="SPDX specification parser"
-    )
-
-    argparser.add_argument("spec_dir", type=str, help="Directory containing specs")
-
-    argparser.add_argument("--gen-md", action="store_true", help="Dumps markdown")
-
-    argparser.add_argument(
-        "--gen-refs", action="store_true", help="Generate References list for Property"
-    )
-
-    argparser.add_argument(
-        "--json-dump",
-        action="store_true",
-        help="Dump the JSON representation of the markdown files.",
-    )
-
-    argparser.add_argument(
-        "--gen-rdf",
-        action="store_true",
-        help="Experimental! Generate RDF in turtle format",
-    )
-
-    argparser.add_argument(
-        "--use-table",
-        action="store_true",
-        help="Use markdown-table to display properties in `Class` entity",
-    )
-
-    argparser.add_argument(
-        "--out-dir",
-        type=str,
-        default="md_generated",
-        help="Output Directory for generating markdown",
-    )
-
-    args = argparser.parse_args()
-
-    return args
-
+from spec_parser import Model
+from runparams import RunParams
 
 if __name__ == "__main__":
+    cfg = RunParams()
+    # TODO: process args in RunParams() -- for now, hardwired values outside
+    indir = "/home/zvr/github/spdx/spdx-3-model/model"
+    outdir = "/tmp/specout"
 
-    args = get_args()
+    m = Model(indir)
+    m.gen_all(outdir, cfg)
 
-    if not os.path.isdir(args.spec_dir):
-        logging.error(
-            f"Error: Directory containing models :{args.spec_dir} doesn't exists"
-        )
-        exit(1)
-
-    specParser = SpecParser(**vars(args))
-    spec = specParser.parse(args.spec_dir)
-    if isError():
-        logging.error(f"Spec not parsed successfully.")
-        exit(1)
-    if args.json_dump:
-        spec.gen_json_dump()
-    if args.gen_md:
-        spec.gen_md()
-    if args.gen_rdf:
-        spec.gen_rdf()
