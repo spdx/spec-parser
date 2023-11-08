@@ -1,0 +1,10 @@
+{% extends "page.md.j2" %}
+
+{% block extra %}
+
+## Entries
+{% for name, val in entries | dictsort %}
+    - {{name}}: {{val}}
+{% endfor %}
+
+{% endblock %}

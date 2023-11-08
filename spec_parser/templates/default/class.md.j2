@@ -1,48 +1,22 @@
-<!-- Auto generated markdown by Spec-parser {{__version__}} -->
+{% extends "page.md.j2" %}
 
-<!-- SPDX-License-Identifier: {{license_name}} -->
-
-# {{name}}
-
-## Summary
-{{summary}}
-
-## Description
-{{description}}
-
-## Metadata
-{% for name, vals in metadata | dictsort %}
-    - {{name}}: {{vals | list | join(" ")}}
-{% endfor %}
+{% block extra %}
 
 ## Properties
-{% if args.get("use_table", False) %}
-    header_list = ["type", "minCount", "maxCount"]
 
-    # print the header
-    f.write("|" + "|".join(["property"] + header_list) + "|\n")
-    f.write("|" + "---|" * (len(header_list) + 1) + "\n")
-
-    {% for name, subprops in properties | dictsort %}
-        |{{name}}
-        {% for subprop in header_list %}
-            |{{subprops.get(subprop, ["NA"]) | join(" ")}}
-        {% endfor %}
-        |
+{% if True %}
+    | Property | Type | minCount | maxCount |
+    |---|---|---|---|
+    {% for name, kv in properties | dictsort %}
+    | {{name}} | {{kv["type"]}} | {{kv["minCount"]}} | {{kv["maxCount"]}} |
     {% endfor %}
 {% else %}
     {% for name, subprops in properties | dictsort %}
         - {{name}}
-        {% for _key, subprop in subprops | dictsort %}
-            - {{_key}}: {{subprop | list | join(" ")}}
+        {% for _key, _val in subprops | dictsort %}
+            - {{_key}}: {{_val}}
         {% endfor %}
     {% endfor %}
 {% endif %}
 
-{% if format_pattern %}
-    ## Format
-
-    {% for name, vals in format_pattern | dictsort %}
-        - {{name}}: {{vals | list | join(" ")}}
-    {% endfor %}
-{% endif %}
+{% endblock %}

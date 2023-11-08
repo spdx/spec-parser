@@ -1,0 +1,14 @@
+{% extends "page.md.j2" %}
+
+{% block extra %}
+
+## Format
+{% if format_pattern %}
+    ## Format
+
+    {% for name, vals in format_pattern | dictsort %}
+        - {{name}}: {{vals | list | join(" ")}}
+    {% endfor %}
+{% endif %}
+
+{% endblock %}

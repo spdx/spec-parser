@@ -1,23 +1,12 @@
-<!-- Auto generated markdown by Spec-parser v{{__version__}} -->
+{% extends "page.md.j2" %}
 
-<!-- SPDX-License-Identifier: {{license_name}} -->
+{% block extra %}
 
-# {{name}}
-
-## Summary
-{{summary}}
-
-## Description
-{{description}}
-
-## Metadata
-{% for name, vals in metadata | dictsort %}
-    - {{name}}: {{vals | list | join(" ")}}
-{% endfor %}
-
-{% if args.get("gen_refs", False) %}
+{% if False %}
     ## References
     {% for name in spec.dataprop_refs.get(self.name, []) | sort %}
         - {{name}}
     {% endfor %}
 {% endif %}
+
+{% endblock %}
