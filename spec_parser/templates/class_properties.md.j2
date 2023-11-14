@@ -1,5 +1,6 @@
 === "{{name}}"
 
-{% for name, subprops in properties | dictsort -%}
-| {{name}} | {{subprops.get("type", "")}} | {{subprops.get("minCount", "")}}..{{subprops.get("maxCount", "")}} |
-{% endfor -%}
+    --8<-- "properties/_header.md"
+    {% for name, subprops in properties | dictsort -%}
+    | {{name}} | {{subprops.get("type", "")}} | {{subprops.get("minCount", "")}}..{{subprops.get("maxCount", "")}} |
+    {% endfor -%}
