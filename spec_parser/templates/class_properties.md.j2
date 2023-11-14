@@ -1,3 +1,5 @@
+=== "{{name}}"
+
 {% for name, subprops in properties | dictsort -%}
 | {{name}} | {{subprops.get("type", "")}} | {{subprops.get("minCount", "")}}..{{subprops.get("maxCount", "")}} |
 {% endfor -%}

@@ -11,12 +11,9 @@ Spec-Parser-Version: {{__version__}}
 ## Description
 {{description}}
 
-## Metadata
-{% for name, vals in metadata | dictsort %}
-    - {{name}}: {{vals | list | join(" ")}}
-{% endfor %}
-
 ## Entries
+| Value | Description |
+| ----- | ----------- |
 {% for name, val in entries | dictsort %}
-    - {{name}}: {{val}}
+| {{name}} | {{val}} |
 {% endfor %}
