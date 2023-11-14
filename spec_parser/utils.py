@@ -405,6 +405,17 @@ class SpecClass(SpecBase):
         with safe_open(fname, "w") as f:
             f.write(result)
 
+    def _gen_md_properties_snippet(self, env, args: dict) -> None:
+
+        fname = path.join(
+            args["out_dir"], ".snippets", "properties", self.namespace_name, f"{self.name}.md"
+        )
+
+        template = env.get_template("class_properties.md.j2")
+        result = template.render({'__version__': __version__, 'args': args} | vars(self))
+
+        with safe_open(fname, "w") as f:
+            f.write(result)
 
     def _gen_rdf(self, g: rdflib.Graph, class_types: List[URIRef]) -> None:
 
@@ -497,7 +508,6 @@ class SpecProperty(SpecBase):
 
         with safe_open(fname, "w") as f:
             f.write(result)
-
 
     def _gen_rdf(self, g: rdflib.Graph) -> None:
 

@@ -1,0 +1,6 @@
+{% for name, subprops in properties | dictsort %}
+    - {{name}}
+    {% for _key, subprop in subprops | dictsort %}
+        - {{_key}}: {{subprop | list | join(" ")}}
+    {% endfor %}
+{% endfor %}
