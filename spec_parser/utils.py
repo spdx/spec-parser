@@ -395,6 +395,8 @@ class SpecClass(SpecBase):
 
     def _gen_md(self, env, args: dict) -> None:
 
+        self._gen_md_properties_snippet(env, args)
+
         fname = path.join(
             args["out_dir"], self.namespace_name, "Classes", f"{self.name}.md"
         )
