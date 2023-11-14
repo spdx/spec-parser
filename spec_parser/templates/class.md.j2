@@ -1,6 +1,6 @@
-<!-- Auto generated markdown by Spec-parser {{__version__}} -->
 ---
 SPDX-License-Identifier: {{license_name}}
+Spec-Parser-Version: {{__version__}}
 hide:
   - toc
 search:
@@ -24,21 +24,21 @@ search:
 ## Properties
 
 === "{{name}}"
-{% if args.get("use_table", False) %}
+{% 
     header_list = ["type", "minCount", "maxCount"]
 
     # print the header
     f.write("|" + "|".join(["property"] + header_list) + "|\n")
     f.write("|" + "---|" * (len(header_list) + 1) + "\n")
 
-    {% for name, subprops in properties | dictsort %}
+    for name, subprops in properties | dictsort %}
         |{{name}}
         {% for subprop in header_list %}
             |{{subprops.get(subprop, ["NA"]) | join(" ")}}
         {% endfor %}
         |
-    {% endfor %}
-{% endif %}
+    {% endfor
+%}
 
 {% if metadata.get("SubClassOf", "") != "" %}
 === "{{metadata.get("SubClassOf", "")}}"
