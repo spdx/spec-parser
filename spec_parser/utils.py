@@ -118,7 +118,7 @@ class Spec:
             self.logger.warning(f"Overwriting out_dir `{self.args['out_dir']}`")
 
         env = Environment(
-            loader=PackageLoader("spec_parser", package_path="templates/default"),
+            loader=PackageLoader("spec_parser", package_path="templates"),
             autoescape=False
         )
 
