@@ -28,6 +28,6 @@ search:
 {%- if metadata.get("SubclassOf", "") != "" and "/" in metadata.get("SubclassOf", "") %}
   --8<-- "properties/{{metadata.get("SubclassOf", "")}}.md"
 {% endif %}
-{%- if metadata.get("SubclassOf", "") != "" and "/" not in metadata.get("SubclassOf", "") %}
+{%- if metadata.get("SubclassOf", "") != "" and "/" not in metadata.get("SubclassOf", "") and metadata.get("SubclassOf", "") != "owl:Thing" %}
   --8<-- "properties/{{namespace_name}}/{{metadata.get("SubclassOf", "")}}.md"
 {% endif %}
