@@ -4,7 +4,7 @@ requires = ["setuptools", "wheel"]
 
 [project]
 name = "spec_parser"
-version = "0.0.15"
+version = "0.0.16"
 dependencies = [
     "isodate",
     "Jinja2",
