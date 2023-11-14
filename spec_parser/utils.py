@@ -4,7 +4,7 @@ import re
 from os import path
 from typing import List
 
-from jinja2 import Environment, PackageLoader, select_autoescape
+from jinja2 import Environment, PackageLoader
 
 import rdflib
 from rdflib import URIRef, Literal, BNode, SH
@@ -118,7 +118,7 @@ class Spec:
             self.logger.warning(f"Overwriting out_dir `{self.args['out_dir']}`")
 
         env = Environment(
-            loader=PackageLoader("spec_parser", package_path="templates"),
+            loader=PackageLoader("spec_parser", package_path="templates/default"),
             autoescape=False
         )
 
