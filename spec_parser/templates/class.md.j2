@@ -24,7 +24,7 @@ search:
 ## Properties
 
   --8<-- "properties/_header.md"
-  --8<-- "properties/{{name}}.md"
+  --8<-- "properties/{{namespace_name}}/{{name}}.md"
 {%- if metadata.get("SubclassOf", "") != "" %}
-  --8<-- "properties/{{metadata.get("SubclassOf", "")}}.md"
+  --8<-- "properties{{metadata.get("SubclassOf", "")}}.md"
 {% endif %}
