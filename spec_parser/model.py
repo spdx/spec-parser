@@ -13,6 +13,7 @@ from .mdparsing import (
     SingleListSection,
     NestedListSection,
 )
+from .jsondump import gen_jsondump
 from .mkdocs import gen_mkdocs
 from .rdf import gen_rdf
 
@@ -86,6 +87,7 @@ class Model:
     def gen_all(self, dir, cfg):
         gen_mkdocs(self, dir, cfg)
         gen_rdf(self, dir, cfg)
+        gen_jsondump(self, dir, cfg)
 
 
 
