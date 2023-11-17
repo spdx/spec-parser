@@ -80,8 +80,10 @@ class Model:
                     self.datatypes.append(n)
                     ns.datatypes.append(n)
 
-        # add backlinks
+        # processing
         # TODO
+        # add links from properties to classes using them
+        # add inherited properties to classes
 
 
     def gen_all(self, dir, cfg):
@@ -112,6 +114,11 @@ class Namespace:
         s = SingleListSection(sf.sections["Metadata"])
         self.metadata = s.kv
 
+        # checks
+        assert self.name == self.metadata["name"], f"Namespace name {self.name} does not match metadata {self.metadata['name']}"
+
+        # processing
+        self.iri = self.metadata["id"]
 
 
 class Class:
@@ -158,7 +165,8 @@ class Class:
                 assert p in self.VALID_PROP_METADATA, f"Unknown nested key '{p}'"
 
         # processing
-        ## adding default values for missing properties
+        self.iri = f"{self.ns.iri}/{self.name}"
+        ## adding default values for missing property metadata
         if "Instantiability" not in self.metadata:
             self.metadata["Instantiability"] = "Concrete"
         for prop in self.properties:
@@ -193,10 +201,12 @@ class Property:
         self.metadata = s.kv
 
         # checks
-        assert self.name == self.metadata["name"], f"Class name {self.name} does not match metadata {self.metadata['name']}"
+        assert self.name == self.metadata["name"], f"Property name {self.name} does not match metadata {self.metadata['name']}"
         for p in self.metadata:
             assert p in self.VALID_METADATA, f"Unknown toplevel key '{p}'"
 
+        # processing
+        self.iri = f"{self.ns.iri}/{self.name}"
 
 
 class Vocabulary:
@@ -224,9 +234,12 @@ class Vocabulary:
         self.entries = s.kv
 
         # checks
-        assert self.name == self.metadata["name"], f"Class name {self.name} does not match metadata {self.metadata['name']}"
+        assert self.name == self.metadata["name"], f"Vocabulary name {self.name} does not match metadata {self.metadata['name']}"
         for p in self.metadata:
             assert p in self.VALID_METADATA, f"Unknown toplevel key '{p}'"
+
+        # processing
+        self.iri = f"{self.ns.iri}/{self.name}"
 
 
 
@@ -256,9 +269,12 @@ class Individual:
         self.values = s.kv
 
         # checks
-        assert self.name == self.metadata["name"], f"Class name {self.name} does not match metadata {self.metadata['name']}"
+        assert self.name == self.metadata["name"], f"Individual name {self.name} does not match metadata {self.metadata['name']}"
         for p in self.metadata:
             assert p in self.VALID_METADATA, f"Unknown toplevel key '{p}'"
+
+        # processing
+        self.iri = f"{self.ns.iri}/{self.name}"
 
 
 
@@ -288,6 +304,10 @@ class Datatype:
         self.format = s.kv
 
         # checks
-        assert self.name == self.metadata["name"], f"Class name {self.name} does not match metadata {self.metadata['name']}"
+        assert self.name == self.metadata["name"], f"Datatype name {self.name} does not match metadata {self.metadata['name']}"
         for p in self.metadata:
             assert p in self.VALID_METADATA, f"Unknown toplevel key '{p}'"
+
+        # processing
+        self.iri = f"{self.ns.iri}/{self.name}"
+

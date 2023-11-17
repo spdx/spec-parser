@@ -16,7 +16,9 @@ Automagically process the specification
 
 ## Current status
 
+- [x] parse everything in model
 - [x] generate mkdocs input
-- [ ] Generate RDF ontology
-- [ ] Generate JSON-LD context
+- [x] generate JSON dump
+- [ ] generate RDF ontology
+- [ ] generate JSON-LD context
 
