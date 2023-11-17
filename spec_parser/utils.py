@@ -196,7 +196,7 @@ class Spec:
 
     def gen_json_dump(self) -> None:
         with safe_open(path.join(self.args["out_dir"], "model_dump.json"), "w") as f:
-            f.write(json.dumps(self.namespaces, default=spec_to_json_encoder))
+            f.write(json.dumps(self.namespaces, default=spec_to_json_encoder, indent=2))
 
 
 class SpecBase:
@@ -364,11 +364,13 @@ class SpecClass(SpecBase):
         self._extract_metadata(metadata)
         self._extract_properties(props)
         self._extract_format(format_pattern)
-        self.ext_props = ext_props
+
+        self.ext_props = dict()
+        self._extract_external_property_restrictions(ext_props)
         if ext_props:
             self.logger.warning("External property restrictions aren't yet handled properly, they are added to the "
                                 "description of the class.")
-            for ext_prop in self.ext_props:
+            for ext_prop in ext_props:
                 for value in ext_prop["values"]:
                     self.description += f"\nExternal property restriction on {ext_prop['name']}: {value['name']}: " \
                                         f"{' '.join(value['values'])}"
@@ -379,7 +381,33 @@ class SpecClass(SpecBase):
             for name, value in self.format_pattern.items():
                 self.description += f"\nFormat restriction: {name}: {value}"
 
-    # TODO: handle ext_props in some way -- for now, silently ignored
+    # TODO: handle ext_props in some way -- for now, only output in json dump
+    def _extract_external_property_restrictions(self, ext_props):
+        for prop in ext_props:
+            name = prop["name"]
+            subprops_dict = dict()
+
+            for avline in prop["values"]:
+                _key = avline["name"]
+                _values = avline["values"]
+
+                if _key in subprops_dict:
+                    # report the error
+                    self.logger.error(
+                        f"{self.name}: Attribute key '{_key}' already exists in restriction for property '{name}'"
+                    )
+
+                subprops_dict[_key] = _values
+
+            if name in self.ext_props:
+                # report the error
+                self.logger.error(f"{self.name}: Restriction for external property `{_key}` already exists")
+
+            # add all default property fields
+            union_dict(subprops_dict, property_defaults)
+
+            self.ext_props[name] = subprops_dict
+
     # TODO: add format_pattern to generated rdf in some way
 
     def _extract_format(self, format_list):
@@ -609,7 +637,8 @@ def spec_to_json_encoder(spec_obj):
         return {"summary": spec_obj.summary,
                 "description": spec_obj.description,
                 "metadata": spec_obj.metadata,
-                "properties": spec_obj.properties}
+                "properties": spec_obj.properties,
+                "externalPropertyRestrictions": spec_obj.ext_props}
     if isinstance(spec_obj, SpecProperty):
         return {"summary": spec_obj.summary,
                 "description": spec_obj.description,
