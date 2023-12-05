@@ -15,6 +15,7 @@ from .mdparsing import (
 )
 from .jsondump import gen_jsondump
 from .mkdocs import gen_mkdocs
+from .plantuml import gen_plantuml
 from .rdf import gen_rdf
 
 class Model:
@@ -85,10 +86,15 @@ class Model:
         # add links from properties to classes using them
         # add inherited properties to classes
 
+        # checks
+        # TODO
+        # for every property, its Range == type for every class using it (and delete type)
+
 
     def gen_all(self, dir, cfg):
         gen_mkdocs(self, dir, cfg)
         gen_rdf(self, dir, cfg)
+        gen_plantuml(self, dir, cfg)
         gen_jsondump(self, dir, cfg)
 
 
@@ -166,10 +172,12 @@ class Class:
 
         # processing
         self.iri = f"{self.ns.iri}/{self.name}"
-        ## adding default values for missing property metadata
         if "Instantiability" not in self.metadata:
             self.metadata["Instantiability"] = "Concrete"
+        if self.metadata.get("SubclassOf") == "none":
+            del self.metadata["SubclassOf"]
         for prop in self.properties:
+            self.properties[prop]["fqname"] = prop if prop.startswith('/') else f"/{ns.name}/{prop}"
             if "minCount" not in self.properties[prop]:
                 self.properties[prop]["minCount"] = 0
             if "maxCount" not in self.properties[prop]:
@@ -204,6 +212,8 @@ class Property:
         assert self.name == self.metadata["name"], f"Property name {self.name} does not match metadata {self.metadata['name']}"
         for p in self.metadata:
             assert p in self.VALID_METADATA, f"Unknown toplevel key '{p}'"
+        for p in self.VALID_METADATA:
+            assert p in self.metadata, f"Missing {p} in property {self.fqname}"
 
         # processing
         self.iri = f"{self.ns.iri}/{self.name}"
