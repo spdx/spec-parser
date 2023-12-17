@@ -16,13 +16,19 @@
 ## Installing dependencies
 
 ```
-❯ python3 -m pip install -r requirements.txt
+❯ python3 setup.py install
+```
+
+or:
+
+```
+❯ pip install git+https://github.com/spdx/spec-parser
 ```
 
 ## Usage
 
 ```
-❯ python main.py -h
+❯ spec-parser -h
 usage: spec-parser [-h] [--gen-md] [--gen-refs] [--gen-rdf] [--use-table] [--out-dir OUT_DIR] spec_dir
 
 SPDX specification parser
