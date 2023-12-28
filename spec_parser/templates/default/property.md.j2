@@ -3,9 +3,10 @@
 {% block extra %}
 
 {% if False %}
-    ## References
+## References
+
     {% for name in spec.dataprop_refs.get(self.name, []) | sort %}
-        - {{name}}
+- {{name}}
     {% endfor %}
 {% endif %}
 

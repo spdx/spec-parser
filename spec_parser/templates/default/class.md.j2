@@ -5,16 +5,16 @@
 ## Properties
 
 {% if True %}
-    | Property | Type | minCount | maxCount |
-    |---|---|---|---|
+| Property | Type | minCount | maxCount |
+|---|---|---|---|
     {% for name, kv in properties | dictsort %}
-    | {{name}} | {{kv["type"]}} | {{kv["minCount"]}} | {{kv["maxCount"]}} |
+| {{name}} | {{kv["type"]}} | {{kv["minCount"]}} | {{kv["maxCount"]}} |
     {% endfor %}
 {% else %}
     {% for name, subprops in properties | dictsort %}
-        - {{name}}
+- {{name}}
         {% for _key, _val in subprops | dictsort %}
-            - {{_key}}: {{_val}}
+    - {{_key}}: {{_val}}
         {% endfor %}
     {% endfor %}
 {% endif %}

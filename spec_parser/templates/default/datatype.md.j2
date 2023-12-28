@@ -2,12 +2,11 @@
 
 {% block extra %}
 
-## Format
 {% if format_pattern %}
-    ## Format
+## Format
 
     {% for name, vals in format_pattern | dictsort %}
-        - {{name}}: {{vals | list | join(" ")}}
+- {{name}}: {{vals | list | join(" ")}}
     {% endfor %}
 {% endif %}
 

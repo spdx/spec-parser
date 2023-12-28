@@ -3,8 +3,9 @@
 {% block extra %}
 
 ## Entries
+
 {% for name, val in entries | dictsort %}
-    - {{name}}: {{val}}
+- {{name}}: {{val}}
 {% endfor %}
 
 {% endblock %}
