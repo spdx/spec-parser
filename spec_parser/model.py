@@ -36,6 +36,9 @@ class Model:
         if not p.is_dir():
             logging.error(f"{dir}: not a directory")
             return
+        if p.name != "model":
+            logging.warning(f'{dir}: input not named "model"')
+
         for d in [d for d in p.iterdir() if d.is_dir() and d.name[0].isupper()]:
             nsp = p / d.name / f"{d.name}.md"
             if not nsp.is_file():
