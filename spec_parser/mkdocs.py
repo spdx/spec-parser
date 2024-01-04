@@ -1,4 +1,4 @@
-# saving the model as RDF
+# saving the model as MkDocs input
 
 # SPDX-License-Identifier: Apache-2.0
 
@@ -14,7 +14,7 @@ def gen_mkdocs(model, dir, cfg):
         return
     
     jinja = Environment(
-        loader=PackageLoader("spec_parser", package_path="templates/default"),            
+        loader=PackageLoader("spec_parser", package_path="templates/mkdocs"),            
         autoescape=select_autoescape(),
         trim_blocks=True, lstrip_blocks=True
     )
