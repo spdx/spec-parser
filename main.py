@@ -7,10 +7,7 @@ from runparams import RunParams
 
 if __name__ == "__main__":
     cfg = RunParams()
-    # TODO: process args in RunParams() -- for now, hardwired values outside
-    indir = "/home/zvr/github/spdx/spdx-3-model/model"
-    outdir = "/tmp/specout"
 
-    m = Model(indir)
-    m.gen_all(outdir, cfg)
+    m = Model(cfg.input_dir)
+    m.gen_all(cfg.output_dir, cfg)
 
