@@ -8,7 +8,7 @@
 | Property | Type | minCount | maxCount |
 |---|---|---|---|
     {% for name, kv in properties | dictsort %}
-| {{name}} | {{kv["type"]}} | {{kv["minCount"]}} | {{kv["maxCount"]}} |
+| {{property_link(name)}} | {{type_link(kv["type"])}} | {{kv["minCount"]}} | {{kv["maxCount"]}} |
     {% endfor %}
 {% else %}
     {% for name, subprops in properties | dictsort %}
