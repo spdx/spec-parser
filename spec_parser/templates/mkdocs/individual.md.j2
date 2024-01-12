@@ -1,3 +1,12 @@
 {% extends "page.md.j2" %}
 
+{% block metadata %}
+
+| | |
+|---|---|
+| Name | {{metadata["name"]}} |
+| Type | {{type_link(metadata["type"])}} |
+
+{% endblock %}
+
 {% block extra %}{% endblock %}

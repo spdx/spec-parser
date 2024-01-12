@@ -15,9 +15,10 @@
 
 ## Metadata
 
-{% for key, val in metadata | dictsort %}
-- {{key}}: {{val}}
-{% endfor %}
+`{{iri}}`
+
+{% block metadata %}
+{% endblock %}
 
 
 {% block extra %}

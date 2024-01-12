@@ -92,6 +92,18 @@ class Model:
         # TODO
         # add links from properties to classes using them
         # add inherited properties to classes
+        def _pr_metadata_set(title, group):
+            s = set()
+            for c in group.values():
+                s.update(c.metadata)
+            print(f"{title}: {len(s)} {sorted(s)}")
+
+        _pr_metadata_set("Classes", self.classes)
+        _pr_metadata_set("Properties", self.properties)
+        _pr_metadata_set("Vocabularies", self.vocabularies)
+        _pr_metadata_set("Individuals", self.individuals)
+        _pr_metadata_set("Datatypes", self.datatypes)
+
 
         # checks
         # TODO
@@ -326,5 +338,5 @@ class Datatype:
             assert p in self.VALID_METADATA, f"Unknown toplevel key '{p}'"
 
         # processing
-        self.iri = f"{self.ns.iri}/{self.name}"
+        self.iri = f"{self.ns.iri}/{self.fqname}"
 
