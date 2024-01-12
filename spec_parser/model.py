@@ -22,11 +22,11 @@ class Model:
     def __init__ (self, dir = None):
         self.name = None
         self.namespaces = []
-        self.classes = []
-        self.properties = []
-        self.vocabularies = []
-        self.individuals = []
-        self.datatypes = []
+        self.classes = dict()
+        self.properties = dict()
+        self.vocabularies = dict()
+        self.individuals = dict()
+        self.datatypes = dict()
 
         if dir is not None:
             self.load(dir)
@@ -52,41 +52,58 @@ class Model:
             if dp.is_dir():
                 for f in [f for f in dp.iterdir() if f.is_file() and f.name[0].isupper() and f.name.endswith(".md")]:
                     n = Class(f, ns)
-                    self.classes.append(n)
-                    ns.classes.append(n)
+                    k = n.fqname
+                    self.classes[k] = n
+                    ns.classes[k] = n
 
             dp = p / d.name / "Properties"
             if dp.is_dir():
                 for f in [f for f in dp.iterdir() if f.is_file() and f.name[0].islower() and f.name.endswith(".md")]:
                     n = Property(f, ns)
-                    self.properties.append(n)
-                    ns.properties.append(n)
+                    k = n.fqname
+                    self.properties[k] = n
+                    ns.properties[k] = n
 
             dp = p / d.name / "Vocabularies"
             if dp.is_dir():
                 for f in [f for f in dp.iterdir() if f.is_file() and f.name[0].isupper() and f.name.endswith(".md")]:
                     n = Vocabulary(f, ns)
-                    self.vocabularies.append(n)
-                    ns.vocabularies.append(n)
+                    k = n.fqname
+                    self.vocabularies[k] = n
+                    ns.vocabularies[k] = n
 
             dp = p / d.name / "Individuals"
             if dp.is_dir():
                 for f in [f for f in dp.iterdir() if f.is_file() and f.name[0].isupper() and f.name.endswith(".md")]:
                     n = Individual(f, ns)
-                    self.individuals.append(n)
-                    ns.individuals.append(n)
+                    k = n.fqname
+                    self.individuals[k] = n
+                    ns.individuals[k] = n
 
             dp = p / d.name / "Datatypes"
             if dp.is_dir():
                 for f in [f for f in dp.iterdir() if f.is_file() and f.name[0].isupper() and f.name.endswith(".md")]:
                     n = Datatype(f, ns)
-                    self.datatypes.append(n)
-                    ns.datatypes.append(n)
+                    k = n.fqname
+                    self.datatypes[k] = n
+                    ns.datatypes[k] = n
 
         # processing
         # TODO
         # add links from properties to classes using them
         # add inherited properties to classes
+        def _pr_metadata_set(title, group):
+            s = set()
+            for c in group.values():
+                s.update(c.metadata)
+            print(f"{title}: {len(s)} {sorted(s)}")
+
+        _pr_metadata_set("Classes", self.classes)
+        _pr_metadata_set("Properties", self.properties)
+        _pr_metadata_set("Vocabularies", self.vocabularies)
+        _pr_metadata_set("Individuals", self.individuals)
+        _pr_metadata_set("Datatypes", self.datatypes)
+
 
         # checks
         # TODO
@@ -103,11 +120,11 @@ class Model:
 
 class Namespace:
     def __init__(self, fname):
-        self.classes = []
-        self.properties = []
-        self.vocabularies = []
-        self.individuals = []
-        self.datatypes = []
+        self.classes = dict()
+        self.properties = dict()
+        self.vocabularies = dict()
+        self.individuals = dict()
+        self.datatypes = dict()
 
         sf = SpecFile(fname)
         self.license = sf.license
@@ -321,5 +338,5 @@ class Datatype:
             assert p in self.VALID_METADATA, f"Unknown toplevel key '{p}'"
 
         # processing
-        self.iri = f"{self.ns.iri}/{self.name}"
+        self.iri = f"{self.ns.iri}/{self.fqname}"
 

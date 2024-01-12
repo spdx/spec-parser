@@ -9,5 +9,6 @@ if __name__ == "__main__":
     cfg = RunParams()
 
     m = Model(cfg.input_dir)
-    m.gen_all(cfg.output_dir, cfg)
+    if not cfg.opt_nooutput:
+        m.gen_all(cfg.output_dir, cfg)
 

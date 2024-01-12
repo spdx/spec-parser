@@ -25,7 +25,7 @@ skinparam packageStyle folder
 
     inheritances = []
     prop2class = []
-    for c in model.classes:
+    for c in model.classes.values():
         if c.metadata["Instantiability"] == "Abstract":
             s += "abstract "
         else:
@@ -41,10 +41,10 @@ skinparam packageStyle folder
                 prop2class.append((f'{c.ns.name}.{c.name}::{p}', t.split("/")[-1]))
         s += '}\n'
 
-    for v in model.vocabularies:
+    for v in model.vocabularies.values():
         s += f'enum {v.ns.name}.{v.name} {{\n}}\n'
 
-    for d in model.datatypes:
+    for d in model.datatypes.values():
         s += f'class {d.ns.name}.{d.name} {{\n}}\n'
 
 

@@ -1,5 +1,15 @@
 {% extends "page.md.j2" %}
 
+{% block metadata %}
+
+| | |
+|---|---|
+| Name | {{metadata["name"]}} |
+| Nature | {{metadata["Nature"]}} |
+| Range | {{type_link(metadata["Range"])}} |
+
+{% endblock %}
+
 {% block extra %}
 
 {% if False %}

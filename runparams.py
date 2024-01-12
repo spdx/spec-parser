@@ -33,6 +33,10 @@ class RunParams:
         return self.args.force
 
     @property
+    def opt_nooutput(self):
+        return self.args.nooutput
+    
+    @property
     def opt_quiet(self):
         return self.args.quiet
 
@@ -68,6 +72,7 @@ class RunParams:
         parser.add_argument("output_dir", help="Directory to write the output files to")
         parser.add_argument("-d", "--debug", action="store_true", help="Print debug output")
         parser.add_argument("-f", "--force", action="store_true", help="Overwrite existing generated files")
+        parser.add_argument("-n", "--nooutput", action="store_true", help="Do not generate anything, only check input")
         parser.add_argument("-q", "--quiet", action="store_true", help="Print no output")
         parser.add_argument("-v", "--verbose", action="store_true", help="Print verbose output")
         parser.add_argument("-V", "--version", action="version", version=f"%(prog)s {RunParams.parser_version}")
