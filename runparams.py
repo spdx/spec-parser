@@ -4,6 +4,7 @@
 
 import argparse
 from datetime import datetime, timezone
+import logging
 import sys
 
 class RunParams:
@@ -67,9 +68,9 @@ class RunParams:
 # - etc.
     
     def process_args(self, args=sys.argv[1:]):
-        parser = argparse.ArgumentParser(description="Generate documentation from an SPDX 3.0 specification")
+        parser = argparse.ArgumentParser(description="Generate documentation from an SPDX 3.0 model")
         parser.add_argument("input_dir", help="Directory containing the input specification files")
-        parser.add_argument("output_dir", help="Directory to write the output files to")
+        parser.add_argument("output_dir", nargs='?', help="Directory to write the output files to")
         parser.add_argument("-d", "--debug", action="store_true", help="Print debug output")
         parser.add_argument("-f", "--force", action="store_true", help="Overwrite existing generated files")
         parser.add_argument("-n", "--nooutput", action="store_true", help="Do not generate anything, only check input")
@@ -77,3 +78,10 @@ class RunParams:
         parser.add_argument("-v", "--verbose", action="store_true", help="Print verbose output")
         parser.add_argument("-V", "--version", action="version", version=f"%(prog)s {RunParams.parser_version}")
         self.args = parser.parse_args(args)
+
+        if self.opt_nooutput:
+            if self.output_dir:
+                logging.warning(f"Ignoring output directory {self.output_dir} specified with --nooutput")
+        else:
+            if not self.output_dir:
+                logging.critical(f"No output directory specified!")
