@@ -12,10 +12,6 @@ from .mdparsing import (
     SingleListSection,
     NestedListSection,
 )
-from .jsondump import gen_jsondump
-from .mkdocs import gen_mkdocs
-from .plantuml import gen_plantuml
-from .rdf import gen_rdf
 
 class Model:
 
@@ -92,18 +88,6 @@ class Model:
         # TODO
         # add links from properties to classes using them
         # add inherited properties to classes
-        def _pr_metadata_set(title, group):
-            s = set()
-            for c in group.values():
-                s.update(c.metadata)
-            print(f"{title}: {len(s)} {sorted(s)}")
-
-        _pr_metadata_set("Classes", self.classes)
-        _pr_metadata_set("Properties", self.properties)
-        _pr_metadata_set("Vocabularies", self.vocabularies)
-        _pr_metadata_set("Individuals", self.individuals)
-        _pr_metadata_set("Datatypes", self.datatypes)
-
 
         # checks
         # TODO
@@ -111,6 +95,11 @@ class Model:
 
 
     def gen_all(self, dir, cfg):
+        from .jsondump import gen_jsondump
+        from .mkdocs import gen_mkdocs
+        from .plantuml import gen_plantuml
+        from .rdf import gen_rdf
+
         gen_mkdocs(self, dir, cfg)
         gen_rdf(self, dir, cfg)
         gen_plantuml(self, dir, cfg)
