@@ -1,0 +1,34 @@
+{% extends "page.md.j2" %}
+
+{% block metadata %}
+
+| | |
+|---|---|
+| Name | {{metadata["name"]}} |
+| Instantiability | {{metadata["Instantiability"]}} |
+{%if "SubclassOf" in metadata %}
+| SubclassOf | {{type_link(metadata["SubclassOf"])}} |
+{% endif %}
+
+{% endblock %}
+
+{% block extra %}
+
+## Properties
+
+{% if True %}
+| Property | Type | minCount | maxCount |
+|---|---|:---:|:---:|
+    {% for name, kv in properties | dictsort %}
+| {{property_link(name)}} | {{type_link(kv["type"])}} | {{kv["minCount"]}} | {{kv["maxCount"]}} |
+    {% endfor %}
+{% else %}
+    {% for name, subprops in properties | dictsort %}
+- {{name}}
+        {% for _key, _val in subprops | dictsort %}
+    - {{_key}}: {{_val}}
+        {% endfor %}
+    {% endfor %}
+{% endif %}
+
+{% endblock %}

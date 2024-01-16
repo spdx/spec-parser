@@ -1,12 +1,7 @@
-import logging
-from .helper import addErrorFilter
+# making source code directory a module
 
-logging.basicConfig(format="%(levelname)-8s: %(message)s")
-logger = logging.getLogger()
-addErrorFilter(logger)
+# SPDX-License-Identifier: Apache-2.0
 
-from .__version__ import *
-from .spec_parser import *
-from .helper import *
-from .parser import *
-from .config import *
+__version__ = "2.0.0"
+
+from .model import Model
