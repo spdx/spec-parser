@@ -2,11 +2,24 @@
 
 Automagically process the model of the SPDXv3 specification to validate input or to generate stuff.
 
+## Build / Install
+
+```
+python3 -m pip install build
+python3 -m build
+```
+
+This creates a wheel file in `dist` that can be installed.  Alternatively,
+run setup.py to install:
+
+```
+python3 ./setup.py install
+```
 
 ## Usage
 
 ```
-python3 ./main.py  -h 
+spec-parser -h 
 usage: main.py [-h] [-d] [-f] [-n] [-q] [-v] [-V] input_dir [output_dir]
 
 Generate documentation from an SPDX 3.0 model
@@ -30,15 +43,14 @@ Note that not all flags are functional yet.
 ### Checking input
 
 ```
-python3 main.py -n some/where/.../model
+spec-parser -n some/where/.../model
 ```
 
 Note that no dependencies are needed.
 
 ### Generate output
 ```
-python3 -m pip install -r requirements.txt
-python3 main.py some/where/.../model some/where/else/.../output_dir
+spec-parser some/where/.../model some/where/else/.../output_dir
 ```
 
 

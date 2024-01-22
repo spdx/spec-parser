@@ -1,0 +1,18 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools>=61.0", "build", "wheel"]
+
+[project]
+name = "spec_parser"
+version = "0.1.0"
+dependencies = [
+    "Jinja2",
+    "jsonpickle",
+    "rdflib"
+]
+
+[project.scripts]
+spec-parser = "spec_parser.main:main"
+
+[tool.setuptools.package-data]
+"spec_parser.templates.mkdocs" = ["*.j2"]
