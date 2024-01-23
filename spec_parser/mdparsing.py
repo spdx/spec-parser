@@ -36,12 +36,15 @@ class SpecFile():
             self.name = m.group(1)
 
         for p in parts[2:]:
-            if p.strip():
-                m = re.fullmatch(self.RE_EXTRACT_HEADER_CONTENT, p)
-                header = m.group(1)
-                content = m.group(2).strip()
-                if content:
-                    self.sections[header] = content
+            if p.strip() == "":
+                continue
+            m = re.fullmatch(self.RE_EXTRACT_HEADER_CONTENT, p)
+            if m is None:
+                continue
+            header = m.group(1)
+            content = m.group(2).strip()
+            if content:
+                self.sections[header] = content
 
 
 
