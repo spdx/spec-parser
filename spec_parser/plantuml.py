@@ -50,7 +50,7 @@ skinparam packageStyle folder
 
     for pair in inheritances:
         (l,r) = pair
-        s += f'{l} <|-- {r}\n'
+        s += f'{l} --|> {r}\n'
     for pair in prop2class:
         (l,r) = pair
         s += f'{l} --> {r}\n'
