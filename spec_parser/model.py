@@ -84,10 +84,6 @@ class Model:
                     self.datatypes[k] = n
                     ns.datatypes[k] = n
 
-        # processing
-        # TODO
-        # add links from properties to classes using them
-        # add inherited properties to classes
         self.types = self.classes | self.vocabularies | self.datatypes
 
         logging.info(f"Loaded {len(self.namespaces)} namespaces, {len(self.classes)} classes, {len(self.properties)} properties, {len(self.vocabularies)} vocabularies, {len(self.individuals)} individuals, {len(self.datatypes)} datatypes")
