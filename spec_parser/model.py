@@ -279,6 +279,7 @@ class Individual:
     VALID_METADATA = (
         "name",
         "type",
+        "IRI",
     )
     def __init__(self, fname, ns):
         self.ns = ns
