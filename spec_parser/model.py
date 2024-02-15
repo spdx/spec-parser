@@ -92,7 +92,6 @@ class Model:
 
         logging.info(f"Loaded {len(self.namespaces)} namespaces, {len(self.classes)} classes, {len(self.properties)} properties, {len(self.vocabularies)} vocabularies, {len(self.individuals)} individuals, {len(self.datatypes)} datatypes")
         logging.info(f"Total {len(self.types)} types")
-        print(f"Loaded {len(self.namespaces)} namespaces, {len(self.classes)} classes, {len(self.properties)} properties, {len(self.vocabularies)} vocabularies, {len(self.individuals)} individuals, {len(self.datatypes)} datatypes")
 
         for c in self.classes.values():
             for p, pkv in c.properties.items():
