@@ -88,10 +88,28 @@ class Model:
         # TODO
         # add links from properties to classes using them
         # add inherited properties to classes
+        self.types = self.classes | self.vocabularies | self.datatypes
 
-        # checks
+        logging.info(f"Loaded {len(self.namespaces)} namespaces, {len(self.classes)} classes, {len(self.properties)} properties, {len(self.vocabularies)} vocabularies, {len(self.individuals)} individuals, {len(self.datatypes)} datatypes")
+        logging.info(f"Total {len(self.types)} types")
+
+        for c in self.classes.values():
+            for p, pkv in c.properties.items():
+                pname = "" if p.startswith("/") else f"/{c.ns.name}/"
+                pname += p
+                proptype = self.properties[pname].metadata["Range"]
+                ptype = pkv["type"]
+                if proptype != ptype:
+                    if not p.startswith("/"):
+                        logging.error(f"In class {c.fqname}, property {p} has type {ptype} but the range of {pname} is {proptype}")
+                    else:
+                        if proptype.rpartition('/')[-1] != ptype.rpartition('/')[-1]:
+                            logging.error(f"In class {c.fqname}, property {p} has type {ptype} but the range of {pname} is {proptype}")
+                # del pkv["type"] # not needed any more, info is on property
+                self.properties[pname].used_in.append(c.fqname)
+
         # TODO
-        # for every property, its Range == type for every class using it (and delete type)
+        # add inherited properties to classes
 
 
     def gen_all(self, dir, cfg):
@@ -153,7 +171,7 @@ class Class:
         sf = SpecFile(fname)
         self.license = sf.license
         self.name = sf.name
-        self.fqname = f"{ns.name}/{sf.name}"
+        self.fqname = f"/{ns.name}/{sf.name}"
 
         s = ContentSection(sf.sections["Summary"])
         self.summary = s.content
@@ -205,7 +223,7 @@ class Property:
         sf = SpecFile(fname)
         self.license = sf.license
         self.name = sf.name
-        self.fqname = f"{ns.name}/{sf.name}"
+        self.fqname = f"/{ns.name}/{sf.name}"
 
         s = ContentSection(sf.sections["Summary"])
         self.summary = s.content
@@ -225,6 +243,7 @@ class Property:
 
         # processing
         self.iri = f"{self.ns.iri}/{self.name}"
+        self.used_in = []
 
 
 class Vocabulary:
@@ -237,7 +256,7 @@ class Vocabulary:
         sf = SpecFile(fname)
         self.license = sf.license
         self.name = sf.name
-        self.fqname = f"{ns.name}/{sf.name}"
+        self.fqname = f"/{ns.name}/{sf.name}"
 
         s = ContentSection(sf.sections["Summary"])
         self.summary = s.content
@@ -273,7 +292,7 @@ class Individual:
         sf = SpecFile(fname)
         self.license = sf.license
         self.name = sf.name
-        self.fqname = f"{ns.name}/{sf.name}"
+        self.fqname = f"/{ns.name}/{sf.name}"
 
         s = ContentSection(sf.sections["Summary"])
         self.summary = s.content
@@ -308,7 +327,7 @@ class Datatype:
         sf = SpecFile(fname)
         self.license = sf.license
         self.name = sf.name
-        self.fqname = f"{ns.name}/{sf.name}"
+        self.fqname = f"/{ns.name}/{sf.name}"
 
         s = ContentSection(sf.sections["Summary"])
         self.summary = s.content
@@ -328,5 +347,5 @@ class Datatype:
             assert p in self.VALID_METADATA, f"Unknown toplevel key '{p}'"
 
         # processing
-        self.iri = f"{self.ns.iri}/{self.fqname}"
+        self.iri = f"{self.ns.iri}/{self.name}"
 

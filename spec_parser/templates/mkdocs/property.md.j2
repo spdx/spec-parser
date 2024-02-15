@@ -12,11 +12,11 @@
 
 {% block extra %}
 
-{% if False %}
-## References
+{% if used_in %}
+## Referenced
 
-    {% for name in spec.dataprop_refs.get(self.name, []) | sort %}
-- {{name}}
+    {% for name in used_in | sort %}
+- {{type_link(name)}}
     {% endfor %}
 {% endif %}
 
