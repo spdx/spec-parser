@@ -48,8 +48,8 @@ python3 main.py some/where/.../model some/where/else/.../output_dir
 - [x] generate mkdocs input
 - [x] generate JSON dump
 - [x] generate diagrams
-- [ ] generate RDF ontology
-- [ ] generate JSON-LD context
+- [x] generate RDF ontology
+- [x] generate JSON-LD context
 
 
 ## Contributing
