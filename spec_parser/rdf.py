@@ -2,28 +2,24 @@
 
 # SPDX-License-Identifier: Apache-2.0
 
+import json
 import logging
 from pathlib import Path
-from types import new_class
 
 from rdflib import (
+    BNode,
     Graph,
     Literal,
     Namespace,
     URIRef,
 )
 from rdflib.namespace import (
-    DOAP, OWL, RDF, RDFS, SH, SKOS, XSD,
+    OWL, RDF, RDFS, SH, XSD,
 )
 from rdflib.tools.rdf2dot import (
     rdf2dot
 )
 
-from owlready2 import (
-    get_namespace,
-    get_ontology,
-    ConstrainedDatatype
-)
 
 URI_BASE = 'https://rdf.spdx.org/v3/'
 
@@ -38,12 +34,11 @@ def gen_rdf(model, dir, cfg):
     fn = p / "ontology.rdf.dot"
     with open(fn, "w") as f:
         rdf2dot(ret, f)
- 
-    ret = gen_owl_ontology(model)
-    for ext in ["rdfxml", "ntriples"]:
-        fn = p / ("ontology.owl." + ext)
-        with open(fn, "wb") as f:
-            ret.save(f, format=ext)
+    ctx = jsonld_context(ret)
+    fn = p / "context.jsonld"
+    with open(fn, "w") as f:
+        json.dump(ctx, f, sort_keys=True, indent=2)
+
 
 
 def gen_rdf_ontology(model):
@@ -63,11 +58,23 @@ def gen_rdf_ontology(model):
             g.add((node, RDFS.comment, Literal(c.summary, lang='en')))
         parent = c.metadata.get("SubclassOf")
         if parent:
-            p = model.classes[parent]
+            pns = "" if parent.startswith("/") else f"/{c.ns.name}/"
+            p = model.classes[pns+parent]            
             g.add((node, RDFS.subClassOf, URIRef(p.iri)))
         if c.properties:
-            shapenode = URIRef(c.iri + 'Shape')
-            g.add((shapenode, RDF.type, SH.NodeShape))
+            g.add((node, RDF.type, SH.NodeShape))
+            for p in c.properties:
+                bnode = BNode()
+                g.add((node, SH.property, bnode))
+                fqprop = c.properties[p]["fqname"]
+                g.add((bnode, SH.path, URIRef(model.properties[fqprop].iri)))
+                mincount = c.properties[p]["minCount"]
+                if int(mincount) != 0:
+                    g.add((bnode, SH.minCount, Literal(int(mincount))))
+                maxcount = c.properties[p]["maxCount"]
+                if maxcount != '*':
+                    g.add((bnode, SH.maxCount, Literal(int(maxcount))))
+
 
     for fqname, p in model.properties.items():
         node = URIRef(p.iri)
@@ -87,10 +94,11 @@ def gen_rdf_ontology(model):
             else:
                 logging.warn(f'Uknown namespace in range <{rng}> of property {p.name}')
         else:
-            pass
-#                 dt = model.classes[rng]
-#                 g.add((node, RDFS.range, URIRef(dt.iri)))
-
+            typename = "" if rng.startswith("/") else f"/{p.ns.name}/"
+            typename += rng
+            dt = model.types[typename]
+            g.add((node, RDFS.range, URIRef(dt.iri)))
+            
     for fqname, v in model.vocabularies.items():
         node = URIRef(v.iri)
         g.add((node, RDF.type, RDFS.Class))
@@ -99,36 +107,37 @@ def gen_rdf_ontology(model):
             g.add((node, RDFS.comment, Literal(v.summary, lang='en')))
         for e, d in v.entries.items():
             enode = URIRef(v.iri + '/' + e)
+            g.add((enode, RDF.type, OWL.NamedIndividual))
             g.add((enode, RDF.type, node))
             g.add((enode, RDFS.label, Literal(e)))
             g.add((enode, RDFS.comment, Literal(d, lang='en')))
+
+    for fqname, i in model.individuals.items():
+        node = URIRef(i.iri)
+        g.add((node, RDF.type, OWL.NamedIndividual))
+        if i.summary:
+            g.add((node, RDFS.comment, Literal(i.summary, lang='en')))
+        typ = i.metadata["type"]
+        typename = "" if typ.startswith("/") else f"/{i.ns.name}/"
+        typename += typ
+        dt = model.types[typename]
+        g.add((node, RDFS.range, URIRef(dt.iri)))
+        custom_iri = i.metadata.get("IRI")
+        if custom_iri:
+            g.add((node, OWL.sameAs, URIRef(custom_iri)))
 
     return g
 
 
 
-
-def gen_owl_ontology(model):
-    spdx_ontology = get_ontology(URI_BASE)
-    with spdx_ontology:
-        for ns in model.namespaces:
-            _ = get_namespace(ns.iri)
-
-    for fqname, c in model.classes.items():
-            nc = new_class(c.name)
-            nc.namespace = c.ns.iri
-#            nc = new_class("NewClassName", (SuperClass,))
-            pass
-    return spdx_ontology
-
-'''
-# A new property can be created by sublcassing the ObjectProperty or DataProperty class.
-# The ‘domain’ and ‘range’ properties can be used to specify.
-# Domain and range must be given in list
-Property.min(cardinality, Range_Class)
-Property.max(cardinality, Range_Class)
-foo = ConstrainedDatatype(str, pattern = xxx)
-'''
-
-# TODO :-D
-def gen_jsonld_context(): pass
+def jsonld_context(g):
+    terms = dict()
+    terms['spdx'] = URI_BASE
+    for s in g.subjects(unique=True):
+        s = str(s)
+        if s.startswith(URI_BASE):
+            short = s[len(URI_BASE):]
+            if short:
+                terms[short] = 'spdx:' + short
+    return terms
+#     return {'@context': terms}
