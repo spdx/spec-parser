@@ -139,5 +139,4 @@ def jsonld_context(g):
             short = s[len(URI_BASE):]
             if short:
                 terms[short] = 'spdx:' + short
-    return terms
-#     return {'@context': terms}
+    return {'@context': terms}
