@@ -132,6 +132,8 @@ def gen_rdf_ontology(model):
 def jsonld_context(g):
     terms = dict()
     terms["spdx"] = URI_BASE
+    terms["spdxId"] = "@id"
+    terms["type"] = "@type"
 
     def shorten(s):
         s = str(s)
