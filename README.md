@@ -1,13 +1,26 @@
-# spec-parser
+# md-spec-parser
 
-Automagically process the model of the SPDXv3 specification to validate input or to generate stuff.
+Automagically process the Markdown model of the SPDXv3 specification to validate input or to generate stuff.
 
+
+## Installation
+
+```
+# Create virtual environment
+python3 -m venv venv
+
+# Activate virtual environment
+. ./venv/bin/activate
+
+# Install module and dependencies in editable mode
+pip install -e .
+```
 
 ## Usage
 
 ```
-python3 ./main.py  -h 
-usage: main.py [-h] [-d] [-f] [-n] [-q] [-v] [-V] input_dir [output_dir]
+$ md-spec-parser -h
+usage: md-spec-parser [-h] [-d] [-f] [-n] [-q] [-v] [-V] input_dir [output_dir]
 
 Generate documentation from an SPDX 3.0 model
 
@@ -30,15 +43,12 @@ Note that not all flags are functional yet.
 ### Checking input
 
 ```
-python3 main.py -n some/where/.../model
+md-spec-parser -n some/where/.../model
 ```
-
-Note that no dependencies are needed.
 
 ### Generate output
 ```
-python3 -m pip install -r requirements.txt
-python3 main.py some/where/.../model some/where/else/.../output_dir
+md-spec-parser some/where/.../model some/where/else/.../output_dir
 ```
 
 
