@@ -129,14 +129,45 @@ def gen_rdf_ontology(model):
     return g
 
 
-
 def jsonld_context(g):
     terms = dict()
-    terms['spdx'] = URI_BASE
-    for s in g.subjects(unique=True):
+    terms["spdx"] = URI_BASE
+
+    def shorten(s):
         s = str(s)
+        if s == URI_BASE:
+            return (s, s)
+
         if s.startswith(URI_BASE):
-            short = s[len(URI_BASE):]
-            if short:
-                terms[short] = 'spdx:' + short
-    return {'@context': terms}
+            key = s[len(URI_BASE) :]
+            return (key, "spdx:" + key)
+
+        return (s, s)
+
+    def get_subject_term(subject, short):
+        if (subject, RDF.type, OWL.ObjectProperty) in g:
+            for _, _, o in g.triples((subject, RDFS.range, None)):
+                if o in has_named_individuals:
+                    return {
+                        "@id": short,
+                        "@type": "@vocab",
+                        "@context": {
+                            "@vocab": shorten(o)[1] + "/",
+                        },
+                    }
+        return short
+
+    has_named_individuals = set()
+    # Collect all named individuals
+    for s in g.subjects(RDF.type, OWL.NamedIndividual):
+        for s, p, o in g.triples((s, RDF.type, None)):
+            has_named_individuals.add(o)
+
+    for subject in g.subjects(unique=True):
+        key, short = shorten(str(subject))
+        if short == key:
+            continue
+
+        terms[key] = get_subject_term(subject, short)
+
+    return {"@context": terms}
