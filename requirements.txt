@@ -1,3 +1,0 @@
-Jinja2==3.1.2
-jsonpickle==3.0.2
-rdflib==7.0.0

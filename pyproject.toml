@@ -1,0 +1,41 @@
+[project]
+name = "md-spec-parser"
+description = "Parse SPDX Spec Markdown Files"
+dynamic = ["version"]
+dependencies = [
+    "Jinja2 == 3.1.2",
+    "jsonpickle == 3.0.2",
+    "rdflib == 7.0.0",
+]
+required-python = ">= 3.8"
+authors = [
+    {name = "Alexios Zavras", email = "alexios.zavras@intel.com"},
+]
+readme = "README.md"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Build Tools",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+[project.urls]
+Homepage = "https://github.com/spdx/spec-parser"
+Repository = "https://github.com/spdx/spec-parser.git"
+Issues = "https://github.com/spdx/spec-parser/issues"
+
+[project.scripts]
+md-spec-parser = "md_spec_parser.main:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "src/md_spec_parser/__init__.py"

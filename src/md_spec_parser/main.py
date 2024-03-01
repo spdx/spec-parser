@@ -2,10 +2,10 @@
 
 # SPDX-License-Identifier: Apache-2.0
 
-from spec_parser import Model
-from runparams import RunParams
+from . import Model
+from .runparams import RunParams
 
-if __name__ == "__main__":
+def main():
     cfg = RunParams()
 
     m = Model(cfg.input_dir)
