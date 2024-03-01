@@ -157,6 +157,11 @@ def jsonld_context(g):
                             "@vocab": shorten(o)[1] + "/",
                         },
                     }
+                elif (o, RDF.type, RDFS.Class) in g:
+                    return {
+                        "@id": short,
+                        "@type": "@id",
+                    }
         return short
 
     has_named_individuals = set()
