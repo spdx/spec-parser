@@ -67,7 +67,16 @@ def gen_rdf_ontology(model):
                 bnode = BNode()
                 g.add((node, SH.property, bnode))
                 fqprop = c.properties[p]["fqname"]
-                g.add((bnode, SH.path, URIRef(model.properties[fqprop].iri)))
+                prop = model.properties[fqprop]
+                g.add((bnode, SH.path, URIRef(prop.iri)))
+                prop_rng = prop.metadata["Range"]
+                if not ":" in prop_rng:
+                    typename = "" if prop_rng.startswith("/") else f"/{prop.ns.name}/"
+                    typename += prop_rng
+                    dt = model.types[typename]
+                    if typename in model.classes:
+                        g.add((bnode, SH["class"], URIRef(dt.iri)))
+
                 mincount = c.properties[p]["minCount"]
                 if int(mincount) != 0:
                     g.add((bnode, SH.minCount, Literal(int(mincount))))
