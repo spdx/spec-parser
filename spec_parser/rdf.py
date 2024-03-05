@@ -144,34 +144,23 @@ def jsonld_context(g):
     terms["spdxId"] = "@id"
     terms["type"] = "@type"
 
-    def shorten(s):
-        s = str(s)
-        if s == URI_BASE:
-            return (s, s)
-
-        if s.startswith(URI_BASE):
-            key = s[len(URI_BASE) :]
-            return (key, "spdx:" + key)
-
-        return (s, s)
-
-    def get_subject_term(subject, short):
+    def get_subject_term(subject):
         if (subject, RDF.type, OWL.ObjectProperty) in g:
             for _, _, o in g.triples((subject, RDFS.range, None)):
                 if o in has_named_individuals:
                     return {
-                        "@id": short,
+                        "@id": subject,
                         "@type": "@vocab",
                         "@context": {
-                            "@vocab": shorten(o)[1] + "/",
+                            "@vocab": o + "/",
                         },
                     }
                 elif (o, RDF.type, RDFS.Class) in g:
                     return {
-                        "@id": short,
+                        "@id": subject,
                         "@type": "@id",
                     }
-        return short
+        return subject
 
     has_named_individuals = set()
     # Collect all named individuals
@@ -179,11 +168,31 @@ def jsonld_context(g):
         for s, p, o in g.triples((s, RDF.type, None)):
             has_named_individuals.add(o)
 
-    for subject in g.subjects(unique=True):
-        key, short = shorten(str(subject))
-        if short == key:
+    for subject in sorted(g.subjects(unique=True)):
+        # Skip named individuals
+        if (subject, RDF.type, OWL.NamedIndividual) in g:
             continue
 
-        terms[key] = get_subject_term(subject, short)
+        try:
+            base, ns, name = str(subject).rsplit("/", 2)
+        except ValueError:
+            continue
+
+        if base != URI_BASE.rstrip("/"):
+            continue
+
+        if ns == "Core":
+            key = name
+        else:
+            key = ns.lower() + "_" + name
+
+        if key in terms:
+            current = terms[key]["@id"] if isinstance(terms[key], dict) else terms[key]
+            logging.error(
+                f"ERROR: Duplicate context key '{key}' for '{subject}'. Already mapped to '{current}'"
+            )
+            continue
+
+        terms[key] = get_subject_term(subject)
 
     return {"@context": terms}
