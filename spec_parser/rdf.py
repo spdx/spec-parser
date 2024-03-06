@@ -59,11 +59,16 @@ def gen_rdf_ontology(model):
         parent = c.metadata.get("SubclassOf")
         if parent:
             pns = "" if parent.startswith("/") else f"/{c.ns.name}/"
-            p = model.classes[pns+parent]            
+            p = model.classes[pns+parent]
             g.add((node, RDFS.subClassOf, URIRef(p.iri)))
         if c.properties:
             g.add((node, RDF.type, SH.NodeShape))
             for p in c.properties:
+                fqprop = c.properties[p]["fqname"]
+                prop = model.properties[fqprop]
+                if prop.metadata["Nature"] == "IdProperty":
+                    continue
+
                 bnode = BNode()
                 g.add((node, SH.property, bnode))
                 fqprop = c.properties[p]["fqname"]
@@ -77,6 +82,8 @@ def gen_rdf_ontology(model):
 
 
     for fqname, p in model.properties.items():
+        if p.metadata["Nature"] == "IdProperty":
+            continue
         node = URIRef(p.iri)
         g.add((node, RDF.type, RDF.Property))
         if p.summary:
