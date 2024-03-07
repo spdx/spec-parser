@@ -40,6 +40,13 @@ def gen_rdf(model, dir, cfg):
         json.dump(ctx, f, sort_keys=True, indent=2)
 
 
+def xsd_range(rng, propname):
+    if rng.startswith('xsd:'):
+        return URIRef("http://www.w3.org/2001/XMLSchema#"+rng[4:])
+
+    logging.warn(f'Uknown namespace in range <{rng}> of property {propname}')
+    return None
+
 
 def gen_rdf_ontology(model):
     g = Graph()
@@ -73,9 +80,28 @@ def gen_rdf_ontology(model):
                 if not ":" in prop_rng:
                     typename = "" if prop_rng.startswith("/") else f"/{prop.ns.name}/"
                     typename += prop_rng
-                    dt = model.types[typename]
-                    if typename in model.classes:
-                        g.add((bnode, SH["class"], URIRef(dt.iri)))
+                else:
+                    typename = prop_rng
+
+                if typename in model.classes:
+                    dt = model.classes[typename]
+                    g.add((bnode, SH["class"], URIRef(dt.iri)))
+                elif typename in model.vocabularies:
+                    dt = model.vocabularies[typename]
+                    g.add((bnode, SH["class"], URIRef(dt.iri)))
+                elif typename in model.datatypes:
+                    dt = model.datatypes[typename]
+                    if "pattern" in dt.format:
+                        g.add((bnode, SH.pattern, Literal(dt.format["pattern"])))
+
+                    t = xsd_range(dt.metadata["SubclassOf"], prop.iri)
+                    if t:
+                        g.add((bnode, SH.datatype, t))
+                else:
+                    t = xsd_range(typename, prop.iri)
+                    if t:
+                        g.add((bnode, SH.datatype, t))
+
 
                 mincount = c.properties[p]["minCount"]
                 if int(mincount) != 0:
@@ -97,17 +123,20 @@ def gen_rdf_ontology(model):
             g.add((node, RDF.type, OWL.DatatypeProperty))
         rng = p.metadata["Range"]
         if ':' in rng:
-            if rng.startswith('xsd:'):
-                t = URIRef("http://www.w3.org/2001/XMLSchema#"+rng[4:])
+            t = xsd_range(rng, p.name)
+            if t:
                 g.add((node, RDFS.range, t))
-            else:
-                logging.warn(f'Uknown namespace in range <{rng}> of property {p.name}')
         else:
             typename = "" if rng.startswith("/") else f"/{p.ns.name}/"
             typename += rng
-            dt = model.types[typename]
-            g.add((node, RDFS.range, URIRef(dt.iri)))
-            
+            if typename in model.datatypes:
+                t = xsd_range(model.datatypes[typename].metadata["SubclassOf"], p.name)
+                if t:
+                    g.add((node, RDFS.range, t))
+            else:
+                dt = model.types[typename]
+                g.add((node, RDFS.range, URIRef(dt.iri)))
+
     for fqname, v in model.vocabularies.items():
         node = URIRef(v.iri)
         g.add((node, RDF.type, RDFS.Class))
