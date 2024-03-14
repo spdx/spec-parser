@@ -189,6 +189,13 @@ def jsonld_context(g):
                         "@id": subject,
                         "@type": "@id",
                     }
+        elif (subject, RDF.type, OWL.DatatypeProperty) in g:
+            for _, _, o in g.triples((subject, RDFS.range, None)):
+                return {
+                    "@id": subject,
+                    "@type": o,
+                }
+
         return subject
 
     has_named_individuals = set()
