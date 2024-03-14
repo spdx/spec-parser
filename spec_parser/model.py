@@ -113,11 +113,13 @@ class Model:
         from .mkdocs import gen_mkdocs
         from .plantuml import gen_plantuml
         from .rdf import gen_rdf
+        from .redirects import gen_redirects
 
         gen_mkdocs(self, dir, cfg)
         gen_rdf(self, dir, cfg)
         gen_plantuml(self, dir, cfg)
         gen_jsondump(self, dir, cfg)
+        gen_redirects(self, dir + '/redirects.json', cfg)
 
 
 
