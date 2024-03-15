@@ -119,7 +119,7 @@ class Model:
         gen_rdf(self, dir, cfg)
         gen_plantuml(self, dir, cfg)
         gen_jsondump(self, dir, cfg)
-        gen_redirects(self, dir + '/redirects.json', cfg)
+        gen_redirects(self, dir + '/redirects', cfg)
 
 
 

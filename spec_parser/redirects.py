@@ -1,48 +1,54 @@
-# saving the model as MkDocs input
+# Creates redirects for the model references to the spec website
 
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
 from pathlib import Path
 
-'''
-Generates a redirects.json file conforming to the AWS S3 redirect configuration format
-'''
-def gen_redirects(model, filepath, cfg):
-    p = Path(filepath)
+
+def gen_redirects(model, dir, cfg):
+    p = Path(dir)
     if p.exists():
         if not cfg.opt_force:
-            logging.error(f"Destination for redirects JSON file {filepath} already exists, will not overwrite")
+            logging.error(f"Destination for redirects {dir} already exists, will not overwrite")
             return
-    def _generate_redirect_group(file, group_name, group):
-        for s in group.values():
-            weblocation = f'spdx-spec/v3.0/model/{s.ns.name}/{group_name}/{s.name}/index.html'
-            awskey = f'rdf/v3/{s.ns.name}/{s.name}'
-            writeredirect(file, awskey, weblocation)
-            
-    with open(p, 'w+') as f:
-        f.write('[\n')
-        _generate_redirect_group(f, "Classes", model.classes)
-        _generate_redirect_group(f, "Properties", model.properties)
-        _generate_redirect_group(f, "Vocabularies", model.vocabularies)
-        _generate_redirect_group(f, "Individuals", model.individuals)
-        _generate_redirect_group(f, "Datatypes", model.datatypes)
-        for ns in model.namespaces:
-            weblocation = f'spdx-spec/v3.0/model/{ns.name}/{ns.name}/index.html'
-            awskey = f'rdf/v3/{ns.name}'
-            writeredirect(f, awskey, weblocation)
-        f.write('\n')
-        f.write(']\n')
 
-def writeredirect(file, awskey, weblocation):
-    if file.tell() > 5:
-        file.write(',\n')
-    file.write('   {\n')
-    file.write('      "Condition": {\n')
-    file.write(f'         "KeyPrefixEquals": "{awskey}"\n')
-    file.write('      },\n')
-    file.write('      "Redirect": {\n')
-    file.write('         "HostName": "spdx.github.io",\n')
-    file.write(f'         "ReplaceKeyWith": "{weblocation}"\n')
-    file.write('      }\n')
-    file.write('   }')
+    p.mkdir()
+
+    for ns in model.namespaces:
+        d = p / ns.name
+        d.mkdir()
+        
+        ''' The following does not work since it duplicates the name of the directory
+        f = p / ns.name
+        
+        redirect = f'https://spdx.github.io/spdx-spec/v3.0/model/{ns.name}/{ns.name}/index.html'
+        page = gen_html_redirect(redirect)
+        f.write_text(page)
+        '''
+
+    def _generate_in_dir(dirname, group, tmplfname):
+        for s in group.values():
+            in_ns = s.ns
+            d = p / in_ns.name
+            d.mkdir(exist_ok=True)
+            f = d / s.name
+            redirect = f'https://spdx.github.io/spdx-spec/v3.0/model/{in_ns.name}/{dirname}/{s.name}/index.html'
+            page = gen_html_redirect(redirect)
+            f.write_text(page)
+
+    _generate_in_dir("Classes", model.classes, "class.md.j2")
+    _generate_in_dir("Properties", model.properties, "property.md.j2")
+    _generate_in_dir("Vocabularies", model.vocabularies, "vocabulary.md.j2")
+    _generate_in_dir("Individuals", model.individuals, "individual.md.j2")
+    _generate_in_dir("Datatypes", model.datatypes, "datatype.md.j2")
+
+def gen_html_redirect(redirect):
+    retval = '<!DOCTYPE html>\n'
+    retval = retval + '<html lang="en">\n'
+    retval = retval + '   <head>\n'
+    retval = retval + '      <title>SPDX Model</title>\n'
+    retval = retval + f'      <meta http-equiv="refresh" content="0; URL={redirect}">\n'
+    retval = retval + '   </head>\n'
+    retval = retval + '</html>'
+    return retval
