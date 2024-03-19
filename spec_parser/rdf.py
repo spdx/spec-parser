@@ -59,7 +59,6 @@ def gen_rdf_ontology(model):
 
     for fqname, c in model.classes.items():
         node = URIRef(c.iri)
-        g.add((node, RDF.type, RDFS.Class))
         g.add((node, RDF.type, OWL.Class))
         if c.summary:
             g.add((node, RDFS.comment, Literal(c.summary, lang='en')))
@@ -117,7 +116,6 @@ def gen_rdf_ontology(model):
 
     for fqname, p in model.properties.items():
         node = URIRef(p.iri)
-        g.add((node, RDF.type, RDF.Property))
         if p.summary:
             g.add((node, RDFS.comment, Literal(p.summary, lang='en')))
         if p.metadata["Nature"] == "ObjectProperty":
@@ -143,7 +141,6 @@ def gen_rdf_ontology(model):
 
     for fqname, v in model.vocabularies.items():
         node = URIRef(v.iri)
-        g.add((node, RDF.type, RDFS.Class))
         g.add((node, RDF.type, OWL.Class))
         if v.summary:
             g.add((node, RDFS.comment, Literal(v.summary, lang='en')))
@@ -188,7 +185,7 @@ def jsonld_context(g):
                             "@vocab": o + "/",
                         },
                     }
-                elif (o, RDF.type, RDFS.Class) in g:
+                elif (o, RDF.type, OWL.Class) in g:
                     return {
                         "@id": subject,
                         "@type": "@id",
