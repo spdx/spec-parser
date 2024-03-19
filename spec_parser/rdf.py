@@ -66,7 +66,7 @@ def gen_rdf_ontology(model):
         parent = c.metadata.get("SubclassOf")
         if parent:
             pns = "" if parent.startswith("/") else f"/{c.ns.name}/"
-            p = model.classes[pns+parent]            
+            p = model.classes[pns+parent]
             g.add((node, RDFS.subClassOf, URIRef(p.iri)))
         if c.properties:
             g.add((node, RDF.type, SH.NodeShape))
@@ -86,9 +86,11 @@ def gen_rdf_ontology(model):
                 if typename in model.classes:
                     dt = model.classes[typename]
                     g.add((bnode, SH["class"], URIRef(dt.iri)))
+                    g.add((bnode, SH.nodeKind, SH.BlankNodeOrIRI))
                 elif typename in model.vocabularies:
                     dt = model.vocabularies[typename]
                     g.add((bnode, SH["class"], URIRef(dt.iri)))
+                    g.add((bnode, SH.nodeKind, SH.IRI))
                 elif typename in model.datatypes:
                     dt = model.datatypes[typename]
                     if "pattern" in dt.format:
@@ -97,10 +99,12 @@ def gen_rdf_ontology(model):
                     t = xsd_range(dt.metadata["SubclassOf"], prop.iri)
                     if t:
                         g.add((bnode, SH.datatype, t))
+                        g.add((bnode, SH.nodeKind, SH.Literal))
                 else:
                     t = xsd_range(typename, prop.iri)
                     if t:
                         g.add((bnode, SH.datatype, t))
+                        g.add((bnode, SH.nodeKind, SH.Literal))
 
 
                 mincount = c.properties[p]["minCount"]
