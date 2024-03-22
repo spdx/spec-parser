@@ -61,6 +61,11 @@ def gen_rdf_ontology(model):
             pns = "" if parent.startswith("/") else f"/{c.ns.name}/"
             p = model.classes[pns+parent]            
             g.add((node, RDFS.subClassOf, URIRef(p.iri)))
+
+        node_kind = c.metadata.get("NodeKind")
+        if node_kind:
+            g.add((node, SH.nodeKind, getattr(SH, node_kind)))
+
         if c.properties:
             g.add((node, RDF.type, SH.NodeShape))
             for p in c.properties:

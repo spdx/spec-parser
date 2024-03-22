@@ -154,6 +154,7 @@ class Class:
         "Instantiability",
         "name",
         "SubclassOf",
+        "NodeKind",
     )
     VALID_PROP_METADATA = (
         "maxCount",
