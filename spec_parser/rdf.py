@@ -68,6 +68,11 @@ def gen_rdf_ontology(model):
             pns = "" if parent.startswith("/") else f"/{c.ns.name}/"
             p = model.classes[pns+parent]
             g.add((node, RDFS.subClassOf, URIRef(p.iri)))
+
+        # Element is hard coded to require an IRI
+        if fqname == "/Core/Element":
+            g.add((node, SH.nodeKind, SH.IRI))
+
         for p in c.properties:
             fqprop = c.properties[p]["fqname"]
             if fqprop == "/Core/spdxId":
