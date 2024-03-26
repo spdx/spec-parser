@@ -23,3 +23,9 @@ docs/_build
 # Virtual Env        #
 ######################
 venv
+
+# Setuptools         #
+######################
+build
+dist
+*.egg-info
