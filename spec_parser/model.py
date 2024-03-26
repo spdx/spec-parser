@@ -40,7 +40,7 @@ class Model:
             if not nsp.is_file():
                 logging.error(f"Missing top-level namespace file {nsp.name}")
                 continue
-            
+
             ns = Namespace(nsp)
             self.namespaces.append(ns)
 
@@ -206,7 +206,7 @@ class Class:
                 self.properties[prop]["maxCount"] = '*'
 
 
-       
+
 class Property:
     VALID_METADATA = (
         "name",

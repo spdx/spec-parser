@@ -40,6 +40,13 @@ def gen_rdf(model, dir, cfg):
         json.dump(ctx, f, sort_keys=True, indent=2)
 
 
+def xsd_range(rng, propname):
+    if rng.startswith('xsd:'):
+        return URIRef("http://www.w3.org/2001/XMLSchema#"+rng[4:])
+
+    logging.warn(f'Uknown namespace in range <{rng}> of property {propname}')
+    return None
+
 
 def gen_rdf_ontology(model):
     g = Graph()
@@ -52,14 +59,13 @@ def gen_rdf_ontology(model):
 
     for fqname, c in model.classes.items():
         node = URIRef(c.iri)
-        g.add((node, RDF.type, RDFS.Class))
         g.add((node, RDF.type, OWL.Class))
         if c.summary:
             g.add((node, RDFS.comment, Literal(c.summary, lang='en')))
         parent = c.metadata.get("SubclassOf")
         if parent:
             pns = "" if parent.startswith("/") else f"/{c.ns.name}/"
-            p = model.classes[pns+parent]            
+            p = model.classes[pns+parent]
             g.add((node, RDFS.subClassOf, URIRef(p.iri)))
         if c.properties:
             g.add((node, RDF.type, SH.NodeShape))
@@ -67,7 +73,39 @@ def gen_rdf_ontology(model):
                 bnode = BNode()
                 g.add((node, SH.property, bnode))
                 fqprop = c.properties[p]["fqname"]
-                g.add((bnode, SH.path, URIRef(model.properties[fqprop].iri)))
+                prop = model.properties[fqprop]
+                g.add((bnode, SH.path, URIRef(prop.iri)))
+                prop_rng = prop.metadata["Range"]
+                if not ":" in prop_rng:
+                    typename = "" if prop_rng.startswith("/") else f"/{prop.ns.name}/"
+                    typename += prop_rng
+                else:
+                    typename = prop_rng
+
+                if typename in model.classes:
+                    dt = model.classes[typename]
+                    g.add((bnode, SH["class"], URIRef(dt.iri)))
+                    g.add((bnode, SH.nodeKind, SH.BlankNodeOrIRI))
+                elif typename in model.vocabularies:
+                    dt = model.vocabularies[typename]
+                    g.add((bnode, SH["class"], URIRef(dt.iri)))
+                    g.add((bnode, SH.nodeKind, SH.IRI))
+                elif typename in model.datatypes:
+                    dt = model.datatypes[typename]
+                    if "pattern" in dt.format:
+                        g.add((bnode, SH.pattern, Literal(dt.format["pattern"])))
+
+                    t = xsd_range(dt.metadata["SubclassOf"], prop.iri)
+                    if t:
+                        g.add((bnode, SH.datatype, t))
+                        g.add((bnode, SH.nodeKind, SH.Literal))
+                else:
+                    t = xsd_range(typename, prop.iri)
+                    if t:
+                        g.add((bnode, SH.datatype, t))
+                        g.add((bnode, SH.nodeKind, SH.Literal))
+
+
                 mincount = c.properties[p]["minCount"]
                 if int(mincount) != 0:
                     g.add((bnode, SH.minCount, Literal(int(mincount))))
@@ -78,7 +116,6 @@ def gen_rdf_ontology(model):
 
     for fqname, p in model.properties.items():
         node = URIRef(p.iri)
-        g.add((node, RDF.type, RDF.Property))
         if p.summary:
             g.add((node, RDFS.comment, Literal(p.summary, lang='en')))
         if p.metadata["Nature"] == "ObjectProperty":
@@ -88,20 +125,22 @@ def gen_rdf_ontology(model):
             g.add((node, RDF.type, OWL.DatatypeProperty))
         rng = p.metadata["Range"]
         if ':' in rng:
-            if rng.startswith('xsd:'):
-                t = URIRef("http://www.w3.org/2001/XMLSchema#"+rng[4:])
+            t = xsd_range(rng, p.name)
+            if t:
                 g.add((node, RDFS.range, t))
-            else:
-                logging.warn(f'Uknown namespace in range <{rng}> of property {p.name}')
         else:
             typename = "" if rng.startswith("/") else f"/{p.ns.name}/"
             typename += rng
-            dt = model.types[typename]
-            g.add((node, RDFS.range, URIRef(dt.iri)))
-            
+            if typename in model.datatypes:
+                t = xsd_range(model.datatypes[typename].metadata["SubclassOf"], p.name)
+                if t:
+                    g.add((node, RDFS.range, t))
+            else:
+                dt = model.types[typename]
+                g.add((node, RDFS.range, URIRef(dt.iri)))
+
     for fqname, v in model.vocabularies.items():
         node = URIRef(v.iri)
-        g.add((node, RDF.type, RDFS.Class))
         g.add((node, RDF.type, OWL.Class))
         if v.summary:
             g.add((node, RDFS.comment, Literal(v.summary, lang='en')))
@@ -129,14 +168,68 @@ def gen_rdf_ontology(model):
     return g
 
 
-
 def jsonld_context(g):
     terms = dict()
-    terms['spdx'] = URI_BASE
-    for s in g.subjects(unique=True):
-        s = str(s)
-        if s.startswith(URI_BASE):
-            short = s[len(URI_BASE):]
-            if short:
-                terms[short] = 'spdx:' + short
-    return {'@context': terms}
+    terms["spdx"] = URI_BASE
+    terms["spdxId"] = "@id"
+    terms["type"] = "@type"
+
+    def get_subject_term(subject):
+        if (subject, RDF.type, OWL.ObjectProperty) in g:
+            for _, _, o in g.triples((subject, RDFS.range, None)):
+                if o in has_named_individuals:
+                    return {
+                        "@id": subject,
+                        "@type": "@vocab",
+                        "@context": {
+                            "@vocab": o + "/",
+                        },
+                    }
+                elif (o, RDF.type, OWL.Class) in g:
+                    return {
+                        "@id": subject,
+                        "@type": "@id",
+                    }
+        elif (subject, RDF.type, OWL.DatatypeProperty) in g:
+            for _, _, o in g.triples((subject, RDFS.range, None)):
+                return {
+                    "@id": subject,
+                    "@type": o,
+                }
+
+        return subject
+
+    has_named_individuals = set()
+    # Collect all named individuals
+    for s in g.subjects(RDF.type, OWL.NamedIndividual):
+        for s, p, o in g.triples((s, RDF.type, None)):
+            has_named_individuals.add(o)
+
+    for subject in sorted(g.subjects(unique=True)):
+        # Skip named individuals
+        if (subject, RDF.type, OWL.NamedIndividual) in g:
+            continue
+
+        try:
+            base, ns, name = str(subject).rsplit("/", 2)
+        except ValueError:
+            continue
+
+        if base != URI_BASE.rstrip("/"):
+            continue
+
+        if ns == "Core":
+            key = name
+        else:
+            key = ns.lower() + "_" + name
+
+        if key in terms:
+            current = terms[key]["@id"] if isinstance(terms[key], dict) else terms[key]
+            logging.error(
+                f"ERROR: Duplicate context key '{key}' for '{subject}'. Already mapped to '{current}'"
+            )
+            continue
+
+        terms[key] = get_subject_term(subject)
+
+    return {"@context": terms}
