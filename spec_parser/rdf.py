@@ -60,6 +60,7 @@ def gen_rdf_ontology(model):
     for fqname, c in model.classes.items():
         node = URIRef(c.iri)
         g.add((node, RDF.type, OWL.Class))
+        g.add((node, RDF.type, SH.NodeShape))
         if c.summary:
             g.add((node, RDFS.comment, Literal(c.summary, lang='en')))
         parent = c.metadata.get("SubclassOf")
@@ -67,49 +68,47 @@ def gen_rdf_ontology(model):
             pns = "" if parent.startswith("/") else f"/{c.ns.name}/"
             p = model.classes[pns+parent]
             g.add((node, RDFS.subClassOf, URIRef(p.iri)))
-        if c.properties:
-            g.add((node, RDF.type, SH.NodeShape))
-            for p in c.properties:
-                fqprop = c.properties[p]["fqname"]
-                if fqprop == "/Core/spdxId":
-                    continue
-                bnode = BNode()
-                g.add((node, SH.property, bnode))
-                prop = model.properties[fqprop]
-                g.add((bnode, SH.path, URIRef(prop.iri)))
-                prop_rng = prop.metadata["Range"]
-                if not ":" in prop_rng:
-                    typename = "" if prop_rng.startswith("/") else f"/{prop.ns.name}/"
-                    typename += prop_rng
-                else:
-                    typename = prop_rng
-                if typename in model.classes:
-                    dt = model.classes[typename]
-                    g.add((bnode, SH["class"], URIRef(dt.iri)))
-                    g.add((bnode, SH.nodeKind, SH.BlankNodeOrIRI))
-                elif typename in model.vocabularies:
-                    dt = model.vocabularies[typename]
-                    g.add((bnode, SH["class"], URIRef(dt.iri)))
-                    g.add((bnode, SH.nodeKind, SH.IRI))
-                elif typename in model.datatypes:
-                    dt = model.datatypes[typename]
-                    if "pattern" in dt.format:
-                        g.add((bnode, SH.pattern, Literal(dt.format["pattern"])))
-                    t = xsd_range(dt.metadata["SubclassOf"], prop.iri)
-                    if t:
-                        g.add((bnode, SH.datatype, t))
-                        g.add((bnode, SH.nodeKind, SH.Literal))
-                else:
-                    t = xsd_range(typename, prop.iri)
-                    if t:
-                        g.add((bnode, SH.datatype, t))
-                        g.add((bnode, SH.nodeKind, SH.Literal))
-                mincount = c.properties[p]["minCount"]
-                if int(mincount) != 0:
-                    g.add((bnode, SH.minCount, Literal(int(mincount))))
-                maxcount = c.properties[p]["maxCount"]
-                if maxcount != '*':
-                    g.add((bnode, SH.maxCount, Literal(int(maxcount))))
+        for p in c.properties:
+            fqprop = c.properties[p]["fqname"]
+            if fqprop == "/Core/spdxId":
+                continue
+            bnode = BNode()
+            g.add((node, SH.property, bnode))
+            prop = model.properties[fqprop]
+            g.add((bnode, SH.path, URIRef(prop.iri)))
+            prop_rng = prop.metadata["Range"]
+            if not ":" in prop_rng:
+                typename = "" if prop_rng.startswith("/") else f"/{prop.ns.name}/"
+                typename += prop_rng
+            else:
+                typename = prop_rng
+            if typename in model.classes:
+                dt = model.classes[typename]
+                g.add((bnode, SH["class"], URIRef(dt.iri)))
+                g.add((bnode, SH.nodeKind, SH.BlankNodeOrIRI))
+            elif typename in model.vocabularies:
+                dt = model.vocabularies[typename]
+                g.add((bnode, SH["class"], URIRef(dt.iri)))
+                g.add((bnode, SH.nodeKind, SH.IRI))
+            elif typename in model.datatypes:
+                dt = model.datatypes[typename]
+                if "pattern" in dt.format:
+                    g.add((bnode, SH.pattern, Literal(dt.format["pattern"])))
+                t = xsd_range(dt.metadata["SubclassOf"], prop.iri)
+                if t:
+                    g.add((bnode, SH.datatype, t))
+                    g.add((bnode, SH.nodeKind, SH.Literal))
+            else:
+                t = xsd_range(typename, prop.iri)
+                if t:
+                    g.add((bnode, SH.datatype, t))
+                    g.add((bnode, SH.nodeKind, SH.Literal))
+            mincount = c.properties[p]["minCount"]
+            if int(mincount) != 0:
+                g.add((bnode, SH.minCount, Literal(int(mincount))))
+            maxcount = c.properties[p]["maxCount"]
+            if maxcount != '*':
+                g.add((bnode, SH.maxCount, Literal(int(maxcount))))
 
 
     for fqname, p in model.properties.items():
