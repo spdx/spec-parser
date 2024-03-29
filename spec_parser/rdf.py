@@ -23,6 +23,10 @@ from rdflib.tools.rdf2dot import (
 
 URI_BASE = 'https://rdf.spdx.org/v3/'
 
+IGNORED_PROPERTIES = [
+    "spdxId",
+]
+
 def gen_rdf(model, dir, cfg):
     p = Path(dir)
     p.mkdir(exist_ok=True)
@@ -69,6 +73,8 @@ def gen_rdf_ontology(model):
             p = model.classes[pns+parent]
             g.add((node, RDFS.subClassOf, URIRef(p.iri)))
         for p in c.properties:
+            if p in IGNORED_PROPERTIES:
+                continue
             bnode = BNode()
             g.add((node, SH.property, bnode))
             fqprop = c.properties[p]["fqname"]
@@ -114,6 +120,8 @@ def gen_rdf_ontology(model):
 
 
     for fqname, p in model.properties.items():
+        if p.name in IGNORED_PROPERTIES:
+            continue
         node = URIRef(p.iri)
         if p.summary:
             g.add((node, RDFS.comment, Literal(p.summary, lang='en')))
