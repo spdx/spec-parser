@@ -70,9 +70,11 @@ def gen_rdf_ontology(model):
         if c.properties:
             g.add((node, RDF.type, SH.NodeShape))
             for p in c.properties:
+                fqprop = c.properties[p]["fqname"]
+                if fqprop == "/Core/spdxId":
+                    continue
                 bnode = BNode()
                 g.add((node, SH.property, bnode))
-                fqprop = c.properties[p]["fqname"]
                 prop = model.properties[fqprop]
                 g.add((bnode, SH.path, URIRef(prop.iri)))
                 prop_rng = prop.metadata["Range"]
@@ -81,7 +83,6 @@ def gen_rdf_ontology(model):
                     typename += prop_rng
                 else:
                     typename = prop_rng
-
                 if typename in model.classes:
                     dt = model.classes[typename]
                     g.add((bnode, SH["class"], URIRef(dt.iri)))
@@ -94,7 +95,6 @@ def gen_rdf_ontology(model):
                     dt = model.datatypes[typename]
                     if "pattern" in dt.format:
                         g.add((bnode, SH.pattern, Literal(dt.format["pattern"])))
-
                     t = xsd_range(dt.metadata["SubclassOf"], prop.iri)
                     if t:
                         g.add((bnode, SH.datatype, t))
@@ -104,8 +104,6 @@ def gen_rdf_ontology(model):
                     if t:
                         g.add((bnode, SH.datatype, t))
                         g.add((bnode, SH.nodeKind, SH.Literal))
-
-
                 mincount = c.properties[p]["minCount"]
                 if int(mincount) != 0:
                     g.add((bnode, SH.minCount, Literal(int(mincount))))
@@ -115,6 +113,8 @@ def gen_rdf_ontology(model):
 
 
     for fqname, p in model.properties.items():
+        if fqname == "/Core/spdxId":
+            continue
         node = URIRef(p.iri)
         if p.summary:
             g.add((node, RDFS.comment, Literal(p.summary, lang='en')))
@@ -170,9 +170,6 @@ def gen_rdf_ontology(model):
 
 def jsonld_context(g):
     terms = dict()
-    terms["spdx"] = URI_BASE
-    terms["spdxId"] = "@id"
-    terms["type"] = "@type"
 
     def get_subject_term(subject):
         if (subject, RDF.type, OWL.ObjectProperty) in g:
@@ -231,5 +228,9 @@ def jsonld_context(g):
             continue
 
         terms[key] = get_subject_term(subject)
+
+    terms["spdx"] = URI_BASE
+    terms["spdxId"] = "@id"
+    terms["type"] = "@type"
 
     return {"@context": terms}
