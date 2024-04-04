@@ -13,6 +13,7 @@ from rdflib import (
     Namespace,
     URIRef,
 )
+from rdflib.collection import Collection
 from rdflib.namespace import (
     OWL, RDF, RDFS, SH, XSD,
 )
@@ -91,6 +92,10 @@ def gen_rdf_ontology(model):
                     dt = model.vocabularies[typename]
                     g.add((bnode, SH["class"], URIRef(dt.iri)))
                     g.add((bnode, SH.nodeKind, SH.IRI))
+                    lst = Collection(g, None)
+                    for e, d in dt.entries.items():
+                        lst.append(URIRef(dt.iri + '/' + e))
+                    g.add((bnode, SH["in"], lst.uri))
                 elif typename in model.datatypes:
                     dt = model.datatypes[typename]
                     if "pattern" in dt.format:
