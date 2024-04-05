@@ -31,7 +31,7 @@ def gen_rdf(model, dir, cfg):
     for ext in ["xml", "ttl", "pretty-xml", "json-ld"]:
         f = p / ("spdx-model." + ext)
         ret.serialize(f, format=ext, encoding="utf-8")
-    fn = p / "ontology.rdf.dot"
+    fn = p / "spdx-model.dot"
     with open(fn, "w") as f:
         rdf2dot(ret, f)
     ctx = jsonld_context(ret)
@@ -59,7 +59,7 @@ def gen_rdf_ontology(model):
     g.add((node, OWL.versionIRI, node))
     g.add((node, RDFS.label, Literal("System Package Data Exchange (SPDX) Ontology", lang='en')))
     g.add((node, DCTERMS.abstract, Literal("This ontology defines the terms and relationships used in the SPDX specification to describe system packages", lang='en')))
-    g.add((node, DCTERMS.created, Literal("2023-04-01", datatype=XSD.date)))
+    g.add((node, DCTERMS.created, Literal("2024-04-05", datatype=XSD.date)))
     g.add((node, DCTERMS.creator, Literal("SPDX Project", lang='en')))
     g.add((node, DCTERMS.license, URIRef("https://spdx.org/licenses/Community-Spec-1.0.html")))
     g.add((node, DCTERMS.references, URIRef("https://spdx.dev/specifications/")))
