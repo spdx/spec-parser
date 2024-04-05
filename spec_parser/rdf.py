@@ -14,14 +14,14 @@ from rdflib import (
     URIRef,
 )
 from rdflib.namespace import (
-    OWL, RDF, RDFS, SH, XSD,
+    DCTERMS, OWL, RDF, RDFS, SH, SKOS, XSD
 )
 from rdflib.tools.rdf2dot import (
     rdf2dot
 )
 
 
-URI_BASE = 'https://rdf.spdx.org/v3/'
+URI_BASE = 'https://spdx.org/rdf/3.0.0/terms/'
 
 def gen_rdf(model, dir, cfg):
     p = Path(dir)
@@ -29,13 +29,13 @@ def gen_rdf(model, dir, cfg):
 
     ret = gen_rdf_ontology(model)
     for ext in ["xml", "ttl", "pretty-xml", "json-ld"]:
-        f = p / ("ontology.rdf." + ext)
+        f = p / ("spdx-model." + ext)
         ret.serialize(f, format=ext, encoding="utf-8")
     fn = p / "ontology.rdf.dot"
     with open(fn, "w") as f:
         rdf2dot(ret, f)
     ctx = jsonld_context(ret)
-    fn = p / "context.jsonld"
+    fn = p / "spdx-context.jsonld"
     with open(fn, "w") as f:
         json.dump(ctx, f, sort_keys=True, indent=2)
 
@@ -51,11 +51,20 @@ def xsd_range(rng, propname):
 def gen_rdf_ontology(model):
     g = Graph()
     g.bind("spdx", Namespace(URI_BASE))
-    g.bind("xsd", XSD)
+    OMG_ANN = Namespace("https://www.omg.org/spec/Commons/AnnotationVocabulary/")
+    g.bind("omg-ann", OMG_ANN)
 
     node = URIRef(URI_BASE)
     g.add((node, RDF.type, OWL.Ontology))
     g.add((node, OWL.versionIRI, node))
+    g.add((node, RDFS.label, Literal("System Package Data Exchange (SPDX) Ontology", lang='en')))
+    g.add((node, DCTERMS.abstract, Literal("This ontology defines the terms and relationships used in the SPDX specification to describe system packages", lang='en')))
+    g.add((node, DCTERMS.created, Literal("2023-04-01", datatype=XSD.date)))
+    g.add((node, DCTERMS.creator, Literal("SPDX Project", lang='en')))
+    g.add((node, DCTERMS.license, URIRef("https://spdx.org/licenses/Community-Spec-1.0.html")))
+    g.add((node, DCTERMS.references, URIRef("https://spdx.dev/specifications/")))
+    g.add((node, DCTERMS.title, Literal("System Package Data Exchange (SPDX) Ontology", lang='en')))
+    g.add((node, OMG_ANN.copyright, Literal("Copyright (C) 2024 SPDX Project", lang='en')))
 
     for fqname, c in model.classes.items():
         node = URIRef(c.iri)
