@@ -53,6 +53,24 @@ def gen_mkdocs(model, outdir, cfg):
     _generate_in_dir("Individuals", model.individuals, "individual.md.j2")
     _generate_in_dir("Datatypes", model.datatypes, "datatype.md.j2")
 
+    files = dict()
+    for ns in model.namespaces:
+        nsn = ns.name
+        files[nsn] = []
+        for i in ns.classes:
+            pass # TODO
+
+    filelines = ""
+    filelines.append('- model:')
+    # hardwired order of namespaces
+    for nsname in ["Core", "Software", "Security",
+               "Licensing", "SimpleLicensing", "ExpandedLicensing", 
+               "Dataset", "AI", "Build", "Lite", "Extension"]:
+        filelines.append(f"  - {nsname}:")
+        filelines.append(f"    - 'Description': model/{nsname}/{nsname}.md")
+
+    fn = p / "mkdocs-files.yml"
+    fn.write_text("\n".join(filelines))
 
 def class_link(name):
     if name.startswith("/"):
