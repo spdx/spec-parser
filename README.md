@@ -2,10 +2,9 @@
 
 Automagically process the model of the SPDXv3 specification to validate input or to generate stuff.
 
-
 ## Usage
 
-```
+```shell
 python3 ./main.py  -h 
 usage: main.py [-h] [-d] [-f] [-n] [-q] [-v] [-V] input_dir [output_dir]
 
@@ -29,18 +28,18 @@ Note that not all flags are functional yet.
 
 ### Checking input
 
-```
+```shell
 python3 main.py -n some/where/.../model
 ```
 
 Note that no dependencies are needed.
 
 ### Generate output
-```
+
+```shell
 python3 -m pip install -r requirements.txt
 python3 main.py some/where/.../model some/where/else/.../output_dir
 ```
-
 
 ## Current status (mostly complete / in progress)
 
@@ -51,7 +50,6 @@ python3 main.py some/where/.../model some/where/else/.../output_dir
 - [x] generate RDF ontology
 - [x] generate JSON-LD context
 
-
 ## Contributing
 
 Contributions are always welcome!
@@ -60,4 +58,3 @@ Feel free to open issues for any behavior that is (or even simply does not seem)
 
 However, due to the pressure for releasing SPDXv3, development is happening in fast mode, and not always refelcted in this repository.
 To save everyone valuable time, if you want to contribute code: clearly indicate in the corresponding issue your willingness to work on it, and _wait_ for the assignment of the issue to you.
-
