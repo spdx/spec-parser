@@ -13,9 +13,9 @@ from .mdparsing import (
     NestedListSection,
 )
 
-class Model:
 
-    def __init__ (self, dir = None):
+class Model:
+    def __init__(self, dir=None):
         self.name = None
         self.namespaces = []
         self.classes = dict()
@@ -86,7 +86,9 @@ class Model:
 
         self.types = self.classes | self.vocabularies | self.datatypes
 
-        logging.info(f"Loaded {len(self.namespaces)} namespaces, {len(self.classes)} classes, {len(self.properties)} properties, {len(self.vocabularies)} vocabularies, {len(self.individuals)} individuals, {len(self.datatypes)} datatypes")
+        logging.info(
+            f"Loaded {len(self.namespaces)} namespaces, {len(self.classes)} classes, {len(self.properties)} properties, {len(self.vocabularies)} vocabularies, {len(self.individuals)} individuals, {len(self.datatypes)} datatypes"
+        )
         logging.info(f"Total {len(self.types)} types")
 
         for c in self.classes.values():
@@ -99,14 +101,13 @@ class Model:
                     if not p.startswith("/"):
                         logging.error(f"In class {c.fqname}, property {p} has type {ptype} but the range of {pname} is {proptype}")
                     else:
-                        if proptype.rpartition('/')[-1] != ptype.rpartition('/')[-1]:
+                        if proptype.rpartition("/")[-1] != ptype.rpartition("/")[-1]:
                             logging.error(f"In class {c.fqname}, property {p} has type {ptype} but the range of {pname} is {proptype}")
                 # del pkv["type"] # not needed any more, info is on property
                 self.properties[pname].used_in.append(c.fqname)
 
         # TODO
         # add inherited properties to classes
-
 
     def gen_all(self, dir, cfg):
         from .jsondump import gen_jsondump
@@ -118,7 +119,6 @@ class Model:
         gen_rdf(self, dir, cfg)
         gen_plantuml(self, dir, cfg)
         gen_jsondump(self, dir, cfg)
-
 
 
 class Namespace:
@@ -160,6 +160,7 @@ class Class:
         "minCount",
         "type",
     )
+
     def __init__(self, fname, ns):
         self.ns = ns
 
@@ -199,12 +200,11 @@ class Class:
         if self.metadata.get("SubclassOf") == "none":
             del self.metadata["SubclassOf"]
         for prop in self.properties:
-            self.properties[prop]["fqname"] = prop if prop.startswith('/') else f"/{ns.name}/{prop}"
+            self.properties[prop]["fqname"] = prop if prop.startswith("/") else f"/{ns.name}/{prop}"
             if "minCount" not in self.properties[prop]:
                 self.properties[prop]["minCount"] = 0
             if "maxCount" not in self.properties[prop]:
-                self.properties[prop]["maxCount"] = '*'
-
+                self.properties[prop]["maxCount"] = "*"
 
 
 class Property:
@@ -213,6 +213,7 @@ class Property:
         "Nature",
         "Range",
     )
+
     def __init__(self, fname, ns):
         self.ns = ns
 
@@ -243,9 +244,8 @@ class Property:
 
 
 class Vocabulary:
-    VALID_METADATA = (
-        "name",
-    )
+    VALID_METADATA = ("name",)
+
     def __init__(self, fname, ns):
         self.ns = ns
 
@@ -275,13 +275,13 @@ class Vocabulary:
         self.iri = f"{self.ns.iri}/{self.name}"
 
 
-
 class Individual:
     VALID_METADATA = (
         "name",
         "type",
         "IRI",
     )
+
     def __init__(self, fname, ns):
         self.ns = ns
 
@@ -311,12 +311,12 @@ class Individual:
         self.iri = f"{self.ns.iri}/{self.name}"
 
 
-
 class Datatype:
     VALID_METADATA = (
         "name",
         "SubclassOf",
     )
+
     def __init__(self, fname, ns):
         self.ns = ns
 
@@ -344,4 +344,3 @@ class Datatype:
 
         # processing
         self.iri = f"{self.ns.iri}/{self.name}"
-
