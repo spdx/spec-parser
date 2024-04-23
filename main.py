@@ -11,4 +11,3 @@ if __name__ == "__main__":
     m = Model(cfg.input_dir)
     if not cfg.opt_nooutput:
         m.gen_all(cfg.output_dir, cfg)
-

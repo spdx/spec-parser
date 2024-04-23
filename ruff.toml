@@ -1,0 +1,15 @@
+fix = false
+indent-width = 4
+line-length = 140
+output-format = "full"
+preview = false
+required-version = ">=0.4"
+show-fixes = true
+
+[format]
+docstring-code-format = false
+indent-style = "space"
+line-ending = "native"
+quote-style = "double"
+skip-magic-trailing-comma = false
+

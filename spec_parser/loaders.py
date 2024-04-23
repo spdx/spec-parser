@@ -10,7 +10,7 @@ from .mdparsing import (
 )
 
 
-class NamespaceLoader():
+class NamespaceLoader:
     def __init__(self, fname):
         sf = SpecFile(fname)
         self.license = sf.license
@@ -26,8 +26,7 @@ class NamespaceLoader():
         self.metadata = s.kv
 
 
-
-class ClassLoader():
+class ClassLoader:
     def __init__(self, fname):
         sf = SpecFile(fname)
         self.license = sf.license
@@ -45,9 +44,8 @@ class ClassLoader():
         s = NestedListSection(sf.sections["Properties"])
         self.properties = s.ikv
 
-        
 
-class PropertyLoader():
+class PropertyLoader:
     def __init__(self, fname):
         sf = SpecFile(fname)
         self.license = sf.license
@@ -63,8 +61,7 @@ class PropertyLoader():
         self.metadata = s.kv
 
 
-
-class VocabularyLoader():
+class VocabularyLoader:
     def __init__(self, fname):
         sf = SpecFile(fname)
         self.license = sf.license
@@ -83,8 +80,7 @@ class VocabularyLoader():
         self.entries = s.kv
 
 
-
-class IndividualLoader():
+class IndividualLoader:
     def __init__(self, fname):
         sf = SpecFile(fname)
         self.license = sf.license
@@ -103,8 +99,7 @@ class IndividualLoader():
         self.values = s.kv
 
 
-
-class DatatypeLoader():
+class DatatypeLoader:
     def __init__(self, fname):
         sf = SpecFile(fname)
         self.license = sf.license
@@ -121,4 +116,3 @@ class DatatypeLoader():
 
         s = SingleListSection(sf.sections["Format"])
         self.format = s.kv
-
