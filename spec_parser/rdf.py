@@ -17,12 +17,11 @@ from rdflib.collection import Collection
 from rdflib.namespace import DCTERMS, OWL, RDF, RDFS, SH, SKOS, XSD
 from rdflib.tools.rdf2dot import rdf2dot
 
-
 URI_BASE = "https://spdx.org/rdf/3.0.0/terms/"
 
 
-def gen_rdf(model, dir, cfg):
-    p = Path(dir)
+def gen_rdf(model, outdir, cfg):
+    p = Path(outdir)
     p.mkdir(exist_ok=True)
 
     ret = gen_rdf_ontology(model)
@@ -30,11 +29,11 @@ def gen_rdf(model, dir, cfg):
         f = p / ("spdx-model." + ext)
         ret.serialize(f, format=ext, encoding="utf-8")
     fn = p / "spdx-model.dot"
-    with open(fn, "w") as f:
+    with fn.open("w") as f:
         rdf2dot(ret, f)
     ctx = jsonld_context(ret)
     fn = p / "spdx-context.jsonld"
-    with open(fn, "w") as f:
+    with fn.open("w") as f:
         json.dump(ctx, f, sort_keys=True, indent=2)
 
 
@@ -42,7 +41,7 @@ def xsd_range(rng, propname):
     if rng.startswith("xsd:"):
         return URIRef("http://www.w3.org/2001/XMLSchema#" + rng[4:])
 
-    logging.warn(f"Uknown namespace in range <{rng}> of property {propname}")
+    logging.warning(f"Uknown namespace in range <{rng}> of property {propname}")
     return None
 
 
@@ -61,9 +60,10 @@ def gen_rdf_ontology(model):
             node,
             DCTERMS.abstract,
             Literal(
-                "This ontology defines the terms and relationships used in the SPDX specification to describe system packages", lang="en"
+                "This ontology defines the terms and relationships used in the SPDX specification to describe system packages",
+                lang="en",
             ),
-        )
+        ),
     )
     g.add((node, DCTERMS.created, Literal("2024-04-05", datatype=XSD.date)))
     g.add((node, DCTERMS.creator, Literal("SPDX Project", lang="en")))
@@ -72,7 +72,7 @@ def gen_rdf_ontology(model):
     g.add((node, DCTERMS.title, Literal("System Package Data Exchange (SPDX) Ontology", lang="en")))
     g.add((node, OMG_ANN.copyright, Literal("Copyright (C) 2024 SPDX Project", lang="en")))
 
-    for fqname, c in model.classes.items():
+    for c in model.classes.values():
         node = URIRef(c.iri)
         g.add((node, RDF.type, OWL.Class))
         if c.summary:
@@ -93,7 +93,7 @@ def gen_rdf_ontology(model):
                 prop = model.properties[fqprop]
                 g.add((bnode, SH.path, URIRef(prop.iri)))
                 prop_rng = prop.metadata["Range"]
-                if not ":" in prop_rng:
+                if ":" not in prop_rng:
                     typename = "" if prop_rng.startswith("/") else f"/{prop.ns.name}/"
                     typename += prop_rng
                 else:
@@ -107,7 +107,7 @@ def gen_rdf_ontology(model):
                     g.add((bnode, SH["class"], URIRef(dt.iri)))
                     g.add((bnode, SH.nodeKind, SH.IRI))
                     lst = Collection(g, None)
-                    for e, d in dt.entries.items():
+                    for e in dt.entries:
                         lst.append(URIRef(dt.iri + "/" + e))
                     g.add((bnode, SH["in"], lst.uri))
                 elif typename in model.datatypes:
@@ -138,7 +138,7 @@ def gen_rdf_ontology(model):
             g.add((node, RDFS.comment, Literal(p.summary, lang="en")))
         if p.metadata["Nature"] == "ObjectProperty":
             g.add((node, RDF.type, OWL.ObjectProperty))
-        #             g.add((node, RDFS.domain, xxx))
+        # to add: g.add((node, RDFS.domain, xxx))
         elif p.metadata["Nature"] == "DataProperty":
             g.add((node, RDF.type, OWL.DatatypeProperty))
         rng = p.metadata["Range"]
@@ -157,7 +157,7 @@ def gen_rdf_ontology(model):
                 dt = model.types[typename]
                 g.add((node, RDFS.range, URIRef(dt.iri)))
 
-    for fqname, v in model.vocabularies.items():
+    for v in model.vocabularies.values():
         node = URIRef(v.iri)
         g.add((node, RDF.type, OWL.Class))
         if v.summary:
@@ -169,7 +169,7 @@ def gen_rdf_ontology(model):
             g.add((enode, RDFS.label, Literal(e)))
             g.add((enode, RDFS.comment, Literal(d, lang="en")))
 
-    for fqname, i in model.individuals.items():
+    for i in model.individuals.values():
         node = URIRef(i.iri)
         g.add((node, RDF.type, OWL.NamedIndividual))
         if i.summary:
@@ -217,7 +217,7 @@ def jsonld_context(g):
     has_named_individuals = set()
     # Collect all named individuals
     for s in g.subjects(RDF.type, OWL.NamedIndividual):
-        for s, p, o in g.triples((s, RDF.type, None)):
+        for _s, _p, o in g.triples((s, RDF.type, None)):
             has_named_individuals.add(o)
 
     for subject in sorted(g.subjects(unique=True)):
@@ -233,10 +233,7 @@ def jsonld_context(g):
         if base != URI_BASE.rstrip("/"):
             continue
 
-        if ns == "Core":
-            key = name
-        else:
-            key = ns.lower() + "_" + name
+        key = name if ns == "Core" else ns.lower() + "_" + name
 
         if key in terms:
             current = terms[key]["@id"] if isinstance(terms[key], dict) else terms[key]

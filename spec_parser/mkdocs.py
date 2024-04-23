@@ -4,15 +4,15 @@
 
 import logging
 from pathlib import Path
+
 from jinja2 import Environment, PackageLoader, select_autoescape
 
 
-def gen_mkdocs(model, dir, cfg):
-    p = Path(dir)
-    if p.exists():
-        if not cfg.opt_force:
-            logging.error(f"Destination for mkdocs {dir} already exists, will not overwrite")
-            return
+def gen_mkdocs(model, outdir, cfg):
+    p = Path(outdir)
+    if p.exists() and not cfg.opt_force:
+        logging.error(f"Destination for mkdocs {outdir} already exists, will not overwrite")
+        return
 
     jinja = Environment(
         loader=PackageLoader("spec_parser", package_path="templates/mkdocs"),
