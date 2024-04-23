@@ -14,15 +14,12 @@ from rdflib import (
     URIRef,
 )
 from rdflib.collection import Collection
-from rdflib.namespace import (
-    DCTERMS, OWL, RDF, RDFS, SH, SKOS, XSD
-)
-from rdflib.tools.rdf2dot import (
-    rdf2dot
-)
+from rdflib.namespace import DCTERMS, OWL, RDF, RDFS, SH, SKOS, XSD
+from rdflib.tools.rdf2dot import rdf2dot
 
 
-URI_BASE = 'https://spdx.org/rdf/3.0.0/terms/'
+URI_BASE = "https://spdx.org/rdf/3.0.0/terms/"
+
 
 def gen_rdf(model, dir, cfg):
     p = Path(dir)
@@ -42,10 +39,10 @@ def gen_rdf(model, dir, cfg):
 
 
 def xsd_range(rng, propname):
-    if rng.startswith('xsd:'):
-        return URIRef("http://www.w3.org/2001/XMLSchema#"+rng[4:])
+    if rng.startswith("xsd:"):
+        return URIRef("http://www.w3.org/2001/XMLSchema#" + rng[4:])
 
-    logging.warn(f'Uknown namespace in range <{rng}> of property {propname}')
+    logging.warn(f"Uknown namespace in range <{rng}> of property {propname}")
     return None
 
 
@@ -58,24 +55,32 @@ def gen_rdf_ontology(model):
     node = URIRef(URI_BASE)
     g.add((node, RDF.type, OWL.Ontology))
     g.add((node, OWL.versionIRI, node))
-    g.add((node, RDFS.label, Literal("System Package Data Exchange (SPDX) Ontology", lang='en')))
-    g.add((node, DCTERMS.abstract, Literal("This ontology defines the terms and relationships used in the SPDX specification to describe system packages", lang='en')))
+    g.add((node, RDFS.label, Literal("System Package Data Exchange (SPDX) Ontology", lang="en")))
+    g.add(
+        (
+            node,
+            DCTERMS.abstract,
+            Literal(
+                "This ontology defines the terms and relationships used in the SPDX specification to describe system packages", lang="en"
+            ),
+        )
+    )
     g.add((node, DCTERMS.created, Literal("2024-04-05", datatype=XSD.date)))
-    g.add((node, DCTERMS.creator, Literal("SPDX Project", lang='en')))
+    g.add((node, DCTERMS.creator, Literal("SPDX Project", lang="en")))
     g.add((node, DCTERMS.license, URIRef("https://spdx.org/licenses/Community-Spec-1.0.html")))
     g.add((node, DCTERMS.references, URIRef("https://spdx.dev/specifications/")))
-    g.add((node, DCTERMS.title, Literal("System Package Data Exchange (SPDX) Ontology", lang='en')))
-    g.add((node, OMG_ANN.copyright, Literal("Copyright (C) 2024 SPDX Project", lang='en')))
+    g.add((node, DCTERMS.title, Literal("System Package Data Exchange (SPDX) Ontology", lang="en")))
+    g.add((node, OMG_ANN.copyright, Literal("Copyright (C) 2024 SPDX Project", lang="en")))
 
     for fqname, c in model.classes.items():
         node = URIRef(c.iri)
         g.add((node, RDF.type, OWL.Class))
         if c.summary:
-            g.add((node, RDFS.comment, Literal(c.summary, lang='en')))
+            g.add((node, RDFS.comment, Literal(c.summary, lang="en")))
         parent = c.metadata.get("SubclassOf")
         if parent:
             pns = "" if parent.startswith("/") else f"/{c.ns.name}/"
-            p = model.classes[pns+parent]
+            p = model.classes[pns + parent]
             g.add((node, RDFS.subClassOf, URIRef(p.iri)))
         if c.properties:
             g.add((node, RDF.type, SH.NodeShape))
@@ -103,7 +108,7 @@ def gen_rdf_ontology(model):
                     g.add((bnode, SH.nodeKind, SH.IRI))
                     lst = Collection(g, None)
                     for e, d in dt.entries.items():
-                        lst.append(URIRef(dt.iri + '/' + e))
+                        lst.append(URIRef(dt.iri + "/" + e))
                     g.add((bnode, SH["in"], lst.uri))
                 elif typename in model.datatypes:
                     dt = model.datatypes[typename]
@@ -122,23 +127,22 @@ def gen_rdf_ontology(model):
                 if int(mincount) != 0:
                     g.add((bnode, SH.minCount, Literal(int(mincount))))
                 maxcount = c.properties[p]["maxCount"]
-                if maxcount != '*':
+                if maxcount != "*":
                     g.add((bnode, SH.maxCount, Literal(int(maxcount))))
-
 
     for fqname, p in model.properties.items():
         if fqname == "/Core/spdxId":
             continue
         node = URIRef(p.iri)
         if p.summary:
-            g.add((node, RDFS.comment, Literal(p.summary, lang='en')))
+            g.add((node, RDFS.comment, Literal(p.summary, lang="en")))
         if p.metadata["Nature"] == "ObjectProperty":
             g.add((node, RDF.type, OWL.ObjectProperty))
-#             g.add((node, RDFS.domain, xxx))
+        #             g.add((node, RDFS.domain, xxx))
         elif p.metadata["Nature"] == "DataProperty":
             g.add((node, RDF.type, OWL.DatatypeProperty))
         rng = p.metadata["Range"]
-        if ':' in rng:
+        if ":" in rng:
             t = xsd_range(rng, p.name)
             if t:
                 g.add((node, RDFS.range, t))
@@ -157,19 +161,19 @@ def gen_rdf_ontology(model):
         node = URIRef(v.iri)
         g.add((node, RDF.type, OWL.Class))
         if v.summary:
-            g.add((node, RDFS.comment, Literal(v.summary, lang='en')))
+            g.add((node, RDFS.comment, Literal(v.summary, lang="en")))
         for e, d in v.entries.items():
-            enode = URIRef(v.iri + '/' + e)
+            enode = URIRef(v.iri + "/" + e)
             g.add((enode, RDF.type, OWL.NamedIndividual))
             g.add((enode, RDF.type, node))
             g.add((enode, RDFS.label, Literal(e)))
-            g.add((enode, RDFS.comment, Literal(d, lang='en')))
+            g.add((enode, RDFS.comment, Literal(d, lang="en")))
 
     for fqname, i in model.individuals.items():
         node = URIRef(i.iri)
         g.add((node, RDF.type, OWL.NamedIndividual))
         if i.summary:
-            g.add((node, RDFS.comment, Literal(i.summary, lang='en')))
+            g.add((node, RDFS.comment, Literal(i.summary, lang="en")))
         typ = i.metadata["type"]
         typename = "" if typ.startswith("/") else f"/{i.ns.name}/"
         typename += typ
@@ -236,9 +240,7 @@ def jsonld_context(g):
 
         if key in terms:
             current = terms[key]["@id"] if isinstance(terms[key], dict) else terms[key]
-            logging.error(
-                f"ERROR: Duplicate context key '{key}' for '{subject}'. Already mapped to '{current}'"
-            )
+            logging.error(f"ERROR: Duplicate context key '{key}' for '{subject}'. Already mapped to '{current}'")
             continue
 
         terms[key] = get_subject_term(subject)

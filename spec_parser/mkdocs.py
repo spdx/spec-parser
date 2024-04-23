@@ -13,12 +13,12 @@ def gen_mkdocs(model, dir, cfg):
         if not cfg.opt_force:
             logging.error(f"Destination for mkdocs {dir} already exists, will not overwrite")
             return
-    
+
     jinja = Environment(
         loader=PackageLoader("spec_parser", package_path="templates/mkdocs"),
         autoescape=select_autoescape(),
         trim_blocks=True,
-        lstrip_blocks=True
+        lstrip_blocks=True,
     )
     jinja.globals = cfg.all_as_dict
     jinja.globals["class_link"] = class_link
@@ -36,7 +36,6 @@ def gen_mkdocs(model, dir, cfg):
         page = template.render(vars(ns))
         f.write_text(page)
 
-
     def _generate_in_dir(dirname, group, tmplfname):
         for s in group.values():
             in_ns = s.ns
@@ -53,7 +52,6 @@ def gen_mkdocs(model, dir, cfg):
     _generate_in_dir("Vocabularies", model.vocabularies, "vocabulary.md.j2")
     _generate_in_dir("Individuals", model.individuals, "individual.md.j2")
     _generate_in_dir("Datatypes", model.datatypes, "datatype.md.j2")
-
 
 
 def class_link(name):
@@ -83,11 +81,11 @@ def type_link(name, model):
         return f"[/{other_ns}/{name}](../../{other_ns}/{dirname}/{name}.md)"
     elif name[0].isupper():
         dirname = "Classes"
-        p = [x for x in model.vocabularies if x.endswith("/"+name)]
+        p = [x for x in model.vocabularies if x.endswith("/" + name)]
         if len(p) > 0:
             dirname = "Vocabularies"
         else:
-            p = [x for x in model.datatypes if x.endswith("/"+name)]
+            p = [x for x in model.datatypes if x.endswith("/" + name)]
             if len(p) > 0:
                 dirname = "Datatypes"
         return f"[{name}](../{dirname}/{name}.md)"
