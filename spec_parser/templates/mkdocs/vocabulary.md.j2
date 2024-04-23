@@ -1,11 +1,9 @@
 {% extends "page.md.j2" %}
 
 {% block metadata %}
-
 | | |
 |---|---|
 | Name | {{metadata["name"]}} |
-
 {% endblock %}
 
 {% block extra %}
@@ -15,5 +13,4 @@
 {% for name, val in entries | dictsort %}
 - {{name}}: {{val}}
 {% endfor %}
-
 {% endblock %}
