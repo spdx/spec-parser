@@ -84,4 +84,4 @@ class RunParams:
                 logging.warning(f"Ignoring output directory {self.output_dir} specified with --nooutput")
         else:
             if not self.output_dir:
-                logging.critical(f"No output directory specified!")
+                logging.critical("No output directory specified!")

@@ -3,10 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from .mdparsing import (
-    SpecFile,
     ContentSection,
-    SingleListSection,
     NestedListSection,
+    SingleListSection,
+    SpecFile,
 )
 
 

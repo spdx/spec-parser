@@ -5,3 +5,5 @@
 __version__ = "2.0.0"
 
 from .model import Model
+
+__all__ = ["Model"]
