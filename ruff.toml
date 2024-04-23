@@ -2,6 +2,7 @@ fix = false
 indent-width = 4
 line-length = 140
 output-format = "full"
+# output-format = "grouped"
 preview = false
 required-version = ">=0.4"
 show-fixes = true
@@ -12,4 +13,36 @@ indent-style = "space"
 line-ending = "native"
 quote-style = "double"
 skip-magic-trailing-comma = false
+
+[lint]
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+fixable = ["ALL"]
+ignore = [ "C408", "C901", "COM812", "G004", "ISC001", "RET505", "S101", ]
+ignore-init-module-imports = true
+select = [
+"A", "AIR", "ARG", "ASYNC", "B", "C", "BLE", "C4", "COM", "DJ", "DTZ",
+"EM", "ERA", "E", "W", "EXE", "F", "FA", "FBT", "FIX", "FLY", "G", "I",
+"ICN", "INP", "INT", "ISC", "LOG", "N", "NPY", "PD", "PERF", "PGH", "PIE",
+"PL", "PT", "PTH", "PYI", "Q", "R", "RET", "RSE", "RUF", "S", "SIM",
+"SLF", "SLOT", "T10", "T20", "TCH", "TD", "TID", "TRIO", "TRY", "UP", "YTT",
+]
+unfixable = []
+
+[lint.per-file-ignores]
+# Ignore F401 (unused import) in the module definition file
+"spec_parser/__init__.py" = ["F401"]
+# Ignore E741 (Ambiguous variable name) in file using `(l,r)` pairs
+"spec_parser/mdparsing.py" = ["E741"]
+"spec_parser/plantuml.py" = ["E741"]
+# temporary ignores -- will be removed once code is added
+"spec_parser/jsondump.py" = ["ARG001"]	# unused function argument, for cfg
+"spec_parser/rdf.py" = ["ARG001",	# unused function argument, for cfg
+			"F401",		# unused import, for SKOS
+			"N806",		# uppercase variable, for OMG_ANN
+			"PLR0915",	# too many statements, for gen_rdf_ontology
+]
+
+[lint.pylint]
+max-branches = 35
+max-statements = 55
 

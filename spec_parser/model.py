@@ -5,17 +5,16 @@
 import logging
 from pathlib import Path
 
-
 from .mdparsing import (
-    SpecFile,
     ContentSection,
-    SingleListSection,
     NestedListSection,
+    SingleListSection,
+    SpecFile,
 )
 
 
 class Model:
-    def __init__(self, dir=None):
+    def __init__(self, indir=None):
         self.name = None
         self.namespaces = []
         self.classes = dict()
@@ -24,16 +23,16 @@ class Model:
         self.individuals = dict()
         self.datatypes = dict()
 
-        if dir is not None:
-            self.load(dir)
+        if indir is not None:
+            self.load(indir)
 
-    def load(self, dir):
-        self.toplevel = p = Path(dir)
+    def load(self, indir):
+        self.toplevel = p = Path(indir)
         if not p.is_dir():
-            logging.error(f"{dir}: not a directory")
+            logging.error(f"{indir}: not a directory")
             return
         if p.name != "model":
-            logging.warning(f'{dir}: input not named "model"')
+            logging.warning(f'{indir}: input not named "model"')
 
         for d in [d for d in p.iterdir() if d.is_dir() and d.name[0].isupper()]:
             nsp = p / d.name / f"{d.name}.md"
@@ -87,7 +86,9 @@ class Model:
         self.types = self.classes | self.vocabularies | self.datatypes
 
         logging.info(
-            f"Loaded {len(self.namespaces)} namespaces, {len(self.classes)} classes, {len(self.properties)} properties, {len(self.vocabularies)} vocabularies, {len(self.individuals)} individuals, {len(self.datatypes)} datatypes"
+            f"Loaded {len(self.namespaces)} namespaces, {len(self.classes)} classes, "
+            f"{len(self.properties)} properties, {len(self.vocabularies)} vocabularies, "
+            f"{len(self.individuals)} individuals, {len(self.datatypes)} datatypes",
         )
         logging.info(f"Total {len(self.types)} types")
 
@@ -97,28 +98,22 @@ class Model:
                 pname += p
                 proptype = self.properties[pname].metadata["Range"]
                 ptype = pkv["type"]
-                if proptype != ptype:
-                    if not p.startswith("/"):
-                        logging.error(f"In class {c.fqname}, property {p} has type {ptype} but the range of {pname} is {proptype}")
-                    else:
-                        if proptype.rpartition("/")[-1] != ptype.rpartition("/")[-1]:
-                            logging.error(f"In class {c.fqname}, property {p} has type {ptype} but the range of {pname} is {proptype}")
-                # del pkv["type"] # not needed any more, info is on property
+                if proptype != ptype and (not p.startswith("/") or proptype.rpartition("/")[-1] != ptype.rpartition("/")[-1]):
+                    logging.error(f"In class {c.fqname}, property {p} has type {ptype} but the range of {pname} is {proptype}")
                 self.properties[pname].used_in.append(c.fqname)
 
-        # TODO
-        # add inherited properties to classes
+        # possible in the future: add inherited properties to classes
 
-    def gen_all(self, dir, cfg):
+    def gen_all(self, outdir, cfg):
         from .jsondump import gen_jsondump
         from .mkdocs import gen_mkdocs
         from .plantuml import gen_plantuml
         from .rdf import gen_rdf
 
-        gen_mkdocs(self, dir, cfg)
-        gen_rdf(self, dir, cfg)
-        gen_plantuml(self, dir, cfg)
-        gen_jsondump(self, dir, cfg)
+        gen_mkdocs(self, outdir, cfg)
+        gen_rdf(self, outdir, cfg)
+        gen_plantuml(self, outdir, cfg)
+        gen_jsondump(self, outdir, cfg)
 
 
 class Namespace:
