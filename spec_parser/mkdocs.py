@@ -72,13 +72,12 @@ def property_link(name):
 
 def type_link(name, model):
     if name.startswith("/"):
-        name = name[1:]
         dirname = "Classes"
         if name in model.vocabularies:
             dirname = "Vocabularies"
         elif name in model.datatypes:
             dirname = "Datatypes"
-        other_ns, name = name.split("/")
+        _, other_ns, name = name.split("/")
         return f"[/{other_ns}/{name}](../../{other_ns}/{dirname}/{name}.md)"
     elif name[0].isupper():
         dirname = "Classes"
