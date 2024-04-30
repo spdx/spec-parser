@@ -304,6 +304,8 @@ class Individual:
 
         # processing
         self.iri = f"{self.ns.iri}/{self.name}"
+        if "IRI" not in self.metadata:
+            self.metadata["IRI"] = self.iri
 
 
 class Datatype:
