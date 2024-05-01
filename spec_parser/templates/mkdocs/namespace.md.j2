@@ -8,4 +8,13 @@
 
 {% endblock %}
 
-{% block extra %}{% endblock %}
+{% block extra %}
+
+{% if conformance %}
+## Profile conformance
+
+{{conformance}}
+
+{% endif %}
+
+{% endblock %}

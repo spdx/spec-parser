@@ -137,6 +137,12 @@ class Namespace:
         s = SingleListSection(sf.sections["Metadata"])
         self.metadata = s.kv
 
+        if "Profile conformance" in sf.sections:
+            s = ContentSection(sf.sections["Profile conformance"])
+            self.conformance = s.content
+        else:
+            self.conformance = None
+
         # checks
         assert self.name == self.metadata["name"], f"Namespace name {self.name} does not match metadata {self.metadata['name']}"
 
