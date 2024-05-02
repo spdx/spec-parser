@@ -62,14 +62,26 @@ class SingleListSection(Section):
     def load(self, content):
         self.content = content
         self.kv = dict()
-        for l in content.splitlines():
-            m = re.fullmatch(self.RE_EXTRACT_KEY_VALUE, l)
+        lines = content.splitlines()
+        i = 0
+        lines_len = len(lines)
+        while i < lines_len:
+            m = re.fullmatch(self.RE_EXTRACT_KEY_VALUE, lines[i])
             if m is None:
-                logging.error(f"Single list parsing error in line `{l}'")
-            else:
-                key = m.group(1)
-                val = m.group(2).strip()
-                self.kv[key] = val
+                logging.error(f"Single list parsing error in line `{lines[i]}'")
+                break;
+            key = m.group(1)
+            val = m.group(2).strip()
+
+            # consume the remaining lines of multiline-value
+            j = i + 1
+            while (j < lines_len) and (not lines[j].startswith("-")) and (len(lines[j].strip()) > 0):
+                val = val + " " + lines[j].strip()
+                j = j + 1
+
+            self.kv[key] = val
+
+            i = j  # jump i to the last line of remaining value
 
 
 class NestedListSection(Section):
