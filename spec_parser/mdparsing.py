@@ -81,7 +81,7 @@ class SingleListSection(Section):
 
             self.kv[key] = val
 
-            i = j  # jump i to the last line of remaining value
+            i = j  # jump i to the last line of the multiline-value
 
 
 class NestedListSection(Section):
