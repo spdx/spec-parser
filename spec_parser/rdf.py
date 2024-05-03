@@ -50,6 +50,7 @@ def gen_rdf_ontology(model):
     g.bind("spdx", Namespace(URI_BASE))
     OMG_ANN = Namespace("https://www.omg.org/spec/Commons/AnnotationVocabulary/")
     g.bind("omg-ann", OMG_ANN)
+    AbstractClass = URIRef("http://spdx.invalid./AbstractClass")
 
     node = URIRef(URI_BASE)
     g.add((node, RDF.type, OWL.Ontology))
@@ -82,6 +83,8 @@ def gen_rdf_ontology(model):
             pns = "" if parent.startswith("/") else f"/{c.ns.name}/"
             p = model.classes[pns + parent]
             g.add((node, RDFS.subClassOf, URIRef(p.iri)))
+        if c.metadata["Instantiability"] == "Abstract":
+            g.add((node, RDF.type, AbstractClass))
         if c.properties:
             g.add((node, RDF.type, SH.NodeShape))
             for p in c.properties:
