@@ -53,21 +53,34 @@ def gen_mkdocs(model, outdir, cfg):
     _generate_in_dir("Individuals", model.individuals, "individual.md.j2")
     _generate_in_dir("Datatypes", model.datatypes, "datatype.md.j2")
 
+    def _gen_filelist(nsname, itemslist, heading):
+        ret = []
+        nameslist = [c.name for c in itemslist.values()]
+        if nameslist:
+            ret.append(f"    - {heading}:")
+            for n in sorted(nameslist):
+                ret.append(f"      - model/{nsname}/{heading}/{n}.md")
+        return ret
+
     files = dict()
     for ns in model.namespaces:
         nsn = ns.name
         files[nsn] = []
-        for i in ns.classes:
-            pass # TODO
-
-    filelines = ""
+        files[nsn].append(f"  - {nsn}:")
+        files[nsn].append(f"    - 'Description': model/{nsn}/{nsn}.md")
+        files[nsn].extend(_gen_filelist(nsn, ns.classes, "Classes"))
+        files[nsn].extend(_gen_filelist(nsn, ns.properties, "Properties"))
+        files[nsn].extend(_gen_filelist(nsn, ns.vocabularies, "Vocabularies"))
+        files[nsn].extend(_gen_filelist(nsn, ns.individuals, "Individuals"))
+        files[nsn].extend(_gen_filelist(nsn, ns.datatypes, "Datatypes"))
+                 
+    filelines = []
     filelines.append('- model:')
     # hardwired order of namespaces
     for nsname in ["Core", "Software", "Security",
                "Licensing", "SimpleLicensing", "ExpandedLicensing", 
                "Dataset", "AI", "Build", "Lite", "Extension"]:
-        filelines.append(f"  - {nsname}:")
-        filelines.append(f"    - 'Description': model/{nsname}/{nsname}.md")
+        filelines.extend(files[nsname])
 
     fn = p / "mkdocs-files.yml"
     fn.write_text("\n".join(filelines))
