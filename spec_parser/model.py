@@ -104,6 +104,35 @@ class Model:
 
         # possible in the future: add inherited properties to classes
 
+        # add class inheritance stack
+        inheritances = []
+        for c in self.classes.values():
+            parent = c.fqsupercname
+            if parent:
+                inheritances.append((c.fqname, parent))
+        
+        def _tsort_recursive(inh, cn, visited, stack):
+            visited[cn] = True
+            for ipair in inh:
+                (chd, par) = ipair
+                if chd == cn:
+                    if not visited[par]:
+                        _tsort_recursive(inh, par, visited, stack)
+            stack.append(cn)
+        visited = {c.fqname: False for c in self.classes.values()}
+        stack = []
+        for c in self.classes.values():
+            if not visited[c.fqname]:
+                _tsort_recursive(inheritances, c.fqname, visited, stack)
+        for cn in stack:
+            c = self.classes[cn]
+            c.inheritance_stack = []
+            pcn = c.fqsupercname
+            while pcn:
+                c.inheritance_stack.append(pcn)
+                pcn = self.classes[pcn].fqsupercname
+
+
     def gen_all(self, outdir, cfg):
         from .jsondump import gen_jsondump
         from .mkdocs import gen_mkdocs
@@ -206,6 +235,12 @@ class Class:
                 self.properties[prop]["minCount"] = 0
             if "maxCount" not in self.properties[prop]:
                 self.properties[prop]["maxCount"] = "*"
+
+        parent = self.metadata.get("SubclassOf")
+        if parent:
+            if not parent.startswith("/"):
+                parent = f"/{ns.name}/{parent}"
+        self.fqsupercname = parent
 
 
 class Property:
