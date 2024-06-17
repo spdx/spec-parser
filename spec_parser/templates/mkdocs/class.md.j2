@@ -10,6 +10,15 @@
 | SubclassOf | {{type_link(metadata["SubclassOf"])}} |
 {% endif %}
 
+
+{%if inheritance_stack %}
+## Superclasses
+
+{% for super in inheritance_stack %}
+* {{type_link(super)}}
+{% endfor %}
+{% endif %}
+
 {% endblock %}
 
 {% block extra %}
