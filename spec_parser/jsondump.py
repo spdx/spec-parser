@@ -2,12 +2,13 @@
 
 # SPDX-License-Identifier: Apache-2.0
 
-import jsonpickle
 from pathlib import Path
 
+import jsonpickle
 
-def gen_jsondump(model, dir, cfg):
-    p = Path(dir)
+
+def gen_jsondump(model, outdir, cfg):
+    p = Path(outdir)
     p.mkdir(exist_ok=True)
 
     f = p / "model.json"

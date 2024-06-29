@@ -26,13 +26,13 @@ class SpecFile:
 
         m = re.fullmatch(self.RE_EXTRACT_LICENSE, parts[0])
         if m is None:
-            logging.error(f"File {str(fpath)} does not start with license.")
+            logging.error(f"File {fpath!s} does not start with license.")
         else:
             self.license = m.group(1)
 
         m = re.fullmatch(self.RE_EXTRACT_NAME, parts[1])
         if m is None:
-            logging.error(f"File {str(fpath)} does not have name after license.")
+            logging.error(f"File {fpath!s} does not have name after license.")
         else:
             self.name = m.group(1)
 

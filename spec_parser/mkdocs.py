@@ -4,15 +4,15 @@
 
 import logging
 from pathlib import Path
+
 from jinja2 import Environment, PackageLoader, select_autoescape
 
 
-def gen_mkdocs(model, dir, cfg):
-    p = Path(dir)
-    if p.exists():
-        if not cfg.opt_force:
-            logging.error(f"Destination for mkdocs {dir} already exists, will not overwrite")
-            return
+def gen_mkdocs(model, outdir, cfg):
+    p = Path(outdir)
+    if p.exists() and not cfg.opt_force:
+        logging.error(f"Destination for mkdocs {outdir} already exists, will not overwrite")
+        return
 
     jinja = Environment(
         loader=PackageLoader("spec_parser", package_path="templates/mkdocs"),
@@ -53,6 +53,37 @@ def gen_mkdocs(model, dir, cfg):
     _generate_in_dir("Individuals", model.individuals, "individual.md.j2")
     _generate_in_dir("Datatypes", model.datatypes, "datatype.md.j2")
 
+    def _gen_filelist(nsname, itemslist, heading):
+        ret = []
+        nameslist = [c.name for c in itemslist.values()]
+        if nameslist:
+            ret.append(f"    - {heading}:")
+            for n in sorted(nameslist):
+                ret.append(f"      - model/{nsname}/{heading}/{n}.md")
+        return ret
+
+    files = dict()
+    for ns in model.namespaces:
+        nsn = ns.name
+        files[nsn] = []
+        files[nsn].append(f"  - {nsn}:")
+        files[nsn].append(f"    - 'Description': model/{nsn}/{nsn}.md")
+        files[nsn].extend(_gen_filelist(nsn, ns.classes, "Classes"))
+        files[nsn].extend(_gen_filelist(nsn, ns.properties, "Properties"))
+        files[nsn].extend(_gen_filelist(nsn, ns.vocabularies, "Vocabularies"))
+        files[nsn].extend(_gen_filelist(nsn, ns.individuals, "Individuals"))
+        files[nsn].extend(_gen_filelist(nsn, ns.datatypes, "Datatypes"))
+                 
+    filelines = []
+    filelines.append('- model:')
+    # hardwired order of namespaces
+    for nsname in ["Core", "Software", "Security",
+               "Licensing", "SimpleLicensing", "ExpandedLicensing", 
+               "Dataset", "AI", "Build", "Lite", "Extension"]:
+        filelines.extend(files[nsname])
+
+    fn = p / "mkdocs-files.yml"
+    fn.write_text("\n".join(filelines))
 
 def class_link(name):
     if name.startswith("/"):
@@ -72,13 +103,12 @@ def property_link(name):
 
 def type_link(name, model):
     if name.startswith("/"):
-        name = name[1:]
         dirname = "Classes"
         if name in model.vocabularies:
             dirname = "Vocabularies"
         elif name in model.datatypes:
             dirname = "Datatypes"
-        other_ns, name = name.split("/")
+        _, other_ns, name = name.split("/")
         return f"[/{other_ns}/{name}](../../{other_ns}/{dirname}/{name}.md)"
     elif name[0].isupper():
         dirname = "Classes"

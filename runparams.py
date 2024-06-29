@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import argparse
-from datetime import datetime, timezone
 import logging
 import sys
+from datetime import datetime, timezone
 
 
 class RunParams:
@@ -65,7 +65,8 @@ class RunParams:
             )
         }
 
-    # TODO: add more parameters, specified as command-line arguments
+    # Additional future improvements:
+    # - add more parameters, specified as command-line arguments
     # - separate output dirs for mkdocs / RDF /JSON-LD / ...
     # - maybe flags whether something might not be generated?
     # - etc.
@@ -82,9 +83,7 @@ class RunParams:
         parser.add_argument("-V", "--version", action="version", version=f"%(prog)s {RunParams.parser_version}")
         self.args = parser.parse_args(args)
 
-        if self.opt_nooutput:
-            if self.output_dir:
-                logging.warning(f"Ignoring output directory {self.output_dir} specified with --nooutput")
-        else:
-            if not self.output_dir:
-                logging.critical(f"No output directory specified!")
+        if self.opt_nooutput and self.output_dir:
+            logging.warning(f"Ignoring output directory {self.output_dir} specified with --nooutput")
+        if not self.opt_nooutput and not self.output_dir:
+            logging.critical("No output directory specified!")
