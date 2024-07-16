@@ -182,6 +182,7 @@ def gen_rdf_ontology(model):
         typename += typ
         dt = model.types[typename]
         g.add((node, RDFS.range, URIRef(dt.iri)))
+        g.add((node, RDF.type, URIRef(dt.iri)))
         custom_iri = i.metadata.get("IRI")
         if custom_iri:
             g.add((node, OWL.sameAs, URIRef(custom_iri)))
