@@ -17,7 +17,7 @@ from rdflib.collection import Collection
 from rdflib.namespace import DCTERMS, OWL, RDF, RDFS, SH, SKOS, XSD
 from rdflib.tools.rdf2dot import rdf2dot
 
-URI_BASE = "https://spdx.org/rdf/3.0.0/terms/"
+URI_BASE = "https://spdx.org/rdf/3.0.1/terms/"
 
 
 def gen_rdf(model, outdir, cfg):
@@ -50,7 +50,6 @@ def gen_rdf_ontology(model):
     g.bind("spdx", Namespace(URI_BASE))
     OMG_ANN = Namespace("https://www.omg.org/spec/Commons/AnnotationVocabulary/")
     g.bind("omg-ann", OMG_ANN)
-    AbstractClass = URIRef("http://spdx.invalid./AbstractClass")
 
     node = URIRef(URI_BASE)
     g.add((node, RDF.type, OWL.Ontology))
@@ -72,6 +71,19 @@ def gen_rdf_ontology(model):
     g.add((node, DCTERMS.references, URIRef("https://spdx.dev/specifications/")))
     g.add((node, DCTERMS.title, Literal("System Package Data Exchange (SPDX) Ontology", lang="en")))
     g.add((node, OMG_ANN.copyright, Literal("Copyright (C) 2024 SPDX Project", lang="en")))
+
+    gen_rdf_classes(model, g)
+    gen_rdf_properties(model, g)
+#     gen_rdf_datatypes(model, g)
+    gen_rdf_vocabularies(model, g)
+    gen_rdf_individuals(model, g)
+
+    return g
+
+
+def gen_rdf_classes(model, g):
+    AbstractClass = URIRef("http://spdx.invalid./AbstractClass")
+    g.add((AbstractClass, RDF.type, OWL.Class))
 
     for c in model.classes.values():
         node = URIRef(c.iri)
@@ -104,7 +116,10 @@ def gen_rdf_ontology(model):
                 if typename in model.classes:
                     dt = model.classes[typename]
                     g.add((bnode, SH["class"], URIRef(dt.iri)))
-                    g.add((bnode, SH.nodeKind, SH.BlankNodeOrIRI))
+                    if "spdxId" in dt.all_properties:
+                        g.add((bnode, SH.nodeKind, SH.IRI))
+                    else:
+                        g.add((bnode, SH.nodeKind, SH.BlankNodeOrIRI))
                 elif typename in model.vocabularies:
                     dt = model.vocabularies[typename]
                     g.add((bnode, SH["class"], URIRef(dt.iri)))
@@ -133,6 +148,8 @@ def gen_rdf_ontology(model):
                 if maxcount != "*":
                     g.add((bnode, SH.maxCount, Literal(int(maxcount))))
 
+
+def gen_rdf_properties(model, g):
     for fqname, p in model.properties.items():
         if fqname == "/Core/spdxId":
             continue
@@ -160,6 +177,8 @@ def gen_rdf_ontology(model):
                 dt = model.types[typename]
                 g.add((node, RDFS.range, URIRef(dt.iri)))
 
+
+def gen_rdf_vocabularies(model, g):
     for v in model.vocabularies.values():
         node = URIRef(v.iri)
         g.add((node, RDF.type, OWL.Class))
@@ -172,6 +191,8 @@ def gen_rdf_ontology(model):
             g.add((enode, RDFS.label, Literal(e)))
             g.add((enode, RDFS.comment, Literal(d, lang="en")))
 
+
+def gen_rdf_individuals(model, g):
     for i in model.individuals.values():
         node = URIRef(i.iri)
         g.add((node, RDF.type, OWL.NamedIndividual))
@@ -185,8 +206,6 @@ def gen_rdf_ontology(model):
         custom_iri = i.metadata.get("IRI")
         if custom_iri:
             g.add((node, OWL.sameAs, URIRef(custom_iri)))
-
-    return g
 
 
 def jsonld_context(g):

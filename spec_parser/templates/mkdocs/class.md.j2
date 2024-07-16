@@ -34,4 +34,27 @@
 
 {% endif %}
 
+{% if ext_prop_restrs %}
+## External properties cardinality updates
+
+| Property | minCount | maxCount |
+|---|:---:|:---:|
+    {% for name, kv in ext_prop_restrs | dictsort %}
+| {{ext_property_link(name)}} | {{not_none(kv.get("minCount"))}} | {{not_none(kv.get("maxCount"))}} |
+    {% endfor %}
+
+{% endif %}
+
+{% if all_properties %}
+## All properties
+
+| Property | Type | minCount | maxCount |
+|---|---|:---:|:---:|
+    {% for name, kv in all_properties | dictsort %}
+| {{property_link(kv["fullname"], showshort=True)}} | {{type_link(kv["fulltype"], showshort=True)}} | {{kv["minCount"]}} | {{kv["maxCount"]}} |
+    {% endfor %}
+
+{% endif %}
+
+
 {% endblock %}

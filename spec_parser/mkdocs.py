@@ -23,7 +23,9 @@ def gen_mkdocs(model, outdir, cfg):
     jinja.globals = cfg.all_as_dict
     jinja.globals["class_link"] = class_link
     jinja.globals["property_link"] = property_link
-    jinja.globals["type_link"] = lambda x: type_link(x, model)
+    jinja.globals["ext_property_link"] = ext_property_link
+    jinja.globals["type_link"] = lambda x, showshort=False: type_link(x, model, showshort)
+    jinja.globals["not_none"] = lambda x: str(x) if x is not None else ""
 
     p.mkdir()
 
@@ -93,15 +95,24 @@ def class_link(name):
         return f"[{name}](../Classes/{name}.md)"
 
 
-def property_link(name):
+def property_link(name, showshort=False):
     if name.startswith("/"):
         _, other_ns, name = name.split("/")
-        return f"[/{other_ns}/{name}](../../{other_ns}/Properties/{name}.md)"
+        showname = name if showshort else f"/{other_ns}/{name}"
+        return f"[{showname}](../../{other_ns}/Properties/{name}.md)"
     else:
         return f"[{name}](../Properties/{name}.md)"
 
 
-def type_link(name, model):
+def ext_property_link(name):
+    (_, pns, pclass, pname) = name.split("/")
+    ret = ""
+    ret += f"[{pname}](../../{pns}/Properties/{pname}.md)"
+    ret += f" from [/{pns}/{pclass}](../../{pns}/Classes/{pclass}.md)"
+    return ret
+
+
+def type_link(name, model, showshort=False):
     if name.startswith("/"):
         dirname = "Classes"
         if name in model.vocabularies:
@@ -109,7 +120,8 @@ def type_link(name, model):
         elif name in model.datatypes:
             dirname = "Datatypes"
         _, other_ns, name = name.split("/")
-        return f"[/{other_ns}/{name}](../../{other_ns}/{dirname}/{name}.md)"
+        showname = name if showshort else f"/{other_ns}/{name}"
+        return f"[{showname}](../../{other_ns}/{dirname}/{name}.md)"
     elif name[0].isupper():
         dirname = "Classes"
         p = [x for x in model.vocabularies if x.endswith("/" + name)]
@@ -122,3 +134,4 @@ def type_link(name, model):
         return f"[{name}](../{dirname}/{name}.md)"
     else:
         return f"{name}"
+

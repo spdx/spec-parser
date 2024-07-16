@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
+from copy import deepcopy
 from pathlib import Path
 
 from .mdparsing import (
@@ -83,15 +84,19 @@ class Model:
                     self.datatypes[k] = n
                     ns.datatypes[k] = n
 
-        self.types = self.classes | self.vocabularies | self.datatypes
-
         logging.info(
             f"Loaded {len(self.namespaces)} namespaces, {len(self.classes)} classes, "
             f"{len(self.properties)} properties, {len(self.vocabularies)} vocabularies, "
             f"{len(self.individuals)} individuals, {len(self.datatypes)} datatypes",
         )
+        self.process_after_load()
+
+
+    def process_after_load(self):
+        self.types = self.classes | self.vocabularies | self.datatypes
         logging.info(f"Total {len(self.types)} types")
 
+        # add used_in information to properties
         for c in self.classes.values():
             for p, pkv in c.properties.items():
                 pname = "" if p.startswith("/") else f"/{c.ns.name}/"
@@ -101,8 +106,6 @@ class Model:
                 if proptype != ptype and (not p.startswith("/") or proptype.rpartition("/")[-1] != ptype.rpartition("/")[-1]):
                     logging.error(f"In class {c.fqname}, property {p} has type {ptype} but the range of {pname} is {proptype}")
                 self.properties[pname].used_in.append(c.fqname)
-
-        # possible in the future: add inherited properties to classes
 
         # add class inheritance stack
         inheritances = []
@@ -131,6 +134,34 @@ class Model:
             while pcn:
                 c.inheritance_stack.append(pcn)
                 pcn = self.classes[pcn].fqsupercname
+
+        # add inherited properties to classes
+        for cn in stack:
+            c = self.classes[cn]
+            c.all_properties = dict()
+            for p, pkv in c.properties.items():
+                shortname = p.rpartition("/")[-1]
+                fullname = "" if p.startswith("/") else f"/{c.ns.name}/"
+                fullname += p
+                fulltype = "" if pkv["type"].startswith("/") or pkv["type"].startswith("xsd:") else f"/{c.ns.name}/"
+                fulltype += pkv["type"]
+                c.all_properties[shortname] = deepcopy(pkv)
+                c.all_properties[shortname]["fullname"] = fullname
+                c.all_properties[shortname]["fulltype"] = fulltype
+
+            if c.inheritance_stack:
+                p = c.inheritance_stack[0]
+                c.all_properties.update(deepcopy(self.classes[p].all_properties))
+
+            if c.ext_prop_restrs:
+                for p, pkv in c.ext_prop_restrs.items():
+                    (_, pns, _, shortname) = p.split("/")
+                    assert c.all_properties[shortname]["fullname"] == f"/{pns}/{shortname}"
+                    for k,v in pkv.items():
+                        if c.all_properties[shortname][k] == v:
+                            logging.warning(f"In class {c.fqname} property {p} has same {k} as the parent class")
+                        c.all_properties[shortname][k] = v
+
 
 
     def gen_all(self, outdir, cfg):
@@ -214,6 +245,12 @@ class Class:
             self.properties = s.ikv
         else:
             self.properties = dict()
+
+        if "External properties restrictions" in sf.sections:
+            s = NestedListSection(sf.sections["External properties restrictions"])
+            self.ext_prop_restrs = s.ikv
+        else:
+            self.ext_prop_restrs = dict()
 
         # checks
         assert self.name == self.metadata["name"], f"Class name {self.name} does not match metadata {self.metadata['name']}"
