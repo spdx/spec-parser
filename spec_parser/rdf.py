@@ -241,11 +241,12 @@ def jsonld_context(g):
     # Collect all named individuals
     for s in g.subjects(RDF.type, OWL.NamedIndividual):
         for _s, _p, o in g.triples((s, RDF.type, None)):
-            has_named_individuals.add(o)
+            if o != OWL.NamedIndividual:
+                has_named_individuals.add(o)
 
     for subject in sorted(g.subjects(unique=True)):
-        # Skip named individuals
-        if (subject, RDF.type, OWL.NamedIndividual) in g:
+        # Skip named individuals in vocabularies
+        if (subject, RDF.type, OWL.NamedIndividual) in g and any((subject, RDF.type, o) in g for o in has_named_individuals):
             continue
 
         try:
