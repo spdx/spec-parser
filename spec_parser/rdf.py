@@ -232,7 +232,7 @@ def jsonld_context(g):
                 elif (o, RDF.type, OWL.Class) in g:
                     return {
                         "@id": subject,
-                        "@type": "@id",
+                        "@type": "@vocab",
                     }
         elif (subject, RDF.type, OWL.DatatypeProperty) in g:
             for _, _, o in g.triples((subject, RDFS.range, None)):
