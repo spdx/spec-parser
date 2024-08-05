@@ -4,18 +4,19 @@
 
 | | |
 |---|---|
-| Name | {{metadata["name"]}} |
-| Instantiability | {{metadata["Instantiability"]}} |
-{%if "SubclassOf" in metadata %}
-| SubclassOf | {{type_link(metadata["SubclassOf"])}} |
+| **Name** | {{metadata["name"]}} |
+| **Instantiability** | {{metadata["Instantiability"]}} |
+{% if "SubclassOf" in metadata %}
+| **SubclassOf** | {{type_link(metadata["SubclassOf"])}} |
 {% endif %}
 
 
 {%if inheritance_stack %}
 ## Superclasses
 
-{% for super in inheritance_stack %}
-* {{type_link(super)}}
+{% set full_inheritance_stack = [fqname] + inheritance_stack %}
+{% for super in full_inheritance_stack | reverse %}
+{{ '&nbsp;' * ((loop.index-1)*4) }}└ {{type_link(super)}}<br />
 {% endfor %}
 {% endif %}
 
