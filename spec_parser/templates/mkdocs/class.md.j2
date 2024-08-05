@@ -14,7 +14,7 @@
 
 {% set full_inheritance_stack = [fqname] + inheritance_stack %}
 {% for super in full_inheritance_stack | reverse %}
-{{ '&nbsp;' * ((loop.index-1)*4) }}
+{{ '&nbsp;' * ((loop.index-1) * 6) }}
   {% if loop.last %}
 **{{type_link(super)}}**
   {% else %}
