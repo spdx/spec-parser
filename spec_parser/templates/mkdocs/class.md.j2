@@ -10,15 +10,17 @@
 | **SubclassOf** | {{type_link(metadata["SubclassOf"])}} |
 {% endif %}
 
-
-{%if inheritance_stack %}
-## Superclasses
+## Inheritance
 
 {% set full_inheritance_stack = [fqname] + inheritance_stack %}
 {% for super in full_inheritance_stack | reverse %}
-{{ '&nbsp;' * ((loop.index-1)*4) }}└ {{type_link(super)}}<br />
+{{ '&nbsp;' * ((loop.index-1)*4) }}
+  {% if loop.last %}
+**{{type_link(super)}}**
+  {% else %}
+{{type_link(super)}}<br />
+  {% endif %}
 {% endfor %}
-{% endif %}
 
 {% endblock %}
 
