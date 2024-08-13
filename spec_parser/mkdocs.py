@@ -59,7 +59,7 @@ def gen_mkdocs(model, outdir, cfg):
         if nameslist:
             ret.append(f"    - {heading}:")
             for n in sorted(nameslist):
-                ret.append(f"      - model/{nsname}/{heading}/{n}.md")
+                ret.append(f"      - '{n}': model/{nsname}/{heading}/{n}.md")
         return ret
 
     files = dict()
@@ -133,4 +133,3 @@ def type_link(name, model, showshort=False):
         return f"[{name}](../{dirname}/{name}.md)"
     else:
         return f"{name}"
-

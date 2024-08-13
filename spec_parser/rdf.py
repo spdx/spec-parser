@@ -97,6 +97,12 @@ def gen_rdf_classes(model, g):
             g.add((node, RDFS.subClassOf, URIRef(p.iri)))
         if c.metadata["Instantiability"] == "Abstract":
             g.add((node, RDF.type, AbstractClass))
+
+        if "spdxId" in c.all_properties:
+            g.add((node, SH.nodeKind, SH.IRI))
+        else:
+            g.add((node, SH.nodeKind, SH.BlankNode))
+
         if c.properties:
             g.add((node, RDF.type, SH.NodeShape))
             for p in c.properties:
@@ -226,7 +232,7 @@ def jsonld_context(g):
                 elif (o, RDF.type, OWL.Class) in g:
                     return {
                         "@id": subject,
-                        "@type": "@id",
+                        "@type": "@vocab",
                     }
         elif (subject, RDF.type, OWL.DatatypeProperty) in g:
             for _, _, o in g.triples((subject, RDFS.range, None)):
