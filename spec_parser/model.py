@@ -169,9 +169,17 @@ class Model:
         from .mkdocs import gen_mkdocs
         from .plantuml import gen_plantuml
         from .rdf import gen_rdf
+        from .tex import gen_tex
+
+        p = Path(outdir)
+        if p.exists() and not cfg.opt_force:
+            logging.error(f"Destination for mkdocs {outdir} already exists, will not overwrite")
+            return
+        p.mkdir(parents=True)
 
         gen_mkdocs(self, outdir, cfg)
         gen_rdf(self, outdir, cfg)
+        gen_tex(self, outdir, cfg)
         gen_plantuml(self, outdir, cfg)
         gen_jsondump(self, outdir, cfg)
 

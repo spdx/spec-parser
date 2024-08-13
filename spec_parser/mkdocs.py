@@ -9,10 +9,6 @@ from jinja2 import Environment, PackageLoader, select_autoescape
 
 
 def gen_mkdocs(model, outdir, cfg):
-    p = Path(outdir)
-    if p.exists() and not cfg.opt_force:
-        logging.error(f"Destination for mkdocs {outdir} already exists, will not overwrite")
-        return
 
     jinja = Environment(
         loader=PackageLoader("spec_parser", package_path="templates/mkdocs"),
@@ -27,6 +23,8 @@ def gen_mkdocs(model, outdir, cfg):
     jinja.globals["type_link"] = lambda x, showshort=False: type_link(x, model, showshort)
     jinja.globals["not_none"] = lambda x: str(x) if x is not None else ""
 
+    op = Path(outdir)
+    p = op / "mkdocs"
     p.mkdir()
 
     for ns in model.namespaces:
@@ -84,8 +82,9 @@ def gen_mkdocs(model, outdir, cfg):
                "Dataset", "AI", "Build", "Lite", "Extension"]:
         filelines.extend(files[nsname])
 
-    fn = p / "mkdocs-files.yml"
+    fn = op / "model-files.yml"
     fn.write_text("\n".join(filelines))
+
 
 def class_link(name):
     if name.startswith("/"):

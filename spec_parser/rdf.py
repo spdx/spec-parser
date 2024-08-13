@@ -21,8 +21,8 @@ URI_BASE = "https://spdx.org/rdf/3.0.1/terms/"
 
 
 def gen_rdf(model, outdir, cfg):
-    p = Path(outdir)
-    p.mkdir(exist_ok=True)
+    p = Path(outdir) / "rdf"
+    p.mkdir()
 
     ret = gen_rdf_ontology(model)
     for ext in ["xml", "ttl", "pretty-xml", "json-ld"]:

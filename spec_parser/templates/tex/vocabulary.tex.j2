@@ -1,0 +1,18 @@
+{% extends "entity.tex.j2" %}
+{% block metadata %}
+\begin{tabular}{ | l l | } 
+\hline
+ \emph{Name:} & {{metadata["name"]}} \\
+\hline
+\end{tabular}
+{% endblock %}
+%
+{% block extra %}
+\spdxpagepart{Entries}
+\begin{description}
+{% for name, val in entries | dictsort %}
+\item[ {{-to_tex(name)-}} ]
+    {{-markdown_to_tex(val)-}}
+{% endfor %}
+\end{description}
+{% endblock %}

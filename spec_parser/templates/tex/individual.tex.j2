@@ -1,0 +1,12 @@
+{% extends "entity.tex.j2" %}
+{% block metadata %}
+\begin{tabular}{ | l l | } 
+\hline
+ \emph{Name:} & {{metadata["name"]}} \\
+ \emph{Type:} & {{metadata["type"]}} \\
+ \emph{IRI:} & \spdxiri{ {{-metadata["IRI"]-}} } \\
+\hline
+\end{tabular}
+{% endblock %}
+%
+{% block extra %}{% endblock %}

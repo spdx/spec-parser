@@ -1,0 +1,66 @@
+{% extends "entity.tex.j2" %}
+{% block metadata %}
+\par
+\begin{tabular}{ | >{\itshape}l l | } 
+\hline
+ Name: & {{metadata["name"]}} \\
+ Instantiability: & {{metadata["Instantiability"]}} \\
+{%if "SubclassOf" in metadata %}
+ SubclassOf: & {{metadata["SubclassOf"]}} \\
+{% endif %}
+\hline
+\end{tabular}
+%
+{%if inheritance_stack %}
+\spdxpagepart{Superclasses}
+\begin{itemize}
+\tightlist
+{% for super in inheritance_stack %}
+\item {{super}}
+{% endfor %}
+\end{itemize}
+{% endif %}
+{% endblock %}
+%
+%
+{% block extra %}
+{% if properties %}
+\spdxpagepart{Properties}
+\begin{tabular}{ l l c c } 
+\toprule
+ Property & Type & minCount & maxCount \\
+\midrule
+    {% for name, kv in properties | dictsort %}
+ {{name}} & {{kv["type"]}} & {{kv["minCount"]}} & {{kv["maxCount"]}} \\
+    {% endfor %}
+\bottomrule
+\end{tabular} 
+{% endif %}
+%
+{% if ext_prop_restrs %}
+\spdxpagepart{External properties cardinality updates}
+\begin{tabular}{ l c c  } 
+\toprule
+ Property & minCount & maxCount \\
+\midrule
+    {% for name, kv in ext_prop_restrs | dictsort %}
+ {{name}} & {{not_none(kv.get("minCount"))}} & {{not_none(kv.get("maxCount"))}} \\
+    {% endfor %}
+\bottomrule
+\end{tabular}
+{% endif %}
+%
+{% if all_properties %}
+% \spdxpagepart{All properties}
+\begin{longtable}{ |l l c c| } 
+\caption*{\textbf{All properties} (informative)} \\
+\hline
+ Property & Type & minCount & maxCount \\
+\hline
+    {% for name, kv in all_properties | dictsort %}
+ {{name}} & {{kv["type"]}} & {{kv["minCount"]}} & {{kv["maxCount"]}} \\
+    {% endfor %}
+\hline
+\end{longtable} 
+{% endif %}
+{% endblock %}

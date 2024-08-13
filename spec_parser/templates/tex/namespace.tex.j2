@@ -1,0 +1,23 @@
+% {{autogen_header}}
+% SPDX-License-Identifier: {{license}}
+\spdxnamespace{ {{-name-}} }
+
+\spdxpagepart{Summary}
+{{summary}}
+
+\spdxpagepart{Description}
+{{markdown_to_tex(description)}}
+
+\spdxpagepart{Metadata}
+\spdxiri{ {{-iri-}} }
+\par
+\begin{tabular}{ | l l | } 
+\hline
+ \emph{Name:} & {{metadata["name"]}} \\
+\hline
+\end{tabular}
+%
+{% if conformance %}
+\spdxpagepart{Profile conformance}
+{{markdown_to_tex(conformance)}}
+{% endif %}

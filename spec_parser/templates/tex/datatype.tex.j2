@@ -1,0 +1,16 @@
+{% extends "entity.tex.j2" %}
+{% block metadata %}
+\begin{tabular}{ | l l | } 
+\hline
+ \emph{Name:} & {{metadata["name"]}} \\
+{%if "SubclassOf" in metadata %}
+ \emph{SubclassOf:} & {{metadata["SubclassOf"]}} \\
+{% endif %}
+\hline
+\end{tabular}
+{% endblock %}
+%
+{% block extra %}
+\spdxpagepart{Format pattern}
+{{-markdown_to_tex("`"+format["pattern"]+"`")-}}
+{% endblock %}
