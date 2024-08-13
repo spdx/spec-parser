@@ -16,7 +16,7 @@
 {% for super in full_inheritance_stack | reverse %}
 {{ '&nbsp;' * ((loop.index-1) * 6) }}
   {% if loop.last %}
-**{{type_link(super)}}**
+{{type_link(super)}}
   {% else %}
 {{type_link(super)}}<br />
   {% endif %}
