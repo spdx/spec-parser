@@ -221,7 +221,7 @@ def jsonld_context(g):
     def get_subject_term(subject):
         if (subject, RDF.type, OWL.ObjectProperty) in g:
             for _, _, o in g.triples((subject, RDFS.range, None)):
-                if o in has_named_individuals:
+                if o in vocab_classes:
                     return {
                         "@id": subject,
                         "@type": "@vocab",
@@ -243,16 +243,20 @@ def jsonld_context(g):
 
         return subject
 
-    has_named_individuals = set()
-    # Collect all named individuals
-    for s in g.subjects(RDF.type, OWL.NamedIndividual):
-        for _s, _p, o in g.triples((s, RDF.type, None)):
-            if o != OWL.NamedIndividual:
-                has_named_individuals.add(o)
+    vocab_named_individuals = set()
+    vocab_classes = set()
+    for lst in g.objects(None, SH["in"]):
+        c = Collection(g, lst)
+        for e in c:
+            vocab_named_individuals.add(e)
+            for typ in g.objects(e, RDF.type):
+                if typ == OWL.NamedIndividual:
+                    continue
+                vocab_classes.add(typ)
 
     for subject in sorted(g.subjects(unique=True)):
         # Skip named individuals in vocabularies
-        if (subject, RDF.type, OWL.NamedIndividual) in g and any((subject, RDF.type, o) in g for o in has_named_individuals):
+        if (subject, RDF.type, OWL.NamedIndividual) in g and subject in vocab_named_individuals:
             continue
 
         try:
