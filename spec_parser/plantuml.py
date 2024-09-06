@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 def gen_plantuml(model, outdir, cfg):
-    p = Path(outdir)
+    p = Path(outdir) / "diagram"
     p.mkdir(exist_ok=True)
 
     f = p / "model.plantuml"

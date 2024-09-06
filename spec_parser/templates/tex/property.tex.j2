@@ -1,0 +1,23 @@
+{% extends "entity.tex.j2" %}
+{% block metadata %}
+\par
+\begin{tabular}{ | l l | } 
+\hline
+ \emph{Name:} & {{metadata["name"]}} \\
+ \emph{Nature:} & {{metadata["Nature"]}} \\
+ \emph{Range:} & {{metadata["Range"]}} \\
+\hline
+\end{tabular}
+{% endblock %}
+%
+{% block extra %}
+{% if used_in %}
+\spdxpagepart{Referenced}
+\begin{itemize}
+\tightlist
+{% for name in used_in | sort %}
+\item {{name}}
+{% endfor %}
+\end{itemize}
+{% endif %}
+{% endblock %}

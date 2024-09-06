@@ -91,7 +91,6 @@ class Model:
         )
         self.process_after_load()
 
-
     def process_after_load(self):
         self.types = self.classes | self.vocabularies | self.datatypes
         logging.info(f"Total {len(self.types)} types")
@@ -113,7 +112,7 @@ class Model:
             parent = c.fqsupercname
             if parent:
                 inheritances.append((c.fqname, parent))
-        
+
         def _tsort_recursive(inh, cn, visited, stack):
             visited[cn] = True
             for ipair in inh:
@@ -122,6 +121,7 @@ class Model:
                     if not visited[par]:
                         _tsort_recursive(inh, par, visited, stack)
             stack.append(cn)
+
         visited = {c.fqname: False for c in self.classes.values()}
         stack = []
         for c in self.classes.values():
@@ -157,21 +157,27 @@ class Model:
                 for p, pkv in c.ext_prop_restrs.items():
                     (_, pns, _, shortname) = p.split("/")
                     assert c.all_properties[shortname]["fullname"] == f"/{pns}/{shortname}"
-                    for k,v in pkv.items():
+                    for k, v in pkv.items():
                         if c.all_properties[shortname][k] == v:
                             logging.warning(f"In class {c.fqname} property {p} has same {k} as the parent class")
                         c.all_properties[shortname][k] = v
-
-
 
     def gen_all(self, outdir, cfg):
         from .jsondump import gen_jsondump
         from .mkdocs import gen_mkdocs
         from .plantuml import gen_plantuml
         from .rdf import gen_rdf
+        from .tex import gen_tex
+
+        p = Path(outdir)
+        if p.exists() and not cfg.opt_force:
+            logging.error(f"Destination for mkdocs {outdir} already exists, will not overwrite")
+            return
+        p.mkdir(parents=True)
 
         gen_mkdocs(self, outdir, cfg)
         gen_rdf(self, outdir, cfg)
+        gen_tex(self, outdir, cfg)
         gen_plantuml(self, outdir, cfg)
         gen_jsondump(self, outdir, cfg)
 
