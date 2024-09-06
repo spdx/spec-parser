@@ -2,14 +2,12 @@
 
 # SPDX-License-Identifier: Apache-2.0
 
-import logging
 from pathlib import Path
 
 from jinja2 import Environment, PackageLoader, select_autoescape
 
 
 def gen_mkdocs(model, outdir, cfg):
-
     jinja = Environment(
         loader=PackageLoader("spec_parser", package_path="templates/mkdocs"),
         autoescape=select_autoescape(),
@@ -73,13 +71,23 @@ def gen_mkdocs(model, outdir, cfg):
         files[nsn].extend(_gen_filelist(nsn, ns.vocabularies, "Vocabularies"))
         files[nsn].extend(_gen_filelist(nsn, ns.individuals, "Individuals"))
         files[nsn].extend(_gen_filelist(nsn, ns.datatypes, "Datatypes"))
-                 
+
     filelines = []
-    filelines.append('- model:')
+    filelines.append("- model:")
     # hardwired order of namespaces
-    for nsname in ["Core", "Software", "Security",
-               "Licensing", "SimpleLicensing", "ExpandedLicensing", 
-               "Dataset", "AI", "Build", "Lite", "Extension"]:
+    for nsname in [
+        "Core",
+        "Software",
+        "Security",
+        "Licensing",
+        "SimpleLicensing",
+        "ExpandedLicensing",
+        "Dataset",
+        "AI",
+        "Build",
+        "Lite",
+        "Extension",
+    ]:
         filelines.extend(files[nsname])
 
     fn = op / "model-files.yml"

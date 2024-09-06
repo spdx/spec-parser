@@ -2,7 +2,6 @@
 
 # SPDX-License-Identifier: Apache-2.0
 
-import logging
 import re
 from pathlib import Path
 
@@ -10,7 +9,6 @@ from jinja2 import Environment, PackageLoader, select_autoescape
 
 
 def gen_tex(model, outdir, cfg):
-
     jinja = Environment(
         loader=PackageLoader("spec_parser", package_path="templates/tex"),
         autoescape=select_autoescape(),
@@ -21,7 +19,6 @@ def gen_tex(model, outdir, cfg):
     jinja.globals["not_none"] = lambda x: str(x) if x is not None else ""
     jinja.globals["to_tex"] = to_tex
     jinja.globals["markdown_to_tex"] = markdown_to_tex
-
 
     op = Path(outdir)
     p = op / "tex"
@@ -66,19 +63,29 @@ def gen_tex(model, outdir, cfg):
     for ns in model.namespaces:
         nsn = ns.name
         files[nsn] = []
-#         files[nsn].append(f"\\section{{{nsn}}}")
+        #         files[nsn].append(f"\\section{{{nsn}}}")
         files[nsn].append(f"\\input{{model/{nsn}/{nsn}}}")
         files[nsn].extend(_gen_filelist(nsn, ns.classes, "Classes"))
         files[nsn].extend(_gen_filelist(nsn, ns.properties, "Properties"))
         files[nsn].extend(_gen_filelist(nsn, ns.vocabularies, "Vocabularies"))
         files[nsn].extend(_gen_filelist(nsn, ns.individuals, "Individuals"))
         files[nsn].extend(_gen_filelist(nsn, ns.datatypes, "Datatypes"))
-                 
+
     filelines = []
     # hardwired order of namespaces
-    for nsname in ["Core", "Software", "Security",
-               "Licensing", "SimpleLicensing", "ExpandedLicensing", 
-               "Dataset", "AI", "Build", "Lite", "Extension"]:
+    for nsname in [
+        "Core",
+        "Software",
+        "Security",
+        "Licensing",
+        "SimpleLicensing",
+        "ExpandedLicensing",
+        "Dataset",
+        "AI",
+        "Build",
+        "Lite",
+        "Extension",
+    ]:
         filelines.extend(files[nsname])
 
     fn = op / "model-files.tex"
@@ -92,34 +99,35 @@ def to_tex(s):
     s = s.replace("#", "\\#")
     s = s.replace("^", "\\^")
     s = s.replace("$", "\\$")
-#    s = s.replace("\\", "\\textbackslash{}")
-#    s = s.replace("<", "$<$")
-#    s = s.replace(">", "$>$")
-#    s = s.replace("{", "\\{")
-#    s = s.replace("}", "\\}")
-#    s = s.replace("~", "\\textasciitilde{}")
+    #    s = s.replace("\\", "\\textbackslash{}")
+    #    s = s.replace("<", "$<$")
+    #    s = s.replace(">", "$>$")
+    #    s = s.replace("{", "\\{")
+    #    s = s.replace("}", "\\}")
+    #    s = s.replace("~", "\\textasciitilde{}")
     return s
+
 
 LINK_REGEXP = re.compile(r"\[([^\]]+)\]\(([^\)]+)\)")
 BOLD_REGEXP = re.compile(r"\*\*([^\*]+)\*\*")
 ITALIC_REGEXP = re.compile(r"\*([^\*]+)\*")
 PREFORMATTED_REGEXP = re.compile(r"\`([^\`]+)\`")
 PREFORMATTED_LINES_REGEXP = re.compile(r"\`\`\`([^\`]+)\`\`\`")
+
+
 def foo(description):
-	description = re.sub(r'\*\*(.+?)\*\*', r'\\textbf{\1}', description)
-	description = re.sub(r'\*(.+?)\*', r'\\textit{\1}', description)
-	description = re.sub(r'`(.+?)`', r'\\texttt{\1}', description)
-	description = re.sub(r'\[(.*?)\]\((.*?)\)', r'\\href{\2}{\1}', description)
+    description = re.sub(r"\*\*(.+?)\*\*", r"\\textbf{\1}", description)
+    description = re.sub(r"\*(.+?)\*", r"\\textit{\1}", description)
+    description = re.sub(r"`(.+?)`", r"\\texttt{\1}", description)
+    description = re.sub(r"\[(.*?)\]\((.*?)\)", r"\\href{\2}{\1}", description)
+
 
 import subprocess
 
-def markdown_to_tex(s):
-	# Call pandoc to convert from Markdown to TeX
-	process = subprocess.run(
-    	['pandoc', '-f', 'markdown', '-t', 'latex'],
-    	input=s.encode('utf-8'),
-    	stdout=subprocess.PIPE,
-    	stderr=subprocess.PIPE
-	)
-	return process.stdout.decode('utf-8')
 
+def markdown_to_tex(s):
+    # Call pandoc to convert from Markdown to TeX
+    process = subprocess.run(
+        ["pandoc", "-f", "markdown", "-t", "latex"], input=s.encode("utf-8"), stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False
+    )
+    return process.stdout.decode("utf-8")

@@ -25,16 +25,20 @@ def gen_rdf(model, outdir, cfg):
     p.mkdir()
 
     ret = gen_rdf_ontology(model)
-    for ext in ["xml", "ttl", "pretty-xml", "json-ld"]:
+    for ext in ["hext", "json-ld", "longturtle", "n3", "nt", "pretty-xml", "trig", "ttl", "xml"]:
         f = p / ("spdx-model." + ext)
         ret.serialize(f, format=ext, encoding="utf-8")
-    fn = p / "spdx-model.dot"
-    with fn.open("w") as f:
-        rdf2dot(ret, f)
+
     ctx = jsonld_context(ret)
     fn = p / "spdx-context.jsonld"
     with fn.open("w") as f:
         json.dump(ctx, f, sort_keys=True, indent=2)
+
+    p = Path(outdir) / "diagram"
+    p.mkdir(exist_ok=True)
+    fn = p / "spdx-model.dot"
+    with fn.open("w") as f:
+        rdf2dot(ret, f)
 
 
 def xsd_range(rng, propname):
@@ -74,7 +78,7 @@ def gen_rdf_ontology(model):
 
     gen_rdf_classes(model, g)
     gen_rdf_properties(model, g)
-#     gen_rdf_datatypes(model, g)
+    #     gen_rdf_datatypes(model, g)
     gen_rdf_vocabularies(model, g)
     gen_rdf_individuals(model, g)
 
