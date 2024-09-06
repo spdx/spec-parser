@@ -212,10 +212,9 @@ def gen_rdf_individuals(model, g):
         typename = "" if typ.startswith("/") else f"/{i.ns.name}/"
         typename += typ
         dt = model.types[typename]
-        g.add((node, RDFS.range, URIRef(dt.iri)))
         g.add((node, RDF.type, URIRef(dt.iri)))
         custom_iri = i.metadata.get("IRI")
-        if custom_iri:
+        if custom_iri and custom_iri != i.iri:
             g.add((node, OWL.sameAs, URIRef(custom_iri)))
 
 
