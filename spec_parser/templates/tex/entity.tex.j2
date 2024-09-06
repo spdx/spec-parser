@@ -1,0 +1,18 @@
+% {{autogen_header}}
+% SPDX-License-Identifier: {{license}}
+%
+\spdxentity{ {{-name-}} }
+\spdxpagepart{Summary}
+{{summary}}
+%
+\spdxpagepart{Description}
+{{markdown_to_tex(description)}}
+%
+\spdxpagepart{Metadata}
+\spdxiri{ {{-iri-}} }
+
+{% block metadata %}
+{% endblock %}
+%
+{% block extra %}
+{% endblock %}

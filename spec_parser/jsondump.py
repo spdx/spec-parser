@@ -8,8 +8,8 @@ import jsonpickle
 
 
 def gen_jsondump(model, outdir, cfg):
-    p = Path(outdir)
-    p.mkdir(exist_ok=True)
+    p = Path(outdir) / "jsondump"
+    p.mkdir()
 
     f = p / "model.json"
     f.write_text(jsonpickle.encode(model, indent=2, warn=True))
