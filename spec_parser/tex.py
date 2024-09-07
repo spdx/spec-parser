@@ -4,6 +4,7 @@
 
 import logging
 import re
+import sys
 from pathlib import Path
 
 from jinja2 import Environment, PackageLoader, select_autoescape
@@ -25,7 +26,7 @@ def gen_tex(model, outdir, cfg):
     p = op / "tex"
     if p.exists() and not cfg.opt_force:
         logging.error(f"Destination for Tex: {p} already exists, will not overwrite")
-        return
+        sys.exit(1)
     p.mkdir(exist_ok=True)
 
     for ns in model.namespaces:

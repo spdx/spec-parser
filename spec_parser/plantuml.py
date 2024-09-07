@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
+import sys
 from pathlib import Path
 
 
@@ -10,7 +11,7 @@ def gen_plantuml(model, outdir, cfg):
     p = Path(outdir) / "diagram"
     if p.exists() and not cfg.opt_force:
         logging.error(f"Destination for PlantUML: {p} already exists, will not overwrite")
-        return
+        sys.exit(1)
     p.mkdir(exist_ok=True)
 
     f = p / "model.plantuml"

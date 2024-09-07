@@ -4,15 +4,10 @@
 
 import json
 import logging
+import sys
 from pathlib import Path
 
-from rdflib import (
-    BNode,
-    Graph,
-    Literal,
-    Namespace,
-    URIRef,
-)
+from rdflib import BNode, Graph, Literal, Namespace, URIRef
 from rdflib.collection import Collection
 from rdflib.namespace import DCTERMS, OWL, RDF, RDFS, SH, SKOS, XSD
 from rdflib.tools.rdf2dot import rdf2dot
@@ -24,7 +19,7 @@ def gen_rdf(model, outdir, cfg):
     p = Path(outdir) / "rdf"
     if p.exists() and not cfg.opt_force:
         logging.error(f"Destination for RDF: {p} already exists, will not overwrite")
-        return
+        sys.exit(1)
     p.mkdir(exist_ok=True)
 
     ret = gen_rdf_ontology(model)
@@ -40,7 +35,7 @@ def gen_rdf(model, outdir, cfg):
     p = Path(outdir) / "diagram"
     if p.exists() and not cfg.opt_force:
         logging.error(f"Destination for diagram: {p} already exists, will not overwrite")
-        return
+        sys.exit(1)
     p.mkdir(exist_ok=True)
     fn = p / "spdx-model.dot"
     with fn.open("w") as f:

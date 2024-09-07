@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
+import sys
 from copy import deepcopy
 from pathlib import Path
 
@@ -31,7 +32,7 @@ class Model:
         self.toplevel = p = Path(indir)
         if not p.is_dir():
             logging.error(f"{indir}: not a directory")
-            return
+            sys.exit(1)
         if p.name != "model":
             logging.warning(f'{indir}: input not named "model"')
 
@@ -172,7 +173,7 @@ class Model:
         p = Path(outdir)
         if p.exists() and not cfg.opt_force:
             logging.error(f"Destination for model: {p} already exists, will not overwrite")
-            return
+            sys.exit(1)
         p.mkdir(exist_ok=True, parents=True)
 
         if "mkdocs" in cfg.gen_formats:
