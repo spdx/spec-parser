@@ -2,6 +2,7 @@
 
 # SPDX-License-Identifier: Apache-2.0
 
+import logging
 from pathlib import Path
 
 from jinja2 import Environment, PackageLoader, select_autoescape
@@ -23,11 +24,14 @@ def gen_mkdocs(model, outdir, cfg):
 
     op = Path(outdir)
     p = op / "mkdocs"
-    p.mkdir()
+    if p.exists() and not cfg.opt_force:
+        logging.error(f"Destination for MkDocs: {p} already exists, will not overwrite")
+        return
+    p.mkdir(exist_ok=True)
 
     for ns in model.namespaces:
         d = p / ns.name
-        d.mkdir()
+        d.mkdir(exist_ok=True)
         f = d / f"{ns.name}.md"
 
         template = jinja.get_template("namespace.md.j2")

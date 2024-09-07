@@ -62,6 +62,7 @@ class RunParams:
         for arg, format_str in options:
             if getattr(self.args, arg) or self.args.gen_all:
                 formats.append(format_str)
+        # if nothing is selected, select all
         if not formats:
             formats = [format_str for _, format_str in options]
         return formats

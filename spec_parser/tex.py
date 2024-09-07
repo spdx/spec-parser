@@ -2,6 +2,7 @@
 
 # SPDX-License-Identifier: Apache-2.0
 
+import logging
 import re
 from pathlib import Path
 
@@ -22,11 +23,14 @@ def gen_tex(model, outdir, cfg):
 
     op = Path(outdir)
     p = op / "tex"
-    p.mkdir()
+    if p.exists() and not cfg.opt_force:
+        logging.error(f"Destination for Tex: {p} already exists, will not overwrite")
+        return
+    p.mkdir(exist_ok=True)
 
     for ns in model.namespaces:
         d = p / ns.name
-        d.mkdir()
+        d.mkdir(exist_ok=True)
         f = d / f"{ns.name}.tex"
 
         template = jinja.get_template("namespace.tex.j2")

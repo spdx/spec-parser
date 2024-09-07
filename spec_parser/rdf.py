@@ -22,7 +22,10 @@ URI_BASE = "https://spdx.org/rdf/3.0.1/terms/"
 
 def gen_rdf(model, outdir, cfg):
     p = Path(outdir) / "rdf"
-    p.mkdir()
+    if p.exists() and not cfg.opt_force:
+        logging.error(f"Destination for RDF: {p} already exists, will not overwrite")
+        return
+    p.mkdir(exist_ok=True)
 
     ret = gen_rdf_ontology(model)
     for ext in ["hext", "json-ld", "longturtle", "n3", "nt", "pretty-xml", "trig", "ttl", "xml"]:
@@ -35,6 +38,9 @@ def gen_rdf(model, outdir, cfg):
         json.dump(ctx, f, sort_keys=True, indent=2)
 
     p = Path(outdir) / "diagram"
+    if p.exists() and not cfg.opt_force:
+        logging.error(f"Destination for diagram: {p} already exists, will not overwrite")
+        return
     p.mkdir(exist_ok=True)
     fn = p / "spdx-model.dot"
     with fn.open("w") as f:

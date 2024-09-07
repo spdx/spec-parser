@@ -171,9 +171,9 @@ class Model:
 
         p = Path(outdir)
         if p.exists() and not cfg.opt_force:
-            logging.error(f"Destination for mkdocs {outdir} already exists, will not overwrite")
+            logging.error(f"Destination for model: {p} already exists, will not overwrite")
             return
-        p.mkdir(parents=True)
+        p.mkdir(exist_ok=True, parents=True)
 
         if "mkdocs" in cfg.gen_formats:
             logging.info("Generating MkDocs ...")
