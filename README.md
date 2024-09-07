@@ -5,24 +5,30 @@ or to generate stuff.
 
 ## Usage
 
-```shell
+```text
 python3 ./main.py  -h 
-usage: main.py [-h] [-d] [-f] [-n] [-q] [-v] [-V] input_dir [output_dir]
+usage: main.py [-h] [-f] [-n] [-q] [-d] [-v] [-V] [-gA] [-gM] [-gR] [-gT] [-gU] [-gJ] input_dir [output_dir]
 
 Generate documentation from an SPDX 3.0 model
 
 positional arguments:
-  input_dir       Directory containing the input specification files
-  output_dir      Directory to write the output files to
+  input_dir            Directory containing the input specification files
+  output_dir           Directory to write the output files to
 
 options:
-  -h, --help      show this help message and exit
-  -d, --debug     Print debug output
-  -f, --force     Overwrite existing generated files
-  -n, --nooutput  Do not generate anything, only check input
-  -q, --quiet     Print no output
-  -v, --verbose   Print verbose output
-  -V, --version   show program's version number and exit
+  -h, --help           show this help message and exit
+  -f, --force          Overwrite existing generated files
+  -n, --nooutput       Do not generate anything, only check input
+  -q, --quiet          Print no output
+  -d, --debug          Print debug output (most verbose)
+  -v, --verbose        Print verbose output
+  -V, --version        show program's version number and exit
+  -gA, --gen-all       Generate everything (Default)
+  -gM, --gen-mkdocs    Generate MkDocs-ready Markdown
+  -gR, --gen-rdf       Generate RDF
+  -gT, --gen-tex       Generate Tex
+  -gU, --gen-plantuml  Generate PlantUML
+  -gJ, --gen-jsondump  Generate JSON dump
 ```
 
 Note that not all flags are functional yet.

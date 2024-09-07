@@ -162,7 +162,7 @@ class Model:
                             logging.warning(f"In class {c.fqname} property {p} has same {k} as the parent class")
                         c.all_properties[shortname][k] = v
 
-    def gen_all(self, outdir, cfg):
+    def generate(self, outdir, cfg):
         from .jsondump import gen_jsondump
         from .mkdocs import gen_mkdocs
         from .plantuml import gen_plantuml
@@ -175,11 +175,21 @@ class Model:
             return
         p.mkdir(parents=True)
 
-        gen_mkdocs(self, outdir, cfg)
-        gen_rdf(self, outdir, cfg)
-        gen_tex(self, outdir, cfg)
-        gen_plantuml(self, outdir, cfg)
-        gen_jsondump(self, outdir, cfg)
+        if "mkdocs" in cfg.gen_formats:
+            logging.info("Generating MkDocs ...")
+            gen_mkdocs(self, outdir, cfg)
+        if "rdf" in cfg.gen_formats:
+            logging.info("Generating RDF ...")
+            gen_rdf(self, outdir, cfg)
+        if "tex" in cfg.gen_formats:
+            logging.info("Generating Tex ...")
+            gen_tex(self, outdir, cfg)
+        if "plantuml" in cfg.gen_formats:
+            logging.info("Generating PlantUML ...")
+            gen_plantuml(self, outdir, cfg)
+        if "jsondump" in cfg.gen_formats:
+            logging.info("Generating JSON dump ...")
+            gen_jsondump(self, outdir, cfg)
 
 
 class Namespace:

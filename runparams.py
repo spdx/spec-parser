@@ -50,6 +50,23 @@ class RunParams:
         return sys.modules["spec_parser"].__version__
 
     @property
+    def gen_formats(self):
+        formats = []
+        options = [
+            ("gen_mkdocs", "mkdocs"),
+            ("gen_rdf", "rdf"),
+            ("gen_tex", "tex"),
+            ("gen_plantuml", "plantuml"),
+            ("gen_jsondump", "jsondump")
+        ]
+        for arg, format_str in options:
+            if getattr(self.args, arg) or self.args.gen_all:
+                formats.append(format_str)
+        if not formats:
+            formats = [format_str for _, format_str in options]
+        return formats
+
+    @property
     def all_as_dict(self):
         return {
             k: getattr(self, k)
@@ -62,6 +79,7 @@ class RunParams:
                 "opt_quiet",
                 "opt_verbose",
                 "parser_version",
+                "gen_formats"
             )
         }
 
@@ -75,15 +93,21 @@ class RunParams:
         parser = argparse.ArgumentParser(description="Generate documentation from an SPDX 3.0 model")
         parser.add_argument("input_dir", help="Directory containing the input specification files")
         parser.add_argument("output_dir", nargs="?", help="Directory to write the output files to")
-        parser.add_argument("-d", "--debug", action="store_true", help="Print debug output")
         parser.add_argument("-f", "--force", action="store_true", help="Overwrite existing generated files")
         parser.add_argument("-n", "--nooutput", action="store_true", help="Do not generate anything, only check input")
         parser.add_argument("-q", "--quiet", action="store_true", help="Print no output")
+        parser.add_argument("-d", "--debug", action="store_true", help="Print debug output (most verbose)")
         parser.add_argument("-v", "--verbose", action="store_true", help="Print verbose output")
         parser.add_argument("-V", "--version", action="version", version=f"%(prog)s {RunParams.parser_version}")
+        parser.add_argument("-gA", "--gen-all", action="store_true", help="Generate everything (Default)")
+        parser.add_argument("-gM", "--gen-mkdocs", action="store_true", help="Generate MkDocs-ready Markdown")
+        parser.add_argument("-gR", "--gen-rdf", action="store_true", help="Generate RDF")
+        parser.add_argument("-gT", "--gen-tex", action="store_true", help="Generate Tex")
+        parser.add_argument("-gU", "--gen-plantuml", action="store_true", help="Generate PlantUML")
+        parser.add_argument("-gJ", "--gen-jsondump", action="store_true", help="Generate JSON dump")
         self.args = parser.parse_args(args)
 
         if self.opt_nooutput and self.output_dir:
             logging.warning(f"Ignoring output directory {self.output_dir} specified with --nooutput")
         if not self.opt_nooutput and not self.output_dir:
-            logging.critical("No output directory specified!")
+            logging.critical("The output_dir argument is required when the --nooutput option is not specified.")

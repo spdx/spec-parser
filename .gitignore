@@ -7,6 +7,7 @@ md_generated
 spdx-spec
 spec-v3-template
 tmp
+logs/
 
 # sphinx build folder #
 #######################
@@ -14,7 +15,6 @@ docs/_build
 
 # OS generated files #
 ######################
-*__pycache__
 *.DS_Store?
 *ehthumbs.db
 *Icon?
@@ -23,3 +23,10 @@ docs/_build
 # Virtual Env        #
 ######################
 venv
+.env
+
+# Python caches      #
+######################
+*__pycache__
+__pycache__/
+.mypy_cache
