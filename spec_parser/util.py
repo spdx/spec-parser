@@ -10,7 +10,7 @@ def _replace_text_link(match: re.Match) -> str:
     link = str(match.group(2))
     if text.lower() == link.lower():
         return f"<{link}>"
-    elif link.startswith("."):
+    elif link.startswith(".") or link.endswith(".md"):
         return f"{text}"
     else:
         return f"{text} <{link}>"
