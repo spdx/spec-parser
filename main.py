@@ -23,7 +23,7 @@ if __name__ == "__main__":
     else:
         logging.basicConfig(level=logging.WARNING)
         warnings.filterwarnings("once", module="rdflib")
-        warnings.filterwarnings("ignore", category=UserWarning)
+        warnings.filterwarnings("ignore", message=r".*Assertions on rdflib\.term\.BNode.*RDF\.first and RDF\.rest.*")
 
     m = Model(cfg.input_dir)
     if not cfg.opt_nooutput:
