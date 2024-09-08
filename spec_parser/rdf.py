@@ -17,6 +17,8 @@ from rdflib.collection import Collection
 from rdflib.namespace import DCTERMS, OWL, RDF, RDFS, SH, SKOS, XSD
 from rdflib.tools.rdf2dot import rdf2dot
 
+from .util import unmarkdown
+
 URI_BASE = "https://spdx.org/rdf/3.0.1/terms/"
 
 
@@ -114,10 +116,10 @@ def gen_rdf_classes(model, g):
         if c.name:
             g.add((node, RDFS.label, Literal(c.name)))
         if c.summary:
-            g.add((node, RDFS.comment, Literal(c.summary, lang="en")))
-            g.add((node, SKOS.definition, Literal(c.summary, lang="en")))
+            g.add((node, RDFS.comment, Literal(unmarkdown(c.summary), lang="en")))
+            g.add((node, SKOS.definition, Literal(unmarkdown(c.summary), lang="en")))
         if c.description:
-            g.add((node, SKOS.note, Literal(c.description, lang="en")))
+            g.add((node, SKOS.note, Literal(unmarkdown(c.description), lang="en")))
         parent = c.metadata.get("SubclassOf")
         if parent:
             pns = "" if parent.startswith("/") else f"/{c.ns.name}/"
@@ -191,10 +193,10 @@ def gen_rdf_properties(model, g):
         if p.name:
             g.add((node, RDFS.label, Literal(p.name)))
         if p.summary:
-            g.add((node, RDFS.comment, Literal(p.summary, lang="en")))
-            g.add((node, SKOS.definition, Literal(p.summary, lang="en")))
+            g.add((node, RDFS.comment, Literal(unmarkdown(p.summary), lang="en")))
+            g.add((node, SKOS.definition, Literal(unmarkdown(p.summary), lang="en")))
         if p.description:
-            g.add((node, SKOS.note, Literal(p.description, lang="en")))
+            g.add((node, SKOS.note, Literal(unmarkdown(p.description), lang="en")))
         if p.metadata["Nature"] == "ObjectProperty":
             g.add((node, RDF.type, OWL.ObjectProperty))
         # to add: g.add((node, RDFS.domain, xxx))
@@ -224,17 +226,17 @@ def gen_rdf_vocabularies(model, g):
         if v.name:
             g.add((node, RDFS.label, Literal(v.name)))
         if v.summary:
-            g.add((node, RDFS.comment, Literal(v.summary, lang="en")))
-            g.add((node, SKOS.definition, Literal(v.summary, lang="en")))
+            g.add((node, RDFS.comment, Literal(unmarkdown(v.summary), lang="en")))
+            g.add((node, SKOS.definition, Literal(unmarkdown(v.summary), lang="en")))
         if v.description:
-            g.add((node, SKOS.note, Literal(v.description, lang="en")))
+            g.add((node, SKOS.note, Literal(unmarkdown(v.description), lang="en")))
         for e, d in v.entries.items():
             enode = URIRef(v.iri + "/" + e)
             g.add((enode, RDF.type, OWL.NamedIndividual))
             g.add((enode, RDF.type, node))
             g.add((enode, RDFS.label, Literal(e)))
-            g.add((enode, RDFS.comment, Literal(d, lang="en")))
-            g.add((enode, SKOS.definition, Literal(d, lang="en")))
+            g.add((enode, RDFS.comment, Literal(unmarkdown(d), lang="en")))
+            g.add((enode, SKOS.definition, Literal(unmarkdown(d), lang="en")))
 
 
 def gen_rdf_individuals(model, g):
@@ -244,10 +246,10 @@ def gen_rdf_individuals(model, g):
         if i.name:
             g.add((node, RDFS.label, Literal(i.name)))
         if i.summary:
-            g.add((node, RDFS.comment, Literal(i.summary, lang="en")))
-            g.add((node, SKOS.definition, Literal(i.summary, lang="en")))
+            g.add((node, RDFS.comment, Literal(unmarkdown(i.summary), lang="en")))
+            g.add((node, SKOS.definition, Literal(unmarkdown(i.summary), lang="en")))
         if i.description:
-            g.add((node, SKOS.note, Literal(i.description, lang="en")))
+            g.add((node, SKOS.note, Literal(unmarkdown(i.description), lang="en")))
         typ = i.metadata["type"]
         typename = "" if typ.startswith("/") else f"/{i.ns.name}/"
         typename += typ
