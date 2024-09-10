@@ -36,10 +36,15 @@ def _unmarkdown_repl_text_url(match: re.Match) -> str:
         return f"{text} <{url}>"
 
 
+# A list of (regular expression, replacement string/function), ordered by
+# the sequence in which they should be applied to a Markdown text.
 _unmakdown_rules: list[ReplaceTuple] = [
-    (re.compile(r"\[(.*?)\]\((.*?)\)"), _unmarkdown_repl_text_url),  # [text](url) replacements
-    (re.compile(r"^```\S*\s*\n?", re.MULTILINE), ""),  # remove code block markup
-    (re.compile(r"`([^`]+)`"), r"\1"),  # remove code inline markup
+    # [text](url) replacements
+    (re.compile(r"\[(.*?)\]\((.*?)\)"), _unmarkdown_repl_text_url),
+    # remove code block markup
+    (re.compile(r"^```\S*\s*\n?", re.MULTILINE), ""),
+    # remove code inline markup
+    (re.compile(r"`([^`]+)`"), r"\1"),
 ]
 
 
