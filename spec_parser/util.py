@@ -1,3 +1,15 @@
+# SPDX-License-Identifier: Apache-2.0
+
+"""
+This module provides utility functions.
+
+Functions:
+    unmarkdown(text: str) -> str: Convert Markdown text to plain text.
+
+Types:
+    ReplaceTuple: A tuple containing a compiled regex pattern and a replacement string or function.
+"""
+
 from __future__ import annotations
 
 import re
@@ -10,9 +22,9 @@ def _unmarkdown_repl_text_url(match: re.Match) -> str:
     """
     Replacement function for Markdown links.
 
-    [text](url)  ->  text <url>
-    [text](url)  ->  text
-    [url](url)   ->  <url>
+    [text](url)      ->  text <url>
+    [text](file.md)  ->  text
+    [url](url)       ->  <url>
     """
     text = str(match.group(1))
     url = str(match.group(2))
