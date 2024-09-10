@@ -1,11 +1,19 @@
+from __future__ import annotations
+
 import re
-from typing import Pattern, cast
+from typing import Callable, Pattern, Tuple, Union
+
+ReplaceTuple = Tuple[Pattern[str], Union[str, Callable[[re.Match], str]]]
 
 
 def _unmarkdown_repl_text_url(match: re.Match) -> str:
-    # [text](url)  ->  text <url>
-    # [text](url)  ->  text
-    # [url](url)   ->  <url>
+    """
+    Replacement function for Markdown links.
+
+    [text](url)  ->  text <url>
+    [text](url)  ->  text
+    [url](url)   ->  <url>
+    """
     text = str(match.group(1))
     url = str(match.group(2))
     if text.lower() == url.lower():
@@ -16,15 +24,11 @@ def _unmarkdown_repl_text_url(match: re.Match) -> str:
         return f"{text} <{url}>"
 
 
-# A list of regular expression and replacement string pairs, ordered by the
-# sequence in which they should be applied to a Markdown text.
-# Note that this assumes that the dict is ordered;
-# dict is ordered since CPython 3.6 (unofficial) and all of Python 3.7 (official).
-_unmakdown_rules = {
-    "repl_text_url": {"pat": re.compile(r"\[(.*?)\]\((.*?)\)"), "repl": _unmarkdown_repl_text_url},
-    "rm_code_block_markup": {"pat": re.compile(r"^```\S*\s*$", re.MULTILINE), "repl": ""},
-    "rm_code_inline_markup": {"pat": re.compile(r"`([^`]+)`"), "repl": r"\1"},
-}
+_unmakdown_rules: list[ReplaceTuple] = [
+    (re.compile(r"\[(.*?)\]\((.*?)\)"), _unmarkdown_repl_text_url),  # [text](url) replacements
+    (re.compile(r"^```\S*\s*$", re.MULTILINE), ""),  # remove code block markup
+    (re.compile(r"`([^`]+)`"), r"\1"),  # remove code inline markup
+]
 
 
 def unmarkdown(text: str) -> str:
@@ -38,6 +42,6 @@ def unmarkdown(text: str) -> str:
     Returns:
         str: The plain text result.
     """
-    for pair in _unmakdown_rules.values():
-        text = cast(Pattern, pair["pat"]).sub(pair["repl"], text)
+    for pattern, replacement in _unmakdown_rules:
+        text = pattern.sub(replacement, text)
     return text
