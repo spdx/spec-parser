@@ -219,7 +219,7 @@ def gen_rdf_individuals(model, g):
     spdx_org = URIRef(URI_BASE + "Core/_SpdxOrganization")
     g.add((spdx_org, RDF.type, OWL.NamedIndividual))
     g.add((spdx_org, RDF.type, SPDX.Organization))
-    g.add((spdx_org, SPDX.spdxId, URIRef("https://spdx.dev/")))
+    g.add((spdx_org, SPDX.spdxId, URIRef("https://spdx.org/")))
     g.add((spdx_org, RDFS.comment, Literal("SPDX Project", lang="en")))
 
     # Define an instance of CreationInfo as a blank node
