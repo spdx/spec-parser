@@ -203,17 +203,22 @@ def gen_rdf_vocabularies(model, g):
 
 
 def gen_rdf_individuals(model, g):
+    class SPDX:
+        name = URIRef(URI_BASE + "Core/name")
+        spdxId = URIRef(URI_BASE + "Core/spdxId")
+
     for i in model.individuals.values():
         node = URIRef(i.iri)
         g.add((node, RDF.type, OWL.NamedIndividual))
         if i.summary:
             g.add((node, RDFS.comment, Literal(i.summary, lang="en")))
         if i.values:
-            spdx_core_name = URIRef(URI_BASE + "Core/name")
             for p, v in i.values.items():
                 if p == "name":
                     v = v.strip('"')  # - name: "NONE"
-                    g.add((node, spdx_core_name, Literal(v)))
+                    g.add((node, SPDX.name, Literal(v)))
+                elif p == "spdxId":
+                    g.add((node, SPDX.spdxId, Literal(v)))
 
         typ = i.metadata["type"]
         typename = "" if typ.startswith("/") else f"/{i.ns.name}/"
