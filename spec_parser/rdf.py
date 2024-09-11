@@ -18,6 +18,7 @@ from rdflib.namespace import DCTERMS, OWL, RDF, RDFS, SH, SKOS, XSD
 from rdflib.tools.rdf2dot import rdf2dot
 
 URI_BASE = "https://spdx.org/rdf/3.0.1/terms/"
+CREATION_DATETIME = "2024-09-13T00:00:00Z"
 
 
 def gen_rdf(model, outdir, cfg):
@@ -203,6 +204,35 @@ def gen_rdf_vocabularies(model, g):
 
 
 def gen_rdf_individuals(model, g):
+    class SPDX:
+        """SPDX terms
+        """
+        CreationInfo = URIRef(URI_BASE + "Core/CreationInfo")
+        creationInfo = URIRef(URI_BASE + "Core/creationInfo")
+        created = URIRef(URI_BASE + "Core/created")
+        createdBy = URIRef(URI_BASE + "Core/createdBy")
+        Organization = URIRef(URI_BASE + "Core/Organization")
+        specVersion = URIRef(URI_BASE + "Core/specVersion")
+        spdxId = URIRef(URI_BASE + "Core/spdxId")
+
+    # Define _SpdxOrganization named individual
+    spdx_org = URIRef(URI_BASE + "Core/_SpdxOrganization")
+    g.add((spdx_org, RDF.type, OWL.NamedIndividual))
+    g.add((spdx_org, RDF.type, SPDX.Organization))
+    g.add((spdx_org, SPDX.spdxId, URIRef("https://spdx.dev/")))
+    g.add((spdx_org, RDFS.comment, Literal("SPDX Project", lang="en")))
+
+    # Define an instance of CreationInfo as a blank node
+    creation_info = BNode("_CreationInfo")
+    g.add((creation_info, RDF.type, SPDX.CreationInfo))
+    g.add((creation_info, SPDX.created, Literal(CREATION_DATETIME, datatype=XSD.dateTimeStamp)))
+    g.add((creation_info, SPDX.createdBy, spdx_org))
+    g.add((creation_info, SPDX.specVersion, Literal("3.0.1", datatype=XSD.string)))
+
+    # Add creationInfo to _SpdxOrganization
+    g.add((spdx_org, SPDX.creationInfo, creation_info))
+
+    # Add all individuals
     for i in model.individuals.values():
         node = URIRef(i.iri)
         g.add((node, RDF.type, OWL.NamedIndividual))
@@ -216,6 +246,7 @@ def gen_rdf_individuals(model, g):
         custom_iri = i.metadata.get("IRI")
         if custom_iri and custom_iri != i.iri:
             g.add((node, OWL.sameAs, URIRef(custom_iri)))
+        g.add((node, SPDX.creationInfo, creation_info))
 
 
 def jsonld_context(g):
