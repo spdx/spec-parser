@@ -10,14 +10,16 @@
 
 {% endblock %}
 
+{% block extra %}
+
 {% if values %}
 ## Property Values
 
 | Property | Value |
 |---|---|:---:|:---:|
     {% for name, val in values | dictsort %}
-| {{name)}} | {{val}} |
+| {{name}} | {{val}} |
     {% endfor %}
 {% endif %}
 
-{% block extra %}{% endblock %}
+{% endblock %}
