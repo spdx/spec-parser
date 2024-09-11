@@ -208,6 +208,13 @@ def gen_rdf_individuals(model, g):
         g.add((node, RDF.type, OWL.NamedIndividual))
         if i.summary:
             g.add((node, RDFS.comment, Literal(i.summary, lang="en")))
+        if i.values:
+            spdx_core_name = URIRef(URI_BASE + "Core/name")
+            for p, v in i.values.items():
+                if p == "name":
+                    v = v.strip('"')  # - name: "NONE"
+                    g.add((node, spdx_core_name, Literal(v)))
+
         typ = i.metadata["type"]
         typename = "" if typ.startswith("/") else f"/{i.ns.name}/"
         typename += typ
