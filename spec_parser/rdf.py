@@ -216,7 +216,9 @@ def gen_rdf_individuals(model, g):
         specVersion = URIRef(URI_BASE + "Core/specVersion")
 
     # Define an instance of CreationInfo as a blank node
-    creation_info = BNode("_CreationInfo")
+    version = SPDX_VERSION.replace(".", "_")  # 3.0.1 -> 3_0_1
+    creation_info_name = f"_V{version}_CreationInfo"  # unique across versions
+    creation_info = BNode(creation_info_name)
     g.add((creation_info, RDF.type, SPDX.CreationInfo))
     g.add((creation_info, SPDX.created, Literal(CREATION_DATETIME, datatype=XSD.dateTimeStamp)))
     g.add((creation_info, SPDX.createdBy, SPDX.SpdxOrganization))
