@@ -213,7 +213,7 @@ def gen_rdf_individuals(model, g):
         created = URIRef(URI_BASE + "Core/created")
         createdBy = URIRef(URI_BASE + "Core/createdBy")
         spdxId = URIRef(URI_BASE + "Core/spdxId")
-        SpdxOrganization = URIRef("https://spdx.org/")
+        SpdxOrganization = URIRef(URI_BASE + "Core/SpdxOrganization")
         specVersion = URIRef(URI_BASE + "Core/specVersion")
 
     # Define an instance of CreationInfo as a blank node
