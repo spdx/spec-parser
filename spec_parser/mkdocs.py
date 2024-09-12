@@ -18,16 +18,18 @@ def gen_mkdocs(model, outdir, cfg):
     jinja.globals["class_link"] = class_link
     jinja.globals["property_link"] = property_link
     jinja.globals["ext_property_link"] = ext_property_link
-    jinja.globals["type_link"] = lambda x, showshort=False: type_link(x, model, showshort)
+    jinja.globals["type_link"] = lambda x, showshort=False: type_link(
+        x, model, showshort
+    )
     jinja.globals["not_none"] = lambda x: str(x) if x is not None else ""
 
     op = Path(outdir)
     p = op / "mkdocs"
-    p.mkdir()
+    p.mkdir(exist_ok=True)
 
     for ns in model.namespaces:
         d = p / ns.name
-        d.mkdir()
+        d.mkdir(exist_ok=True)
         f = d / f"{ns.name}.md"
 
         template = jinja.get_template("namespace.md.j2")

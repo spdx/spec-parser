@@ -173,7 +173,7 @@ class Model:
         if p.exists() and not cfg.opt_force:
             logging.error(f"Destination for mkdocs {outdir} already exists, will not overwrite")
             return
-        p.mkdir(parents=True)
+        p.mkdir(parents=True, exist_ok=True)
 
         gen_mkdocs(self, outdir, cfg)
         gen_rdf(self, outdir, cfg)
