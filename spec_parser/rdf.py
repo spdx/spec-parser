@@ -212,7 +212,6 @@ def gen_rdf_individuals(model, g):
         creationInfo = URIRef(URI_BASE + "Core/creationInfo")
         created = URIRef(URI_BASE + "Core/created")
         createdBy = URIRef(URI_BASE + "Core/createdBy")
-        spdxId = URIRef(URI_BASE + "Core/spdxId")
         SpdxOrganization = URIRef(URI_BASE + "Core/SpdxOrganization")
         specVersion = URIRef(URI_BASE + "Core/specVersion")
 
