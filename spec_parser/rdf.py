@@ -97,11 +97,14 @@ def gen_rdf_classes(model, g):
             p = model.classes[pns + parent]
             g.add((node, RDFS.subClassOf, URIRef(p.iri)))
         if c.metadata["Instantiability"] == "Abstract":
-            g.add((node, OWL.oneOf, RDF.nil))
             bnode = BNode()
-            g.add((node, SH.property, bnode))
-            g.add((bnode, SH.path, RDF.type))
-            g.add((bnode, SH.disjoint, node))
+            g.add((node, SH["not"], bnode))
+            g.add((bnode, SH["class"], node))
+            msg = Literal(
+                f"{node} is an abstract class and should not be instantiated directly. Instantiate a subclass instead.",
+                lang="en",
+            )
+            g.add((bnode, SH.message, msg))
 
         if "spdxId" in c.all_properties:
             g.add((node, SH.nodeKind, SH.IRI))
@@ -260,7 +263,11 @@ def jsonld_context(g):
 
     for subject in sorted(g.subjects(unique=True)):
         # Skip named individuals in vocabularies
-        if (subject, RDF.type, OWL.NamedIndividual) in g and subject in vocab_named_individuals:
+        if (
+            subject,
+            RDF.type,
+            OWL.NamedIndividual,
+        ) in g and subject in vocab_named_individuals:
             continue
 
         try:
@@ -275,7 +282,9 @@ def jsonld_context(g):
 
         if key in terms:
             current = terms[key]["@id"] if isinstance(terms[key], dict) else terms[key]
-            logging.error(f"ERROR: Duplicate context key '{key}' for '{subject}'. Already mapped to '{current}'")
+            logging.error(
+                f"ERROR: Duplicate context key '{key}' for '{subject}'. Already mapped to '{current}'"
+            )
             continue
 
         terms[key] = get_subject_term(subject)
