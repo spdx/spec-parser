@@ -86,8 +86,6 @@ def gen_rdf_ontology(model):
 
 
 def gen_rdf_classes(model, g):
-    abscls = set()
-    subcls = {}
     for c in model.classes.values():
         node = URIRef(c.iri)
         g.add((node, RDF.type, OWL.Class))
@@ -98,9 +96,12 @@ def gen_rdf_classes(model, g):
             pns = "" if parent.startswith("/") else f"/{c.ns.name}/"
             p = model.classes[pns + parent]
             g.add((node, RDFS.subClassOf, URIRef(p.iri)))
-            subcls.setdefault(URIRef(p.iri), []).append(node)
         if c.metadata["Instantiability"] == "Abstract":
-            abscls.add(node)
+            g.add((node, OWL.oneOf, RDF.nil))
+            bnode = BNode()
+            g.add((node, SH.property, bnode))
+            g.add((bnode, SH.path, RDF.type))
+            g.add((bnode, SH.disjoint, node))
 
         if "spdxId" in c.all_properties:
             g.add((node, SH.nodeKind, SH.IRI))
@@ -157,19 +158,6 @@ def gen_rdf_classes(model, g):
                 maxcount = c.properties[p]["maxCount"]
                 if maxcount != "*":
                     g.add((bnode, SH.maxCount, Literal(int(maxcount))))
-
-    for parent in abscls.intersection(subcls):
-        bn = BNode()
-        g.add((parent, OWL.equivalentClass, bn))
-        g.add((bn, RDF.type, OWL.Class))
-        owl_union = Collection(g, None, subcls[parent])
-        g.add((bn, OWL.unionOf, owl_union.uri))
-        sh_or = Collection(g, None)
-        for sb in subcls[parent]:
-            class_node = BNode()
-            g.add((class_node, SH['class'], sb))
-            sh_or.append(class_node)
-        g.add((parent, SH["or"], sh_or.uri))
 
 
 def gen_rdf_properties(model, g):
