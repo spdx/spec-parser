@@ -263,11 +263,7 @@ def jsonld_context(g):
 
     for subject in sorted(g.subjects(unique=True)):
         # Skip named individuals in vocabularies
-        if (
-            subject,
-            RDF.type,
-            OWL.NamedIndividual,
-        ) in g and subject in vocab_named_individuals:
+        if (subject, RDF.type, OWL.NamedIndividual) in g and subject in vocab_named_individuals:
             continue
 
         try:
@@ -282,9 +278,7 @@ def jsonld_context(g):
 
         if key in terms:
             current = terms[key]["@id"] if isinstance(terms[key], dict) else terms[key]
-            logging.error(
-                f"ERROR: Duplicate context key '{key}' for '{subject}'. Already mapped to '{current}'"
-            )
+            logging.error(f"ERROR: Duplicate context key '{key}' for '{subject}'. Already mapped to '{current}'")
             continue
 
         terms[key] = get_subject_term(subject)
