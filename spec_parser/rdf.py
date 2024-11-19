@@ -88,9 +88,6 @@ def gen_rdf_ontology(model):
 
 
 def gen_rdf_classes(model, g):
-    AbstractClass = URIRef("http://spdx.invalid./AbstractClass")
-    g.add((AbstractClass, RDF.type, OWL.Class))
-
     for c in model.classes.values():
         node = URIRef(c.iri)
         g.add((node, RDF.type, OWL.Class))
@@ -102,7 +99,14 @@ def gen_rdf_classes(model, g):
             p = model.classes[pns + parent]
             g.add((node, RDFS.subClassOf, URIRef(p.iri)))
         if c.metadata["Instantiability"] == "Abstract":
-            g.add((node, RDF.type, AbstractClass))
+            bnode = BNode()
+            g.add((node, SH["not"], bnode))
+            g.add((bnode, SH["class"], node))
+            msg = Literal(
+                f"{node} is an abstract class and should not be instantiated directly. Instantiate a subclass instead.",
+                lang="en",
+            )
+            g.add((bnode, SH.message, msg))
 
         if "spdxId" in c.all_properties:
             g.add((node, SH.nodeKind, SH.IRI))
