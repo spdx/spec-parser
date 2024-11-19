@@ -17,7 +17,9 @@ from rdflib.collection import Collection
 from rdflib.namespace import DCTERMS, OWL, RDF, RDFS, SH, SKOS, XSD
 from rdflib.tools.rdf2dot import rdf2dot
 
-URI_BASE = "https://spdx.org/rdf/3.0.1/terms/"
+CREATION_DATETIME = "2024-09-13T00:00:00Z"
+SPDX_VERSION = "3.0.1"
+URI_BASE = f"https://spdx.org/rdf/{SPDX_VERSION}/terms/"
 
 
 def gen_rdf(model, outdir, cfg):
@@ -207,6 +209,26 @@ def gen_rdf_vocabularies(model, g):
 
 
 def gen_rdf_individuals(model, g):
+    class SPDX:
+        """SPDX terms"""
+
+        CreationInfo = URIRef(URI_BASE + "Core/CreationInfo")
+        creationInfo = URIRef(URI_BASE + "Core/creationInfo")
+        created = URIRef(URI_BASE + "Core/created")
+        createdBy = URIRef(URI_BASE + "Core/createdBy")
+        SpdxOrganization = URIRef(URI_BASE + "Core/SpdxOrganization")
+        specVersion = URIRef(URI_BASE + "Core/specVersion")
+
+    # Define an instance of CreationInfo as a blank node
+    version = SPDX_VERSION.replace(".", "_")  # 3.0.1 -> 3_0_1
+    creation_info_name = f"_V{version}_CreationInfo"  # unique across versions
+    creation_info = BNode(creation_info_name)
+    g.add((creation_info, RDF.type, SPDX.CreationInfo))
+    g.add((creation_info, SPDX.created, Literal(CREATION_DATETIME, datatype=XSD.dateTimeStamp)))
+    g.add((creation_info, SPDX.createdBy, SPDX.SpdxOrganization))
+    g.add((creation_info, SPDX.specVersion, Literal(SPDX_VERSION, datatype=XSD.string)))
+
+    # Add all individuals
     for i in model.individuals.values():
         node = URIRef(i.iri)
         g.add((node, RDF.type, OWL.NamedIndividual))
@@ -220,6 +242,7 @@ def gen_rdf_individuals(model, g):
         custom_iri = i.metadata.get("IRI")
         if custom_iri and custom_iri != i.iri:
             g.add((node, OWL.sameAs, URIRef(custom_iri)))
+        g.add((node, SPDX.creationInfo, creation_info))
 
 
 def jsonld_context(g):
