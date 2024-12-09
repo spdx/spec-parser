@@ -23,3 +23,7 @@ docs/_build
 # Virtual Env        #
 ######################
 venv
+
+.env
+logs/
+__pycache__/
