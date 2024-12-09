@@ -213,7 +213,7 @@ def gen_rdf_individuals(model, g):
     for i in model.individuals.values():
         ci_node = URIRef("https://spdx.org/rdf/3.0.1/creationInfo_" + i.name)
         g.add((ci_node, RDF.type, ci_ref("CreationInfo")))
-        g.add((ci_node, ci_ref("comment"), Literal("This individual element was defined by the spec.", lang="en")))
+        g.add((ci_node, RDFS.comment, Literal("This individual element was defined by the spec.", lang="en")))
         g.add((ci_node, ci_ref("created"), Literal("2024-11-22T03:00:01Z", datatype=XSD.dateTimeStamp)))
         g.add((ci_node, ci_ref("createdBy"), URIRef("https://spdx.org/")))
         g.add((ci_node, ci_ref("specVersion"), Literal("3.0.1")))
