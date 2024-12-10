@@ -109,7 +109,7 @@ def gen_rdf_classes(model, g):
         if "spdxId" in c.all_properties:
             g.add((node, SH.nodeKind, SH.IRI))
         else:
-            g.add((node, SH.nodeKind, SH.BlankNode))
+            g.add((node, SH.nodeKind, SH.BlankNodeOrIRI))
 
         if c.properties:
             g.add((node, RDF.type, SH.NodeShape))
