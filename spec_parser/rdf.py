@@ -98,8 +98,12 @@ def gen_rdf_classes(model, g):
             g.add((node, RDFS.subClassOf, URIRef(p.iri)))
         if c.metadata["Instantiability"] == "Abstract":
             bnode = BNode()
-            g.add((node, SH["not"], bnode))
-            g.add((bnode, SH["class"], node))
+            g.add((node, SH.property, bnode))
+            g.add((bnode, SH.path, RDF.type))
+            notNode = BNode()
+            g.add((bnode, SH["not"], notNode))
+            hasValueNode = BNode()
+            g.add((notNode, SH["hasValue"], node))
             msg = Literal(
                 f"{node} is an abstract class and should not be instantiated directly. Instantiate a subclass instead.",
                 lang="en",
