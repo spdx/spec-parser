@@ -98,8 +98,12 @@ def gen_rdf_classes(model, g):
             g.add((node, RDFS.subClassOf, URIRef(p.iri)))
         if c.metadata["Instantiability"] == "Abstract":
             bnode = BNode()
-            g.add((node, SH["not"], bnode))
-            g.add((bnode, SH["class"], node))
+            g.add((node, SH.property, bnode))
+            g.add((bnode, SH.path, RDF.type))
+            notNode = BNode()
+            g.add((bnode, SH["not"], notNode))
+            hasValueNode = BNode()
+            g.add((notNode, SH["hasValue"], node))
             msg = Literal(
                 f"{node} is an abstract class and should not be instantiated directly. Instantiate a subclass instead.",
                 lang="en",
@@ -215,7 +219,7 @@ def gen_rdf_individuals(model, g):
         g.add((ci_node, RDF.type, ci_ref("CreationInfo")))
         g.add((ci_node, RDFS.comment, Literal("This individual element was defined by the spec.", lang="en")))
         g.add((ci_node, ci_ref("created"), Literal("2024-11-22T03:00:01Z", datatype=XSD.dateTimeStamp)))
-        g.add((ci_node, ci_ref("createdBy"), URIRef("https://spdx.org/")))
+        g.add((ci_node, ci_ref("createdBy"), ci_ref("SpdxOrganization")))
         g.add((ci_node, ci_ref("specVersion"), Literal("3.0.1")))
         node = URIRef(i.iri)
         g.add((node, RDF.type, OWL.NamedIndividual))
