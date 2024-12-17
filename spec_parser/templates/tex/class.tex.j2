@@ -21,8 +21,7 @@
 \end{itemize}
 {% endif %}
 {% endblock %}
-%
-%
+
 {% block extra %}
 {% if properties %}
 \spdxpagepart{Properties}
@@ -35,8 +34,9 @@
     {% endfor %}
 \bottomrule
 \end{tabular} 
+\par
 {% endif %}
-%
+
 {% if ext_prop_restrs %}
 \spdxpagepart{External properties cardinality updates}
 \begin{tabular}{ l c c  } 
@@ -48,12 +48,13 @@
     {% endfor %}
 \bottomrule
 \end{tabular}
+\par
 {% endif %}
-%
+
 {% if all_properties %}
 % \spdxpagepart{All properties}
-\begin{longtable}{ |l l c c| } 
-\caption*{\textbf{All properties} (informative)} \\
+\begin{tabular}{ |l l c c| } 
+\multicolumn{4}{c}{\textbf{All properties} (informative)} \\
 \hline
  Property & Type & minCount & maxCount \\
 \hline
@@ -61,6 +62,8 @@
  {{name}} & {{kv["type"]}} & {{kv["minCount"]}} & {{kv["maxCount"]}} \\
     {% endfor %}
 \hline
-\end{longtable} 
+\end{tabular} 
+\par
 {% endif %}
+
 {% endblock %}
