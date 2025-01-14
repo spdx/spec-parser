@@ -40,14 +40,14 @@ class SpecFile:
             if p.strip():
                 m = re.fullmatch(self.RE_EXTRACT_HEADER_CONTENT, p)
                 if m is None:
-                    logging.error(f"File {fpath!s} may contain an empty section.")
+                    logging.error(f"File {fpath!s} may contain an empty section at `{p}'")
                 else:
                     header = m.group(1)
                     content = m.group(2).strip()
                     if content:
                         self.sections[header] = content
                     else:
-                        logging.error(f"Content under header '{header}' in File {fpath!s} is empty.")
+                        logging.error(f"Content under header `{header}' in File {fpath!s} is empty.")
 
 
 class Section:
