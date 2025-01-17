@@ -4,7 +4,6 @@
 
 import json
 import logging
-from pathlib import Path
 
 from rdflib import (
     BNode,
@@ -19,10 +18,10 @@ from rdflib.tools.rdf2dot import rdf2dot
 
 URI_BASE = "https://spdx.org/rdf/3.0.1/terms/"
 
+logger = logging.getLogger(__name__)
 
-def gen_rdf(model, outdir, cfg):
-    p = Path(outdir) / "rdf"
-    p.mkdir()
+def gen_rdf(model, outpath, cfg):
+    p = outpath
 
     ret = gen_rdf_ontology(model)
     for ext in ["hext", "json-ld", "longturtle", "n3", "nt", "pretty-xml", "trig", "ttl", "xml"]:
@@ -34,8 +33,6 @@ def gen_rdf(model, outdir, cfg):
     with fn.open("w") as f:
         json.dump(ctx, f, sort_keys=True, indent=2)
 
-    p = Path(outdir) / "diagram"
-    p.mkdir(exist_ok=True)
     fn = p / "spdx-model.dot"
     with fn.open("w") as f:
         rdf2dot(ret, f)
@@ -45,7 +42,7 @@ def xsd_range(rng, propname):
     if rng.startswith("xsd:"):
         return URIRef("http://www.w3.org/2001/XMLSchema#" + rng[4:])
 
-    logging.warning(f"Uknown namespace in range <{rng}> of property {propname}")
+    logger.warning(f"Uknown namespace in range <{rng}> of property {propname}")
     return None
 
 
@@ -102,7 +99,6 @@ def gen_rdf_classes(model, g):
             g.add((bnode, SH.path, RDF.type))
             notNode = BNode()
             g.add((bnode, SH["not"], notNode))
-            hasValueNode = BNode()
             g.add((notNode, SH["hasValue"], node))
             msg = Literal(
                 f"{node} is an abstract class and should not be instantiated directly. Instantiate a subclass instead.",
@@ -292,7 +288,7 @@ def jsonld_context(g):
 
         if key in terms:
             current = terms[key]["@id"] if isinstance(terms[key], dict) else terms[key]
-            logging.error(f"ERROR: Duplicate context key '{key}' for '{subject}'. Already mapped to '{current}'")
+            logger.error(f"ERROR: Duplicate context key '{key}' for '{subject}'. Already mapped to '{current}'")
             continue
 
         terms[key] = get_subject_term(subject)

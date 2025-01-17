@@ -2,13 +2,12 @@
 
 # SPDX-License-Identifier: Apache-2.0
 
-import re
-from pathlib import Path
+import subprocess
 
 from jinja2 import Environment, PackageLoader, select_autoescape
 
 
-def gen_tex(model, outdir, cfg):
+def gen_tex(model, outpath, cfg):
     jinja = Environment(
         loader=PackageLoader("spec_parser", package_path="templates/tex"),
         autoescape=select_autoescape(),
@@ -17,12 +16,10 @@ def gen_tex(model, outdir, cfg):
     )
     jinja.globals = cfg.all_as_dict
     jinja.globals["not_none"] = lambda x: str(x) if x is not None else ""
-    jinja.globals["to_tex"] = to_tex
+    jinja.globals["tex_escape"] = tex_escape
     jinja.globals["markdown_to_tex"] = markdown_to_tex
 
-    op = Path(outdir)
-    p = op / "tex"
-    p.mkdir()
+    p = outpath
 
     for ns in model.namespaces:
         d = p / ns.name
@@ -55,8 +52,7 @@ def gen_tex(model, outdir, cfg):
         nameslist = [c.name for c in itemslist.values()]
         if nameslist:
             ret.append(f"\\spdxcategory{{{heading}}}")
-            for n in sorted(nameslist):
-                ret.append(f"\\input{{model/{nsname}/{heading}/{n}}}")
+            ret.extend(f"\\input{{model/{nsname}/{heading}/{n}}}" for n in sorted(nameslist))
         return ret
 
     files = dict()
@@ -88,46 +84,23 @@ def gen_tex(model, outdir, cfg):
     ]:
         filelines.extend(files[nsname])
 
-    fn = op / "model-files.tex"
+    fn = p / "model-files.tex"
     fn.write_text("\n".join(filelines))
 
 
-def to_tex(s):
+def tex_escape(s):
     s = s.replace("\\", "\\textbackslash{}")
     s = s.replace("_", "\\_")
     s = s.replace("&", "\\&")
     s = s.replace("#", "\\#")
     s = s.replace("^", "\\^")
     s = s.replace("$", "\\$")
-    #    s = s.replace("\\", "\\textbackslash{}")
-    #    s = s.replace("<", "$<$")
-    #    s = s.replace(">", "$>$")
-    #    s = s.replace("{", "\\{")
-    #    s = s.replace("}", "\\}")
-    #    s = s.replace("~", "\\textasciitilde{}")
     return s
-
-
-LINK_REGEXP = re.compile(r"\[([^\]]+)\]\(([^\)]+)\)")
-BOLD_REGEXP = re.compile(r"\*\*([^\*]+)\*\*")
-ITALIC_REGEXP = re.compile(r"\*([^\*]+)\*")
-PREFORMATTED_REGEXP = re.compile(r"\`([^\`]+)\`")
-PREFORMATTED_LINES_REGEXP = re.compile(r"\`\`\`([^\`]+)\`\`\`")
-
-
-def foo(description):
-    description = re.sub(r"\*\*(.+?)\*\*", r"\\textbf{\1}", description)
-    description = re.sub(r"\*(.+?)\*", r"\\textit{\1}", description)
-    description = re.sub(r"`(.+?)`", r"\\texttt{\1}", description)
-    description = re.sub(r"\[(.*?)\]\((.*?)\)", r"\\href{\2}{\1}", description)
-
-
-import subprocess
 
 
 def markdown_to_tex(s):
     # Call pandoc to convert from Markdown to TeX
     process = subprocess.run(
-        ["pandoc", "-f", "markdown", "-t", "latex"], input=s.encode("utf-8"), stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False
+        ["pandoc", "-f", "markdown", "-t", "latex"], input=s.encode("utf-8"), capture_output=True, check=False
     )
     return process.stdout.decode("utf-8")

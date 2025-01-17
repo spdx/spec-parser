@@ -6,8 +6,8 @@ from runparams import RunParams
 from spec_parser import Model
 
 if __name__ == "__main__":
-    cfg = RunParams()
+    cfg = RunParams("spec-parser")
 
-    m = Model(cfg.input_dir)
-    if not cfg.opt_nooutput:
-        m.gen_all(cfg.output_dir, cfg)
+    m = Model(cfg.input_path)
+    if not cfg.no_output:
+        m.generate(cfg)

@@ -11,7 +11,7 @@
 \spdxpagepart{Entries}
 \begin{description}
 {% for name, val in entries | dictsort %}
-\item[ {{-to_tex(name)-}} ]
+\item[ {{-tex_escape(name)-}} ]
     {{-markdown_to_tex(val)-}}
 {% endfor %}
 \end{description}
