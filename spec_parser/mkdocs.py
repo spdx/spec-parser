@@ -2,12 +2,10 @@
 
 # SPDX-License-Identifier: Apache-2.0
 
-from pathlib import Path
-
 from jinja2 import Environment, PackageLoader, select_autoescape
 
 
-def gen_mkdocs(model, outdir, cfg):
+def gen_mkdocs(model, outpath, cfg):
     jinja = Environment(
         loader=PackageLoader("spec_parser", package_path="templates/mkdocs"),
         autoescape=select_autoescape(),
@@ -18,12 +16,10 @@ def gen_mkdocs(model, outdir, cfg):
     jinja.globals["class_link"] = class_link
     jinja.globals["property_link"] = property_link
     jinja.globals["ext_property_link"] = ext_property_link
-    jinja.globals["type_link"] = lambda x, showshort=False: type_link(x, model, showshort)
+    jinja.globals["type_link"] = lambda x, showshort=False: type_link(x, model, showshort=showshort)
     jinja.globals["not_none"] = lambda x: str(x) if x is not None else ""
 
-    op = Path(outdir)
-    p = op / "mkdocs"
-    p.mkdir()
+    p = outpath
 
     for ns in model.namespaces:
         d = p / ns.name
@@ -56,8 +52,7 @@ def gen_mkdocs(model, outdir, cfg):
         nameslist = [c.name for c in itemslist.values()]
         if nameslist:
             ret.append(f"    - {heading}:")
-            for n in sorted(nameslist):
-                ret.append(f"      - '{n}': model/{nsname}/{heading}/{n}.md")
+            ret.extend(f"      - '{n}': model/{nsname}/{heading}/{n}.md" for n in sorted(nameslist))
         return ret
 
     files = dict()
@@ -90,7 +85,7 @@ def gen_mkdocs(model, outdir, cfg):
     ]:
         filelines.extend(files[nsname])
 
-    fn = op / "model-files.yml"
+    fn = outpath / "model-files.yml"
     fn.write_text("\n".join(filelines))
 
 
@@ -102,7 +97,7 @@ def class_link(name):
         return f"[{name}](../Classes/{name}.md)"
 
 
-def property_link(name, showshort=False):
+def property_link(name, *, showshort=False):
     if name.startswith("/"):
         _, other_ns, name = name.split("/")
         showname = name if showshort else f"/{other_ns}/{name}"
@@ -119,7 +114,7 @@ def ext_property_link(name):
     return ret
 
 
-def type_link(name, model, showshort=False):
+def type_link(name, model, *, showshort=False):
     if name.startswith("/"):
         dirname = "Classes"
         if name in model.vocabularies:
