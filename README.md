@@ -53,7 +53,7 @@ options:
   -R, --output-rdf OUTPUT_RDF               Output directory for RDF files.
   -t, --generate-tex                        Generate TeX output.
   -T, --output-tex OUTPUT_TEX               Output directory for TeX files.
-  -v, --verbose                             Print verbose output
+  -v, --verbose                             Print verbose information.
   -V, --version                             Show program version number and exit
   -w, --generate-webpages                   Generate web pages output.
   -W, --output-webpages OUTPUT_WEBPAGES     Output directory for web pages.
