@@ -68,7 +68,7 @@ class RunParams(SimpleNamespace):
 
         parser.add_argument("input_dir", type=str, help="Path to the input 'model' directory.")
 
-        parser.add_argument("-d", "--debug", action="store_true", help="Print debug output")
+        parser.add_argument("-d", "--debug", action="store_true", help="Print spec-parser debug information.")
         parser.add_argument("-f", "--force", action="store_true", help="Force overwrite of existing output directories.")
         parser.add_argument("-j", "--generate-jsondump", action="store_true", help="Generate a dump of the model in JSON format.")
         parser.add_argument("-J", "--output-jsondump", type=str, help="Output directory for JSON dump file.")
