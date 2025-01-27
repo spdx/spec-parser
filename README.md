@@ -43,8 +43,8 @@ options:
   -f, --force                               Force overwrite of existing output directories.
   -j, --generate-jsondump                   Generate a dump of the model in JSON format.
   -J, --output-jsondump OUTPUT_JSONDUMP     Output directory for JSON dump file.
-  -m, --generate-mkdocs                     Generate mkdocs output.
-  -M, --output-mkdocs OUTPUT_MKDOCS         Output directory for mkdocs files.
+  -m, --generate-mkdocs                     Generate MkDocs output.
+  -M, --output-mkdocs OUTPUT_MKDOCS         Output directory for MkDocs files.
   -n, --no-output                           Perform no output generation, only input validation.
   -o, --output OUTPUT                       Single output directory for all output types.
   -p, --generate-plantuml                   Generate PlantUML output.
