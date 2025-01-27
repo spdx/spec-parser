@@ -82,7 +82,7 @@ class RunParams(SimpleNamespace):
         parser.add_argument("-R", "--output-rdf", type=str, help="Output directory for RDF files.")
         parser.add_argument("-t", "--generate-tex", action="store_true", help="Generate TeX output.")
         parser.add_argument("-T", "--output-tex", type=str, help="Output directory for TeX files.")
-        parser.add_argument("-v", "--verbose", action="store_true", help="Print verbose output")
+        parser.add_argument("-v", "--verbose", action="store_true", help="Print verbose information.")
         parser.add_argument("-V", "--version", action="version", version=f"%(prog)s {self.parser_version}")
         parser.add_argument("-w", "--generate-webpages", action="store_true", help="Generate web pages output.")
         parser.add_argument("-W", "--output-webpages", type=str, help="Output directory for web pages.")
