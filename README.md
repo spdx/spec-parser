@@ -38,8 +38,8 @@ positional arguments:
   input_dir             Path to the input 'model' directory.
 
 options:
-  -h, --help                                Show this help message and exit
-  -d, --debug                               Print debug output
+  -h, --help                                Show this help message and exit.
+  -d, --debug                               Print spec-parser debug information.
   -f, --force                               Force overwrite of existing output directories.
   -j, --generate-jsondump                   Generate a dump of the model in JSON format.
   -J, --output-jsondump OUTPUT_JSONDUMP     Output directory for JSON dump file.
