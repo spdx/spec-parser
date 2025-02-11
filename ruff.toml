@@ -1,30 +1,34 @@
 fix = false
 indent-width = 4
-line-length = 140
+line-length = 145
 output-format = "full"
 # output-format = "grouped"
 preview = false
-required-version = ">=0.4"
+required-version = ">=0.9"
 show-fixes = true
 
 [format]
 docstring-code-format = false
 indent-style = "space"
 line-ending = "native"
+preview = false
 quote-style = "double"
 skip-magic-trailing-comma = false
 
 [lint]
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 fixable = ["ALL"]
-ignore = [ "C408", "C901", "COM812", "G004", "ISC001", "RET505", "S101", ]
-ignore-init-module-imports = true
+ignore = [ "C408", "C901", "COM812", "EM102", "G004", "ISC001", "RET505", "S101", ]
+logger-objects = ["cfg.log"]
+preview = false
+# anything but "AIR", "ANN", "D", "NPY", "PD",
 select = [
-"A", "AIR", "ARG", "ASYNC", "B", "C", "BLE", "C4", "COM", "DJ", "DTZ",
-"EM", "ERA", "E", "W", "EXE", "F", "FA", "FBT", "FIX", "FLY", "G", "I",
-"ICN", "INP", "INT", "ISC", "LOG", "N", "NPY", "PD", "PERF", "PGH", "PIE",
-"PL", "PT", "PTH", "PYI", "Q", "R", "RET", "RSE", "RUF", "S", "SIM",
-"SLF", "SLOT", "T10", "T20", "TCH", "TD", "TID", "TRIO", "TRY", "UP", "YTT",
+"A", "ARG", "ASYNC", "ASYNC1", "B", "BLE", "C", "C4", "C90", "COM", "CPY",
+"DJ", "DOC", "DTZ", "E", "EM", "ERA", "EXE", "F", "FA", "FAST", "FBT", "FIX",
+"FLY", "FURB", "G", "I", "ICN", "INP", "INT", "ISC", "LOG", "N", "PERF",
+"PGH", "PIE", "PL", "PT", "PTH", "PYI", "Q", "R", "RET", "RSE", "RUF", "S",
+"SIM", "SLF", "SLOT", "T10", "T20", "TC", "TD", "TID", "TRY", "UP", "W", "YTT",
+
 ]
 unfixable = []
 
@@ -42,7 +46,14 @@ unfixable = []
 			"PLR0915",	# too many statements, for gen_rdf_ontology
 ]
 
+[lint.isort]
+case-sensitive = true
+force-sort-within-sections = false
+from-first = false
+lines-between-types = 0
+split-on-trailing-comma = false
+
 [lint.pylint]
 max-branches = 35
-max-statements = 55
+max-statements = 65
 

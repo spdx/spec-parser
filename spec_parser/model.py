@@ -4,7 +4,6 @@
 
 import logging
 from copy import deepcopy
-from pathlib import Path
 
 from .mdparsing import (
     ContentSection,
@@ -13,9 +12,10 @@ from .mdparsing import (
     SpecFile,
 )
 
+logger = logging.getLogger(__name__)
 
 class Model:
-    def __init__(self, indir=None):
+    def __init__(self, inpath=None):
         self.name = None
         self.namespaces = []
         self.classes = dict()
@@ -24,21 +24,16 @@ class Model:
         self.individuals = dict()
         self.datatypes = dict()
 
-        if indir is not None:
-            self.load(indir)
+        if inpath is not None:
+            self.load(inpath)
 
-    def load(self, indir):
-        self.toplevel = p = Path(indir)
-        if not p.is_dir():
-            logging.error(f"{indir}: not a directory")
-            return
-        if p.name != "model":
-            logging.warning(f'{indir}: input not named "model"')
+    def load(self, inpath):
+        p = inpath
 
         for d in [d for d in p.iterdir() if d.is_dir() and d.name[0].isupper()]:
             nsp = p / d.name / f"{d.name}.md"
             if not nsp.is_file():
-                logging.error(f"Missing top-level namespace file {nsp.name}")
+                logger.error(f"Missing top-level namespace file {nsp.name}")
                 continue
 
             ns = Namespace(nsp)
@@ -84,7 +79,7 @@ class Model:
                     self.datatypes[k] = n
                     ns.datatypes[k] = n
 
-        logging.info(
+        logger.info(
             f"Loaded {len(self.namespaces)} namespaces, {len(self.classes)} classes, "
             f"{len(self.properties)} properties, {len(self.vocabularies)} vocabularies, "
             f"{len(self.individuals)} individuals, {len(self.datatypes)} datatypes",
@@ -93,7 +88,7 @@ class Model:
 
     def process_after_load(self):
         self.types = self.classes | self.vocabularies | self.datatypes
-        logging.info(f"Total {len(self.types)} types")
+        logger.info(f"Total {len(self.types)} types")
 
         # add used_in information to properties
         for c in self.classes.values():
@@ -103,7 +98,7 @@ class Model:
                 proptype = self.properties[pname].metadata["Range"]
                 ptype = pkv["type"]
                 if proptype != ptype and (not p.startswith("/") or proptype.rpartition("/")[-1] != ptype.rpartition("/")[-1]):
-                    logging.error(f"In class {c.fqname}, property {p} has type {ptype} but the range of {pname} is {proptype}")
+                    logger.error(f"In class {c.fqname}, property {p} has type {ptype} but the range of {pname} is {proptype}")
                 self.properties[pname].used_in.append(c.fqname)
 
         # add class inheritance stack
@@ -159,27 +154,28 @@ class Model:
                     assert c.all_properties[shortname]["fullname"] == f"/{pns}/{shortname}"
                     for k, v in pkv.items():
                         if c.all_properties[shortname][k] == v:
-                            logging.warning(f"In class {c.fqname} property {p} has same {k} as the parent class")
+                            logger.warning(f"In class {c.fqname} property {p} has same {k} as the parent class")
                         c.all_properties[shortname][k] = v
 
-    def gen_all(self, outdir, cfg):
-        from .jsondump import gen_jsondump
-        from .mkdocs import gen_mkdocs
-        from .plantuml import gen_plantuml
-        from .rdf import gen_rdf
-        from .tex import gen_tex
-
-        p = Path(outdir)
-        if p.exists() and not cfg.opt_force:
-            logging.error(f"Destination for mkdocs {outdir} already exists, will not overwrite")
-            return
-        p.mkdir(parents=True)
-
-        gen_mkdocs(self, outdir, cfg)
-        gen_rdf(self, outdir, cfg)
-        gen_tex(self, outdir, cfg)
-        gen_plantuml(self, outdir, cfg)
-        gen_jsondump(self, outdir, cfg)
+    def generate(self, cfg):
+        if cfg.generate_jsondump:
+            from .jsondump import gen_jsondump
+            gen_jsondump(self, cfg.output_jsondump_path, cfg)
+        if cfg.generate_mkdocs:
+            from .mkdocs import gen_mkdocs
+            gen_mkdocs(self, cfg.output_mkdocs_path, cfg)
+        if cfg.generate_plantuml:
+            from .plantuml import gen_plantuml
+            gen_plantuml(self, cfg.output_plantuml_path, cfg)
+        if cfg.generate_rdf:
+            from .rdf import gen_rdf
+            gen_rdf(self, cfg.output_rdf_path, cfg)
+        if cfg.generate_tex:
+            from .tex import gen_tex
+            gen_tex(self, cfg.output_tex_path, cfg)
+        if cfg.generate_webpages:
+            from .webpages import gen_webpages
+            gen_webpages(self, cfg.output_webpages_path, cfg)
 
 
 class Namespace:

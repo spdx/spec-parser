@@ -5,6 +5,7 @@
 import logging
 import re
 
+logger = logging.getLogger(__name__)
 
 class SpecFile:
     RE_SPLIT_TO_SECTIONS = re.compile(r"\n(?=(?:\Z|# |## ))")
@@ -19,20 +20,20 @@ class SpecFile:
             self.load(fpath)
 
     def load(self, fpath):
-        logging.debug(f"### loading {fpath.parent}/{fpath.name}")
+        logger.debug(f"### loading {fpath.parent}/{fpath.name}")
         filecontent = fpath.read_text(encoding="utf-8")
 
         parts = re.split(self.RE_SPLIT_TO_SECTIONS, filecontent)
 
         m = re.fullmatch(self.RE_EXTRACT_LICENSE, parts[0])
         if m is None:
-            logging.error(f"File {fpath!s} does not start with license.")
+            logger.error(f"File {fpath!s} does not start with license.")
         else:
             self.license = m.group(1)
 
         m = re.fullmatch(self.RE_EXTRACT_NAME, parts[1])
         if m is None:
-            logging.error(f"File {fpath!s} does not have name after license.")
+            logger.error(f"File {fpath!s} does not have name after license.")
         else:
             self.name = m.group(1)
 
@@ -65,7 +66,7 @@ class SingleListSection(Section):
         for l in content.splitlines():
             m = re.fullmatch(self.RE_EXTRACT_KEY_VALUE, l)
             if m is None:
-                logging.error(f"Single list parsing error in line `{l}'")
+                logger.error(f"Single list parsing error in line `{l}'")
             else:
                 key = m.group(1)
                 val = m.group(2).strip()
@@ -83,19 +84,15 @@ class NestedListSection(Section):
             if l.startswith("-"):
                 m = re.fullmatch(self.RE_EXTRACT_TOP_LEVEL, l)
                 if m is None:
-                    logging.error(f"Top-level nested list parsing error in line `{l}'")
+                    logger.error(f"Top-level nested list parsing error in line `{l}'")
                 else:
                     item = m.group(1)
                     self.ikv[item] = dict()
             else:
                 m = re.fullmatch(self.RE_EXTRACT_KEY_VALUE, l)
                 if m is None:
-                    logging.error(f"Nested list parsing error in line `{l}'")
+                    logger.error(f"Nested list parsing error in line `{l}'")
                 else:
                     key = m.group(1)
                     val = m.group(2).strip()
                     self.ikv[item][key] = val
-
-
-if __name__ == "__main__":
-    fn = "/home/zvr/github/spdx/spdx-3-model/model/Core/Classes/Element.md"
