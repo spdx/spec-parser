@@ -2,6 +2,9 @@
 
 # SPDX-License-Identifier: Apache-2.0
 
+import logging
+
+logger = logging.getLogger(__name__)
 
 def gen_plantuml(model, outpath, cfg):
 

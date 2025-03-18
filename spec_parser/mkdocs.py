@@ -2,8 +2,11 @@
 
 # SPDX-License-Identifier: Apache-2.0
 
+import logging
 from jinja2 import Environment, PackageLoader, select_autoescape
 
+
+logger = logging.getLogger(__name__)
 
 def gen_mkdocs(model, outpath, cfg):
     jinja = Environment(
