@@ -2,12 +2,16 @@
 
 # SPDX-License-Identifier: Apache-2.0
 
+import logging
+
 from .mdparsing import (
     ContentSection,
     NestedListSection,
     SingleListSection,
     SpecFile,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class NamespaceLoader:

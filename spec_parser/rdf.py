@@ -55,7 +55,7 @@ def gen_rdf_ontology(model):
     node = URIRef(URI_BASE)
     g.add((node, RDF.type, OWL.Ontology))
     g.add((node, OWL.versionIRI, node))
-    g.add((node, RDFS.label, Literal("System Package Data Exchange (SPDX) Ontology", lang="en")))
+    g.add((node, RDFS.label, Literal("System Package Data Exchange™ (SPDX®) Ontology", lang="en")))
     g.add(
         (
             node,

@@ -16,6 +16,8 @@ class RunParams(SimpleNamespace):
     def __init__(self, name):
         self._ts = datetime.now(timezone.utc)
         self.log = logging.getLogger(name)
+        lch = LogCountingHandler()
+        self.log.addHandler(lch)
         opt_force = self.process_args()
         self.check_requirements()
         if logging.ERROR in self.log._cache:
@@ -92,9 +94,9 @@ class RunParams(SimpleNamespace):
         desc_list = ["JSON dump", "MkDocs", "PlantUML", "RDF", "TeX", "Web pages"]
 
         if opts.verbose:
-            self.log.basicConfig(level=logging.INFO)
+            self.log.setLevel(level=logging.INFO)
         if opts.debug:
-            self.log.basicConfig(level=logging.DEBUG)
+            self.log.setLevel(level=logging.DEBUG)
 
         self.input_path = Path(opts.input_dir)
         check_input_path(self.input_path)
@@ -117,7 +119,7 @@ class RunParams(SimpleNamespace):
         if opts.output:
             self.output_path = Path(opts.output)
             if self.output_path.exists() and not opts.force:
-                self.log.error("Output directory '{self.output_path}' already exists (use -f/--force to overwrite).")
+                self.log.error(f"Output directory '{self.output_path}' already exists (use -f/--force to overwrite).")
 
         for desc, g in zip(desc_list, gen_list):
             genflag = "generate_" + g
@@ -147,4 +149,24 @@ class RunParams(SimpleNamespace):
                 if force and p.exists():
                     shutil.rmtree(p)
                 p.mkdir(parents=True)
+
+
+
+class LogCountingHandler(logging.StreamHandler):
+    def __init__(self):
+        super().__init__()
+        self.count = dict.fromkeys((logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR, logging.CRITICAL), 0)
+
+    def emit(self, record):
+        self.count[record.levelno] += 1
+        super().emit(record)
+
+    def num_critical(self):
+        return self.count[logging.CRITICAL]
+
+    def num_errors(self):
+        return self.count[logging.ERROR]
+
+    def num_warnings(self):
+        return self.count[logging.WARNING]
 
