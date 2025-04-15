@@ -119,7 +119,7 @@ class RunParams(SimpleNamespace):
         if opts.output:
             self.output_path = Path(opts.output)
             if self.output_path.exists() and not opts.force:
-                self.log.error("Output directory '{self.output_path}' already exists (use -f/--force to overwrite).")
+                self.log.error(f"Output directory '{self.output_path}' already exists (use -f/--force to overwrite).")
 
         for desc, g in zip(desc_list, gen_list):
             genflag = "generate_" + g
@@ -152,17 +152,18 @@ class RunParams(SimpleNamespace):
 
 
 
-class LogCountingHandler(logging.Handler):
+class LogCountingHandler(logging.StreamHandler):
     def __init__(self):
         super().__init__()
         self.count = dict.fromkeys((logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR, logging.CRITICAL), 0)
 
     def emit(self, record):
         self.count[record.levelno] += 1
+        super().emit(record)
 
     def num_critical(self):
         return self.count[logging.CRITICAL]
-    
+
     def num_errors(self):
         return self.count[logging.ERROR]
 
