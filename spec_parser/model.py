@@ -130,6 +130,20 @@ class Model:
                 c.inheritance_stack.append(pcn)
                 pcn = self.classes[pcn].fqsupercname
 
+        # build subclass trees
+        # Initialize subclasses dict for each class
+        for c in self.classes.values():
+            c.subclasses = []
+
+        # Populate subclasses
+        for c in self.classes.values():
+            if c.fqsupercname:
+                self.classes[c.fqsupercname].subclasses.append(c.fqname)
+
+        # Sort subclasses by name for consistent display
+        for c in self.classes.values():
+            c.subclasses.sort()
+
         # add inherited properties to classes
         for cn in stack:
             c = self.classes[cn]

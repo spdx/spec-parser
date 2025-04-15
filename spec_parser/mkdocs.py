@@ -16,8 +16,12 @@ def gen_mkdocs(model, outpath, cfg):
     jinja.globals["class_link"] = class_link
     jinja.globals["property_link"] = property_link
     jinja.globals["ext_property_link"] = ext_property_link
-    jinja.globals["type_link"] = lambda x, showshort=False: type_link(x, model, showshort=showshort)
+    jinja.globals["type_link"] = lambda x, showshort=False: type_link(
+        x, model, showshort=showshort
+    )
     jinja.globals["not_none"] = lambda x: str(x) if x is not None else ""
+    jinja.globals["get_subclass_tree"] = lambda x: get_subclass_tree(x, model)
+    jinja.globals["get_class_url"] = get_class_url
 
     p = outpath
 
@@ -37,8 +41,23 @@ def gen_mkdocs(model, outpath, cfg):
             d.mkdir(exist_ok=True)
             f = d / f"{s.name}.md"
 
+            context = vars(s).copy()
+
+            # For classes, compute direct and nested subclasses
+            if dirname == "Classes" and hasattr(s, "subclasses"):
+                # Calculate direct subclasses (they are already stored in s.subclasses)
+
+                # Create a map of class to its direct subclasses (as Class objects, not just names)
+                direct_subclasses = []
+                for subclass_name in s.subclasses:
+                    subclass = model.classes.get(subclass_name)
+                    if subclass:
+                        direct_subclasses.append(subclass)
+
+                context["direct_subclasses"] = direct_subclasses
+
             template = jinja.get_template(tmplfname)
-            page = template.render(vars(s))
+            page = template.render(context)
             f.write_text(page)
 
     _generate_in_dir("Classes", model.classes, "class.md.j2")
@@ -52,7 +71,10 @@ def gen_mkdocs(model, outpath, cfg):
         nameslist = [c.name for c in itemslist.values()]
         if nameslist:
             ret.append(f"    - {heading}:")
-            ret.extend(f"      - '{n}': model/{nsname}/{heading}/{n}.md" for n in sorted(nameslist))
+            ret.extend(
+                f"      - '{n}': model/{nsname}/{heading}/{n}.md"
+                for n in sorted(nameslist)
+            )
         return ret
 
     files = dict()
@@ -136,3 +158,42 @@ def type_link(name, model, *, showshort=False):
         return f"[{name}](../{dirname}/{name}.md)"
     else:
         return f"{name}"
+
+
+def get_subclass_tree(class_name, model):
+    """Build a nested structure representing the subclass tree for a given class.
+
+    Returns a list of dictionaries, each with 'name' and 'children' keys.
+    """
+    result = []
+    cls = model.classes.get(class_name)
+
+    if not cls or not hasattr(cls, "subclasses") or not cls.subclasses:
+        return result
+
+    for subclass_name in cls.subclasses:
+        subclass_info = {
+            "name": subclass_name,
+            "children": get_subclass_tree(subclass_name, model),
+        }
+        result.append(subclass_info)
+
+    return result
+
+
+def get_class_url(class_name):
+    """Generate a URL for a class based on its fully qualified name.
+
+    Args:
+        class_name: Fully qualified class name like "/Namespace/ClassName"
+
+    Returns:
+        URL string that works in MkDocs
+    """
+    parts = class_name.split("/")
+    if len(parts) >= 3:
+        namespace = parts[1]
+        class_name = parts[2]
+        # Format for MkDocs
+        return f"../../{namespace}/Classes/{class_name}"
+    return "#"
