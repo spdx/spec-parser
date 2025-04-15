@@ -22,6 +22,159 @@
   {% endif %}
 {% endfor %}
 
+{% if subclasses %}
+## Subclass tree
+
+{% set current_ns = fqname.split('/')[1] %}
+{% set current_name = fqname.split('/')[2] %}
+
+<ul class="tree-view">
+  <li>
+    <span class="tree-caret tree-caret-down"></span>
+    <span class="tree-text current-class">/{{current_ns}}/{{current_name}}</span>
+    {% set subclass_tree = get_subclass_tree(fqname) %}
+    {% if subclass_tree %}
+    <ul class="nested active">
+      {% macro render_tree_node(node) %}
+      <li>
+        {% set node_ns = node.name.split('/')[1] %}
+        {% set node_name = node.name.split('/')[2] %}
+        {% if node.children %}
+        <span class="tree-caret"></span>
+        <a href="/spdx-spec/model/{{node_ns}}/Classes/{{node_name}}" class="tree-text">/{{node_ns}}/{{node_name}}</a>
+        <ul class="nested">
+          {% for child in node.children %}
+          {{ render_tree_node(child) }}
+          {% endfor %}
+        </ul>
+        {% else %}
+        <span class="tree-leaf"></span>
+        <a href="/spdx-spec/model/{{node_ns}}/Classes/{{node_name}}" class="tree-text">/{{node_ns}}/{{node_name}}</a>
+        {% endif %}
+      </li>
+      {% endmacro %}
+      
+      {% for node in subclass_tree %}
+      {{ render_tree_node(node) }}
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </li>
+</ul>
+
+<style>
+/* Tree View Styles */
+.tree-view, .tree-view ul, .tree-view li {
+  list-style: none !important;
+  list-style-type: none !important;
+  list-style-image: none !important;
+  margin: 0;
+  padding: 0;
+}
+
+.tree-view {
+  padding-left: 0;
+  font-family: inherit;
+}
+
+.tree-view ul {
+  padding-left: 20px;
+  margin: 5px 0;
+}
+
+.tree-view li {
+  margin: 5px 0;
+  position: relative;
+}
+
+/* Override any markdown list styles */
+.tree-view li::before,
+.tree-view li::marker,
+.tree-view li::after {
+  content: none !important;
+  display: none !important;
+}
+
+.tree-caret,
+.tree-leaf {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.tree-caret {
+  cursor: pointer;
+  user-select: none;
+}
+
+.tree-caret::before {
+  content: "▶";
+  color: #555;
+  display: inline-block;
+  transition: transform 0.2s;
+  font-size: 0.8em;
+}
+
+.tree-caret-down::before {
+  transform: rotate(90deg);
+}
+
+.tree-text {
+  vertical-align: middle;
+}
+
+.current-class {
+  font-weight: bold;
+}
+
+.nested {
+  display: none;
+}
+
+.active {
+  display: block;
+}
+
+/* Fix MkDocs link styles in tree */
+.tree-view a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.tree-view a:hover {
+  text-decoration: underline;
+}
+</style>
+
+<script>
+// Tree view behavior - optimized
+(function() {
+  function initTreeView() {
+    document.querySelectorAll('.tree-caret').forEach(function(toggler) {
+      toggler.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.classList.toggle('tree-caret-down');
+        this.parentElement.querySelector('.nested').classList.toggle('active');
+      });
+    });
+  }
+
+  // Run when DOM is ready
+  if (document.readyState !== 'loading') {
+    initTreeView();
+  } else {
+    document.addEventListener('DOMContentLoaded', initTreeView);
+  }
+
+  // Also run when MkDocs finishes loading
+  document.addEventListener('DOMContentSwapComplete', initTreeView);
+})();
+</script>
+{% endif %}
+
 {% endblock %}
 
 {% block extra %}

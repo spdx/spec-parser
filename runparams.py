@@ -92,9 +92,9 @@ class RunParams(SimpleNamespace):
         desc_list = ["JSON dump", "MkDocs", "PlantUML", "RDF", "TeX", "Web pages"]
 
         if opts.verbose:
-            self.log.basicConfig(level=logging.INFO)
+            logging.basicConfig(level=logging.INFO)
         if opts.debug:
-            self.log.basicConfig(level=logging.DEBUG)
+            logging.basicConfig(level=logging.DEBUG)
 
         self.input_path = Path(opts.input_dir)
         check_input_path(self.input_path)
