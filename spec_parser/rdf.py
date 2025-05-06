@@ -81,6 +81,13 @@ def gen_rdf_ontology(model):
 
     return g
 
+def get_parent(model, c):
+    parent = c.metadata.get("SubclassOf")
+    if parent:
+        pns = "" if parent.startswith("/") else f"/{c.ns.name}/"
+        return model.classes[pns + parent]
+    return None
+
 
 def gen_rdf_classes(model, g):
     for c in model.classes.values():
@@ -88,10 +95,8 @@ def gen_rdf_classes(model, g):
         g.add((node, RDF.type, OWL.Class))
         if c.summary:
             g.add((node, RDFS.comment, Literal(c.summary, lang="en")))
-        parent = c.metadata.get("SubclassOf")
-        if parent:
-            pns = "" if parent.startswith("/") else f"/{c.ns.name}/"
-            p = model.classes[pns + parent]
+        p = get_parent(model, c)
+        if p is not None:
             g.add((node, RDFS.subClassOf, URIRef(p.iri)))
         if c.metadata["Instantiability"] == "Abstract":
             bnode = BNode()
@@ -129,7 +134,35 @@ def gen_rdf_classes(model, g):
                     typename = prop_rng
                 if typename in model.classes:
                     dt = model.classes[typename]
-                    g.add((bnode, SH["class"], URIRef(dt.iri)))
+
+                    # Extension subclasses cannot be validated, since they are
+                    # unknown. Any unknown class is assumed to be derived from
+                    # extension
+                    if typename == "/Extension/Extension":
+                        extnode = BNode()
+                        lst = Collection(g, None)
+                        for cls in model.classes.values():
+                            if cls.metadata["Instantiability"] == "Abstract":
+                                continue
+                            cls_parent = get_parent(model, cls)
+                            if cls_parent is not None and cls_parent.fqname == "/Extension/Extension":
+                                continue
+                            clsNode = BNode()
+                            g.add((clsNode, SH["class"], URIRef(cls.iri)))
+                            lst.append(clsNode)
+                        notNode = BNode()
+                        g.add((extnode, SH["not"], notNode))
+                        g.add((notNode, SH["or"], lst.uri))
+                        msg = Literal(
+                            f"Class is known to not derive from Extension and cannot be used",
+                            lang="en",
+                        )
+                        g.add((extnode, SH.message, msg))
+                        g.add((extnode, SH.path, URIRef(prop.iri)))
+                        g.add((node, SH.property, extnode))
+                    else:
+                        g.add((bnode, SH["class"], URIRef(dt.iri)))
+
                     if "spdxId" in dt.all_properties:
                         g.add((bnode, SH.nodeKind, SH.IRI))
                     else:
