@@ -31,7 +31,6 @@ class Model:
         if inpath is not None:
             self.load(inpath)
 
-
     def load(self, inpath):
         p = inpath
 
