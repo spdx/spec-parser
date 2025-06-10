@@ -16,11 +16,11 @@ class RunParams(SimpleNamespace):
     def __init__(self, name):
         self._ts = datetime.now(timezone.utc)
         self.log = logging.getLogger(name)
-        self.log_handler = LogCountingHandler()
-        self.log.addHandler(self.log_handler)
+        lch = LogCountingHandler()
+        self.log.addHandler(lch)
         opt_force = self.process_args()
         self.check_requirements()
-        if self.log_handler.num_errors() > 0:
+        if logging.ERROR in self.log._cache:
             sys.exit(1)
         self.create_output_dirs(opt_force)
 
