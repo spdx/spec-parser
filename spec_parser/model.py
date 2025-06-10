@@ -12,7 +12,7 @@ from .mdparsing import (
     SpecFile,
 )
 
-logger = logging.getLogger(__name__)
+from runparams import LogCountingHandler
 
 class Model:
     def __init__(self, inpath=None):
@@ -24,8 +24,13 @@ class Model:
         self.individuals = dict()
         self.datatypes = dict()
 
+        self.log = logging.getLogger(str(inpath))
+        self.log_handler = LogCountingHandler()
+        self.log.addHandler(self.log_handler)
+
         if inpath is not None:
             self.load(inpath)
+
 
     def load(self, inpath):
         p = inpath
@@ -33,7 +38,7 @@ class Model:
         for d in [d for d in p.iterdir() if d.is_dir() and d.name[0].isupper()]:
             nsp = p / d.name / f"{d.name}.md"
             if not nsp.is_file():
-                logger.error(f"Missing top-level namespace file {nsp.name}")
+                self.log.error(f"Missing top-level namespace file {nsp.name}")
                 continue
 
             ns = Namespace(nsp)
@@ -79,7 +84,7 @@ class Model:
                     self.datatypes[k] = n
                     ns.datatypes[k] = n
 
-        logger.info(
+        self.log.info(
             f"Loaded {len(self.namespaces)} namespaces, {len(self.classes)} classes, "
             f"{len(self.properties)} properties, {len(self.vocabularies)} vocabularies, "
             f"{len(self.individuals)} individuals, {len(self.datatypes)} datatypes",
@@ -88,7 +93,7 @@ class Model:
 
     def process_after_load(self):
         self.types = self.classes | self.vocabularies | self.datatypes
-        logger.info(f"Total {len(self.types)} types")
+        self.log.info(f"Total {len(self.types)} types")
 
         # add used_in information to properties
         for c in self.classes.values():
@@ -98,7 +103,7 @@ class Model:
                 proptype = self.properties[pname].metadata["Range"]
                 ptype = pkv["type"]
                 if proptype != ptype and (not p.startswith("/") or proptype.rpartition("/")[-1] != ptype.rpartition("/")[-1]):
-                    logger.error(f"In class {c.fqname}, property {p} has type {ptype} but the range of {pname} is {proptype}")
+                    self.log.error(f"In class {c.fqname}, property {p} has type {ptype} but the range of {pname} is {proptype}")
                 self.properties[pname].used_in.append(c.fqname)
 
         # add class inheritance stack
@@ -154,7 +159,7 @@ class Model:
                     assert c.all_properties[shortname]["fullname"] == f"/{pns}/{shortname}"
                     for k, v in pkv.items():
                         if c.all_properties[shortname][k] == v:
-                            logger.warning(f"In class {c.fqname} property {p} has same {k} as the parent class")
+                            self.log.warning(f"In class {c.fqname} property {p} has same {k} as the parent class")
                         c.all_properties[shortname][k] = v
 
     def generate(self, cfg):

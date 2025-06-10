@@ -11,3 +11,9 @@ if __name__ == "__main__":
     m = Model(cfg.input_path)
     if not cfg.no_output:
         m.generate(cfg)
+
+    if m.log_handler.num_errors() > 0:
+        print(f"Model errors: {m.log_handler.num_errors()}")
+        for msg in m.log_handler.error_records:
+            print(msg)
+        exit(1)

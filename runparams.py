@@ -16,11 +16,11 @@ class RunParams(SimpleNamespace):
     def __init__(self, name):
         self._ts = datetime.now(timezone.utc)
         self.log = logging.getLogger(name)
-        lch = LogCountingHandler()
-        self.log.addHandler(lch)
+        self.log_handler = LogCountingHandler()
+        self.log.addHandler(self.log_handler)
         opt_force = self.process_args()
         self.check_requirements()
-        if logging.ERROR in self.log._cache:
+        if self.log_handler.num_errors() > 0:
             sys.exit(1)
         self.create_output_dirs(opt_force)
 
@@ -156,9 +156,12 @@ class LogCountingHandler(logging.StreamHandler):
     def __init__(self):
         super().__init__()
         self.count = dict.fromkeys((logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR, logging.CRITICAL), 0)
+        self.error_records = []
 
     def emit(self, record):
         self.count[record.levelno] += 1
+        if record.levelno == logging.ERROR:
+            self.error_records.append(self.format(record))
         super().emit(record)
 
     def num_critical(self):
@@ -169,4 +172,3 @@ class LogCountingHandler(logging.StreamHandler):
 
     def num_warnings(self):
         return self.count[logging.WARNING]
-
