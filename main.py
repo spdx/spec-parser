@@ -14,17 +14,21 @@ if __name__ == "__main__":
     if not cfg.no_output:
         m.generate(cfg)
 
+    # Logger names and their labels for error reporting,
+    # ordered by processing sequence.
     loggers = [
         ("spec_parser.mdparsing", "Markdown parsing"),
         ("spec_parser.model", "Model"),
         ("spec_parser.rdf", "RDF generation"),
-    ]  # Ordered by processing sequence
+    ]
 
     total_errors = 0
 
     for logger_name, label in loggers:
         logger = logging.getLogger(logger_name)
-        handler = next((h for h in logger.handlers if isinstance(h, LogCountingHandler)), None)
+        handler = next(
+            (h for h in logger.handlers if isinstance(h, LogCountingHandler)), None
+        )  # Get the first LogCountingHandler
         if handler and handler.num_errors() > 0:
             num_errors = handler.num_errors()
             print(f"\n{label} errors: {num_errors}")
