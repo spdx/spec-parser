@@ -12,7 +12,11 @@ from .mdparsing import (
     SpecFile,
 )
 
+from runparams import LogCountingHandler
+
 logger = logging.getLogger(__name__)
+log_handler = LogCountingHandler()
+logger.addHandler(log_handler)
 
 class Model:
     def __init__(self, inpath=None):

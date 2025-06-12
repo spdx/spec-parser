@@ -155,10 +155,19 @@ class RunParams(SimpleNamespace):
 class LogCountingHandler(logging.StreamHandler):
     def __init__(self):
         super().__init__()
-        self.count = dict.fromkeys((logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR, logging.CRITICAL), 0)
+        __log_levels = (
+            logging.DEBUG,
+            logging.INFO,
+            logging.WARNING,
+            logging.ERROR,
+            logging.CRITICAL,
+        )
+        self.count = dict.fromkeys(__log_levels, 0)
+        self.record = {level: [] for level in __log_levels}
 
     def emit(self, record):
         self.count[record.levelno] += 1
+        self.record[record.levelno].append(self.format(record))
         super().emit(record)
 
     def num_critical(self):
@@ -169,4 +178,3 @@ class LogCountingHandler(logging.StreamHandler):
 
     def num_warnings(self):
         return self.count[logging.WARNING]
-

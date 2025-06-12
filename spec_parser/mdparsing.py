@@ -5,7 +5,11 @@
 import logging
 import re
 
+from runparams import LogCountingHandler
+
 logger = logging.getLogger(__name__)
+log_handler = LogCountingHandler()
+logger.addHandler(log_handler)
 
 class SpecFile:
     RE_SPLIT_TO_SECTIONS = re.compile(r"\n(?=(?:\Z|# |## ))")

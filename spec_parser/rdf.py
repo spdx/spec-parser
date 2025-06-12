@@ -16,9 +16,13 @@ from rdflib.collection import Collection
 from rdflib.namespace import DCTERMS, OWL, RDF, RDFS, SH, SKOS, XSD
 from rdflib.tools.rdf2dot import rdf2dot
 
+from runparams import LogCountingHandler
+
 URI_BASE = "https://spdx.org/rdf/3.0.1/terms/"
 
 logger = logging.getLogger(__name__)
+log_handler = LogCountingHandler()
+logger.addHandler(log_handler)
 
 def gen_rdf(model, outpath, cfg):
     p = outpath
