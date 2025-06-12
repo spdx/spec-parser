@@ -168,7 +168,7 @@ class LogCountingHandler(logging.StreamHandler):
     def emit(self, record):
         self.count[record.levelno] += 1
         self.record[record.levelno].append(self.format(record))
-        # super().emit(record)
+        super().emit(record)
 
     def num_critical(self):
         return self.count[logging.CRITICAL]
