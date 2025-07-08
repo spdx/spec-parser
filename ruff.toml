@@ -18,33 +18,25 @@ skip-magic-trailing-comma = false
 [lint]
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 fixable = ["ALL"]
-ignore = [ "C408", "C901", "COM812", "EM102", "G004", "ISC001", "RET505", "S101", ]
-logger-objects = ["cfg.log"]
+ignore = [ "AIR", "ANN", "D", "NPY", "PD",
+	"C408", "C901", "COM812", "EM102", "G004", "ISC001", "RET505", "S101", ]
+logger-objects = ["logger", "root_logger"]
 preview = false
-# anything but "AIR", "ANN", "D", "NPY", "PD",
-select = [
-"A", "ARG", "ASYNC", "ASYNC1", "B", "BLE", "C", "C4", "C90", "COM", "CPY",
-"DJ", "DOC", "DTZ", "E", "EM", "ERA", "EXE", "F", "FA", "FAST", "FBT", "FIX",
-"FLY", "FURB", "G", "I", "ICN", "INP", "INT", "ISC", "LOG", "N", "PERF",
-"PGH", "PIE", "PL", "PT", "PTH", "PYI", "Q", "R", "RET", "RSE", "RUF", "S",
-"SIM", "SLF", "SLOT", "T10", "T20", "TC", "TD", "TID", "TRY", "UP", "W", "YTT",
-
-]
+select = ["ALL"]
 unfixable = []
 
 [lint.per-file-ignores]
-# Ignore F401 (unused import) in the module definition file
-"spec_parser/__init__.py" = ["F401"]
-# Ignore E741 (Ambiguous variable name) in file using `(l,r)` pairs
-"spec_parser/mdparsing.py" = ["E741"]
-"spec_parser/plantuml.py" = ["E741"]
-# temporary ignores -- will be removed once code is added
+"spec_parser/__init__.py" = ["F401"]	# unused import in the module definition file
 "spec_parser/jsondump.py" = ["ARG001"]	# unused function argument, for cfg
+"spec_parser/mdparsing.py" = ["E741"]	# using `(l,r)` pairs
+"spec_parser/plantuml.py" = ["E741"]
+"spec_parser/model.py" = ["PLC0415"]	# import not on top, since dynamic
 "spec_parser/rdf.py" = ["ARG001",	# unused function argument, for cfg
 			"F401",		# unused import, for SKOS
 			"N806",		# uppercase variable, for OMG_ANN
 			"PLR0915",	# too many statements, for gen_rdf_ontology
 ]
+"spec_parser/tex.py" = ["S607"]		# process without full path
 
 [lint.isort]
 case-sensitive = true

@@ -5,12 +5,7 @@
 import logging
 from copy import deepcopy
 
-from .mdparsing import (
-    ContentSection,
-    NestedListSection,
-    SingleListSection,
-    SpecFile,
-)
+from .mdparsing import ContentSection, NestedListSection, SingleListSection, SpecFile
 
 logger = logging.getLogger(__name__)
 

@@ -5,13 +5,7 @@
 import json
 import logging
 
-from rdflib import (
-    BNode,
-    Graph,
-    Literal,
-    Namespace,
-    URIRef,
-)
+from rdflib import BNode, Graph, Literal, Namespace, URIRef
 from rdflib.collection import Collection
 from rdflib.namespace import DCTERMS, OWL, RDF, RDFS, SH, SKOS, XSD
 from rdflib.tools.rdf2dot import rdf2dot
@@ -154,7 +148,7 @@ def gen_rdf_classes(model, g):
                         g.add((extnode, SH["not"], notNode))
                         g.add((notNode, SH["or"], lst.uri))
                         msg = Literal(
-                            f"Class is known to not derive from Extension and cannot be used",
+                            "Class is known to not derive from Extension and cannot be used",
                             lang="en",
                         )
                         g.add((extnode, SH.message, msg))
