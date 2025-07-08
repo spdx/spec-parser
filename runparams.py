@@ -13,16 +13,13 @@ from types import SimpleNamespace
 
 
 class RunParams(SimpleNamespace):
-    def __init__(self, name):
+    def __init__(self, name, logger):
+        self.logger = logger
+        self.name = name
         self._ts = datetime.now(timezone.utc)
-        self.log = logging.getLogger(name)
-        lch = LogCountingHandler()
-        self.log.addHandler(lch)
-        opt_force = self.process_args()
+        self.process_args()
         self.check_requirements()
-        if logging.ERROR in self.log._cache:
-            sys.exit(1)
-        self.create_output_dirs(opt_force)
+
 
     @property
     def autogen_header(self):
@@ -39,11 +36,11 @@ class RunParams(SimpleNamespace):
     def check_requirements(self):
         def check_import_module(module_name, condition):
             if importlib.util.find_spec(module_name) is None:
-                self.log.error(f"Python module '{module_name}' is required when {condition} is specified.  Make sure it's installed.")
+                self.logger.error(f"Python module '{module_name}' is required when {condition} is specified.  Make sure it's installed.")
 
         def check_external_program(program_name, condition):
             if shutil.which(program_name) is None:
-                self.log.error(
+                self.logger.error(
                     f"Program '{program_name}' is required when {condition} is specified.  Make sure it's installed and present in your PATH."
                 )
 
@@ -94,9 +91,9 @@ class RunParams(SimpleNamespace):
         desc_list = ["JSON dump", "MkDocs", "PlantUML", "RDF", "TeX", "Web pages"]
 
         if opts.verbose:
-            self.log.setLevel(level=logging.INFO)
+            self.logger.setLevel(level=logging.INFO)
         if opts.debug:
-            self.log.setLevel(level=logging.DEBUG)
+            self.logger.setLevel(level=logging.DEBUG)
 
         self.input_path = Path(opts.input_dir)
         check_input_path(self.input_path)
@@ -104,7 +101,7 @@ class RunParams(SimpleNamespace):
         if opts.no_output:
             self.no_output = True
             if any(getattr(opts, "generate_" + g) for g in gen_list):
-                self.log.warning("Incompatible flag combination: -n/--no-output overwrites any generation")
+                self.logger.warning("Incompatible flag combination: -n/--no-output overwrites any generation")
             for g in gen_list:
                 setattr(self, "generate_" + g, False)
         else:
@@ -119,7 +116,7 @@ class RunParams(SimpleNamespace):
         if opts.output:
             self.output_path = Path(opts.output)
             if self.output_path.exists() and not opts.force:
-                self.log.error(f"Output directory '{self.output_path}' already exists (use -f/--force to overwrite).")
+                self.logger.error(f"Output directory '{self.output_path}' already exists (use -f/--force to overwrite).")
 
         for desc, g in zip(desc_list, gen_list):
             genflag = "generate_" + g
@@ -131,42 +128,23 @@ class RunParams(SimpleNamespace):
                 elif p := getattr(self, "output_path", None):
                     setattr(self, outpath, p / g)
                 else:
-                    self.log.error(f"{desc} was specified, but no output directory.")
+                    self.logger.error(f"{desc} was specified, but no output directory.")
                 if p := getattr(self, outpath, None):
                     if p.exists() and not opts.force:
-                        self.log.error(f"Output directory '{p}' already exists (use -f/--force to overwrite).")
+                        self.logger.error(f"Output directory '{p}' already exists (use -f/--force to overwrite).")
 
-        return opts.force
+        self.force = opts.force
 
 
-    def create_output_dirs(self, force):
+    def create_output_dirs(self):
         gen_list = ["jsondump", "mkdocs", "plantuml", "rdf", "tex", "webpages"]
         for g in gen_list:
             genflag = "generate_" + g
             if getattr(self, genflag, False):
                 outpath = "output_" + g + "_path"
                 p = getattr(self, outpath)
-                if force and p.exists():
+                if self.force and p.exists():
                     shutil.rmtree(p)
                 p.mkdir(parents=True)
 
-
-
-class LogCountingHandler(logging.StreamHandler):
-    def __init__(self):
-        super().__init__()
-        self.count = dict.fromkeys((logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR, logging.CRITICAL), 0)
-
-    def emit(self, record):
-        self.count[record.levelno] += 1
-        super().emit(record)
-
-    def num_critical(self):
-        return self.count[logging.CRITICAL]
-
-    def num_errors(self):
-        return self.count[logging.ERROR]
-
-    def num_warnings(self):
-        return self.count[logging.WARNING]
 

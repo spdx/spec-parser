@@ -2,8 +2,9 @@
 
 # SPDX-License-Identifier: Apache-2.0
 
-import jsonpickle
 import logging
+
+import jsonpickle
 
 logger = logging.getLogger(__name__)
 

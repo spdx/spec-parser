@@ -47,9 +47,15 @@ class SpecFile:
 
 
 class Section:
-    def __init__(self, content):
+    def __init__(self, content, filename=None, context=None):
+        self.filename = filename
+        self.context = context
+
         if content is not None:
             self.load(content)
+
+    def _fmt_err_msg(self, s, line_num, line_content):
+        return f"{s} in {self.context} of '{self.filename}', line {line_num}: `{line_content}'"
 
 
 class ContentSection(Section):
@@ -63,10 +69,10 @@ class SingleListSection(Section):
     def load(self, content):
         self.content = content
         self.kv = dict()
-        for l in content.splitlines():
+        for i,l in enumerate(content.splitlines()):
             m = re.fullmatch(self.RE_EXTRACT_KEY_VALUE, l)
             if m is None:
-                logger.error(f"Single list parsing error in line `{l}'")
+                logger.error(self._fmt_err_msg("Single list parsing error", i+1, l))
             else:
                 key = m.group(1)
                 val = m.group(2).strip()
@@ -80,18 +86,18 @@ class NestedListSection(Section):
     def load(self, content):
         self.content = content
         self.ikv = dict()
-        for l in content.splitlines():
+        for i,l in enumerate(content.splitlines()):
             if l.startswith("-"):
                 m = re.fullmatch(self.RE_EXTRACT_TOP_LEVEL, l)
                 if m is None:
-                    logger.error(f"Top-level nested list parsing error in line `{l}'")
+                    logger.error(self._fmt_err_msg("Top-level nested list parsing error", i+1, l))
                 else:
                     item = m.group(1)
                     self.ikv[item] = dict()
             else:
                 m = re.fullmatch(self.RE_EXTRACT_KEY_VALUE, l)
                 if m is None:
-                    logger.error(f"Nested list parsing error in line `{l}'")
+                    logger.error(self._fmt_err_msg("Nested list parsing error", i+1, l))
                 else:
                     key = m.group(1)
                     val = m.group(2).strip()
