@@ -70,10 +70,8 @@ def gen_mkdocs(model, outpath, cfg):
         files[nsn].extend(_gen_filelist(nsn, ns.individuals, "Individuals"))
         files[nsn].extend(_gen_filelist(nsn, ns.datatypes, "Datatypes"))
 
-    filelines = []
-    filelines.append("- model:")
     # hardwired order of namespaces
-    for nsname in [
+    namespace_order = [
         "Core",
         "Software",
         "Security",
@@ -83,9 +81,22 @@ def gen_mkdocs(model, outpath, cfg):
         "Dataset",
         "AI",
         "Build",
+        "Service",
         "Lite",
         "Extension",
-    ]:
+    ]
+
+    # Sort namespaces according to the order in namespace_order, if present.
+    # If a namespace is not in namespace_order, it will be added at the end
+    # of the list, sorted alphabetically.
+    namespaces: List[str] = list(files.keys())
+    ordered_ns = [ns for ns in namespace_order if ns in namespaces]
+    remaining_ns = sorted([ns for ns in namespaces if ns not in namespace_order])
+    namespaces = ordered_ns + remaining_ns
+
+    filelines = []
+    filelines.append("- model:")
+    for nsname in namespaces:
         filelines.extend(files[nsname])
 
     fn = outpath / "model-files.yml"
