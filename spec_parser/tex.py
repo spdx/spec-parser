@@ -57,6 +57,7 @@ def gen_tex(model, outpath, cfg):
             ret.extend(f"\\input{{model/{nsname}/{heading}/{n}}}" for n in sorted(nameslist))
         return ret
 
+    namespaces = [ns.name for ns in model.namespaces]
     files = dict()
     for ns in model.namespaces:
         nsn = ns.name
@@ -83,8 +84,15 @@ def gen_tex(model, outpath, cfg):
         "Build",
         "Lite",
         "Extension",
+        "Hardware",
+        "Service",
     ]:
-        filelines.extend(files[nsname])
+        if nsname in namespaces:
+            filelines.extend(files[nsname])
+            namespaces.remove(nsname)
+
+    if namespaces:
+        logger.warning("The following namespaces were not processed: %s", ", ".join(namespaces))
 
     fn = p / "model-files.tex"
     fn.write_text("\n".join(filelines))
