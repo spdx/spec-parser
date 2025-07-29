@@ -228,23 +228,23 @@ class Class:
         self.name = sf.name
         self.fqname = f"/{ns.name}/{sf.name}"
 
-        s = ContentSection(sf.sections["Summary"])
+        s = ContentSection(sf.sections["Summary"], filename=self.fqname, context="summary")
         self.summary = s.content
 
-        s = ContentSection(sf.sections["Description"])
+        s = ContentSection(sf.sections["Description"], filename=self.fqname, context="description")
         self.description = s.content
 
-        s = SingleListSection(sf.sections["Metadata"])
+        s = SingleListSection(sf.sections["Metadata"], filename=self.fqname, context="metadata")
         self.metadata = s.kv
 
         if "Properties" in sf.sections:
-            s = NestedListSection(sf.sections["Properties"])
+            s = NestedListSection(sf.sections["Properties"], filename=self.fqname, context="properties")
             self.properties = s.ikv
         else:
             self.properties = dict()
 
         if "External properties restrictions" in sf.sections:
-            s = NestedListSection(sf.sections["External properties restrictions"])
+            s = NestedListSection(sf.sections["External properties restrictions"], filename=self.fqname, context="external properties restrictions")
             self.ext_prop_restrs = s.ikv
         else:
             self.ext_prop_restrs = dict()
@@ -292,13 +292,13 @@ class Property:
         self.name = sf.name
         self.fqname = f"/{ns.name}/{sf.name}"
 
-        s = ContentSection(sf.sections["Summary"])
+        s = ContentSection(sf.sections["Summary"], filename=self.fqname, context="summary")
         self.summary = s.content
 
-        s = ContentSection(sf.sections["Description"])
+        s = ContentSection(sf.sections["Description"], filename=self.fqname, context="description")
         self.description = s.content
 
-        s = SingleListSection(sf.sections["Metadata"])
+        s = SingleListSection(sf.sections["Metadata"], filename=self.fqname, context="metadata")
         self.metadata = s.kv
 
         # checks
@@ -324,16 +324,16 @@ class Vocabulary:
         self.name = sf.name
         self.fqname = f"/{ns.name}/{sf.name}"
 
-        s = ContentSection(sf.sections["Summary"])
+        s = ContentSection(sf.sections["Summary"], filename=self.fqname, context="summary")
         self.summary = s.content
 
-        s = ContentSection(sf.sections["Description"])
+        s = ContentSection(sf.sections["Description"], filename=self.fqname, context="description")
         self.description = s.content
 
-        s = SingleListSection(sf.sections["Metadata"])
+        s = SingleListSection(sf.sections["Metadata"], filename=self.fqname, context="metadata")
         self.metadata = s.kv
 
-        s = SingleListSection(sf.sections["Entries"])
+        s = SingleListSection(sf.sections["Entries"], filename=self.fqname, context="entries")
         self.entries = s.kv
 
         # checks
@@ -360,16 +360,16 @@ class Individual:
         self.name = sf.name
         self.fqname = f"/{ns.name}/{sf.name}"
 
-        s = ContentSection(sf.sections["Summary"])
+        s = ContentSection(sf.sections["Summary"], filename=self.fqname, context="summary")
         self.summary = s.content
 
-        s = ContentSection(sf.sections["Description"])
+        s = ContentSection(sf.sections["Description"], filename=self.fqname, context="description")
         self.description = s.content
 
-        s = SingleListSection(sf.sections["Metadata"])
+        s = SingleListSection(sf.sections["Metadata"], filename=self.fqname, context="metadata")
         self.metadata = s.kv
 
-        s = SingleListSection(sf.sections["Property Values"])
+        s = SingleListSection(sf.sections["Property Values"], filename=self.fqname, context="property values")
         self.values = s.kv
 
         # checks
@@ -397,16 +397,16 @@ class Datatype:
         self.name = sf.name
         self.fqname = f"/{ns.name}/{sf.name}"
 
-        s = ContentSection(sf.sections["Summary"])
+        s = ContentSection(sf.sections["Summary"], filename=self.fqname, context="summary")
         self.summary = s.content
 
-        s = ContentSection(sf.sections["Description"])
+        s = ContentSection(sf.sections["Description"], filename=self.fqname, context="description")
         self.description = s.content
 
-        s = SingleListSection(sf.sections["Metadata"])
+        s = SingleListSection(sf.sections["Metadata"], filename=self.fqname, context="metadata")
         self.metadata = s.kv
 
-        s = SingleListSection(sf.sections["Format"])
+        s = SingleListSection(sf.sections["Format"], filename=self.fqname, context="format")
         self.format = s.kv
 
         # checks
