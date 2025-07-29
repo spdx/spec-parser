@@ -92,7 +92,7 @@ def gen_tex(model, outpath, cfg):
             namespaces.remove(nsname)
 
     if namespaces:
-        logger.warning("The following namespaces were not processed: %s", ", ".join(namespaces))
+        logger.warning("The following namespaces were not processed for TeX generation: %s", ", ".join(namespaces))
 
     fn = p / "model-files.tex"
     fn.write_text("\n".join(filelines))

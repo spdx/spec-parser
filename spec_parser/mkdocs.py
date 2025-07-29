@@ -94,7 +94,7 @@ def gen_mkdocs(model, outpath, cfg):
             namespaces.remove(nsname)
 
     if namespaces:
-        logger.warning("The following namespaces were not processed: %s", ", ".join(namespaces))
+        logger.warning("The following namespaces were not processed for MkDocs generation: %s", ", ".join(namespaces))
 
     fn = outpath / "model-files.yml"
     fn.write_text("\n".join(filelines))
