@@ -1,9 +1,5 @@
 {% extends "page.md.j2" %}
 
-{% block extratitle %}
-# Profile information
-{% endblock %}
-
 {% block metadata %}
 
 | | |
@@ -14,11 +10,10 @@
 
 {% block extra %}
 
-{% if conformance %}
-## Profile conformance
+#### Entries
 
-{{conformance}}
-
-{% endif %}
+{% for name, val in entries | dictsort %}
+- {{name}}: {{val}}
+{% endfor %}
 
 {% endblock %}

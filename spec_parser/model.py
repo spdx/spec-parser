@@ -171,6 +171,9 @@ class Model:
         if cfg.generate_webpages:
             from .webpages import gen_webpages
             gen_webpages(self, cfg.output_webpages_path, cfg)
+        if cfg.generate_word:
+            from .word import gen_word
+            gen_word(self, cfg.output_word_path, cfg)
 
 
 class Namespace:
