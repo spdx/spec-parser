@@ -1,0 +1,20 @@
+{% extends "page.md.j2" %}
+
+{% block metadata %}
+
+| | |
+|---|---|
+| **Name** | {{metadata["name"]}} |
+{%if "SubclassOf" in metadata %}
+| **SubclassOf** | {{metadata["SubclassOf"]}} |
+{% endif %}
+
+{% endblock %}
+
+{% block extra %}
+
+#### Format pattern
+
+`{{format["pattern"]}}`
+
+{% endblock %}
