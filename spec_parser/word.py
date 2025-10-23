@@ -80,6 +80,7 @@ def gen_word(model, outpath, cfg):
         "Extension",
         "Hardware",
         "Service",
+        "SupplyChain",
     ]:
         if nsname in namespaces:
             f = p / nsname / f"{nsname}.md"
