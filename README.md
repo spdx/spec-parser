@@ -14,7 +14,8 @@ It then optionally generates one or more of the following outputs:
 3. PlantUML file, to be used by plantuml to generate a diagram
 4. RDF files (ontology and context), for any need
 5. TeX files, to be used by LaTeX to generate a printable version
-6. Web page files, to provide information on the RDF URIs
+6. Web page files, to provide information on the RDF URIs _[not implemented yet]_
+7. a single Markdown file, to be converted by Pandoc to a Word document
 
 If no generation is specified in the command line,
 the default functionality is to generate everything.
@@ -30,7 +31,9 @@ usage: main.py [-h] [-V] [-d] [-v] [-f] [-n]
                [-r] [-R dir]
                [-t] [-T dir]
                [-w] [-W dir]
+               [-x] [-X dir]
                input_dir
+
 
 Generate documentation from an SPDXv3 model.
 
@@ -38,7 +41,7 @@ positional arguments:
   input_dir             Path to the input 'model' directory.
 
 options:
-  -h, --help                                Show this help message and exit.
+  -h, --help                                show this help message and exit
   -d, --debug                               Print spec-parser debug information.
   -f, --force                               Force overwrite of existing output directories.
   -j, --generate-jsondump                   Generate a dump of the model in JSON format.
@@ -54,9 +57,11 @@ options:
   -t, --generate-tex                        Generate TeX output.
   -T, --output-tex OUTPUT_TEX               Output directory for TeX files.
   -v, --verbose                             Print verbose information.
-  -V, --version                             Show program version number and exit
+  -V, --version                             show program's version number and exit
   -w, --generate-webpages                   Generate web pages output.
   -W, --output-webpages OUTPUT_WEBPAGES     Output directory for web pages.
+  -x, --generate-singlefile                 Generate singlefile Markdown output.
+  -X, --output-singlefile OUTPUT_SINGLEFILE Output directory for singlefile Markdown file.
 
 ```
 
@@ -80,7 +85,7 @@ Note that no dependencies are needed.
 | PlantUML generation | None |
 | RDF generation | [RDFlib](https://pypi.org/project/rdflib/) Python module |
 | TeX generation | [Jinja2](https://pypi.org/project/Jinja2/) Python module and [pandoc](https://pandoc.org/) software |
-| Web pages generation | [Jinja2](https://pypi.org/project/Jinja2/) Python module |
+| single file generation | [Jinja2](https://pypi.org/project/Jinja2/) Python module |
 
 The software will check for the presence of prerequisites,
 according to the calling arguments,
@@ -100,3 +105,4 @@ To save everyone valuable time, if you want to contribute code:
 clearly indicate in the corresponding issue
 your willingness to work on it,
 and _wait_ for the assignment of the issue to you.
+

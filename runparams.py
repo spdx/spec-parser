@@ -53,9 +53,9 @@ class RunParams(SimpleNamespace):
         if self.generate_tex:
             check_external_program("pandoc", "TeX generation")
             check_import_module("jinja2", "TeX generation")
-        if self.generate_word:
-            check_external_program("pandoc", "Word generation")
-            check_import_module("jinja2", "Word generation")
+        if self.generate_singlefile:
+            check_external_program("pandoc", "singlefile generation")
+            check_import_module("jinja2", "singlefile generation")
 
     def process_args(self, opts=sys.argv[1:]):
         def check_input_path(p):
@@ -88,12 +88,12 @@ class RunParams(SimpleNamespace):
         parser.add_argument("-V", "--version", action="version", version=f"%(prog)s {self.parser_version}")
         parser.add_argument("-w", "--generate-webpages", action="store_true", help="Generate web pages output.")
         parser.add_argument("-W", "--output-webpages", type=str, help="Output directory for web pages.")
-        parser.add_argument("-x", "--generate-word", action="store_true", help="Generate Word output.")
-        parser.add_argument("-X", "--output-word", type=str, help="Output directory for Word file.")
+        parser.add_argument("-x", "--generate-singlefile", action="store_true", help="Generate singlefile Markdown output.")
+        parser.add_argument("-X", "--output-singlefile", type=str, help="Output directory for singlefile Markdown file.")
 
         opts = parser.parse_args()
-        gen_list = ["jsondump", "mkdocs", "plantuml", "rdf", "tex", "webpages", "word"]
-        desc_list = ["JSON dump", "MkDocs", "PlantUML", "RDF", "TeX", "Web pages", "Word document"]
+        gen_list = ["jsondump", "mkdocs", "plantuml", "rdf", "tex", "webpages", "singlefile"]
+        desc_list = ["JSON dump", "MkDocs", "PlantUML", "RDF", "TeX", "Web pages", "singlefile Markdown document"]
 
         if opts.verbose:
             self.logger.setLevel(level=logging.INFO)
@@ -142,7 +142,7 @@ class RunParams(SimpleNamespace):
 
 
     def create_output_dirs(self):
-        gen_list = ["jsondump", "mkdocs", "plantuml", "rdf", "tex", "webpages", "word"]
+        gen_list = ["jsondump", "mkdocs", "plantuml", "rdf", "tex", "webpages", "singlefile"]
         for g in gen_list:
             genflag = "generate_" + g
             if getattr(self, genflag, False):

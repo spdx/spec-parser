@@ -1,4 +1,4 @@
-# saving the model as a single Microsoft Word document
+# saving the model as a single file markdown document
 
 # SPDX-License-Identifier: Apache-2.0
 
@@ -9,9 +9,9 @@ from jinja2 import Environment, PackageLoader, select_autoescape
 logger = logging.getLogger(__name__)
 
 
-def gen_word(model, outpath, cfg):
+def gen_singlefile(model, outpath, cfg):
     jinja = Environment(
-        loader=PackageLoader("spec_parser", package_path="templates/word"),
+        loader=PackageLoader("spec_parser", package_path="templates/singlefile"),
         autoescape=select_autoescape(),
         trim_blocks=True,
         lstrip_blocks=True,
@@ -94,7 +94,7 @@ def gen_word(model, outpath, cfg):
             namespaces.remove(nsname)
 
     if namespaces:
-        logger.warning("The following namespaces were not processed for Word generation: %s", ", ".join(namespaces))
+        logger.warning("The following namespaces were not processed for singlefile generation: %s", ", ".join(namespaces))
 
 
 def show_name(name, *, showshort=False):
