@@ -81,6 +81,7 @@ def gen_singlefile(model, outpath, cfg):
         "Hardware",
         "Service",
         "SupplyChain",
+        "Operations",
     ]:
         if nsname in namespaces:
             f = p / nsname / f"{nsname}.md"
