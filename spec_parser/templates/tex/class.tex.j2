@@ -20,6 +20,15 @@
 {% endfor %}
 \end{itemize}
 {% endif %}
+{%if direct_subclasses %}
+\spdxpagepart{Direct subclasses}
+\begin{itemize}
+\tightlist
+{% for subclass in direct_subclasses | sort %}
+\item {{subclass}}
+{% endfor %}
+\end{itemize}
+{% endif %}
 {% endblock %}
 
 {% block extra %}

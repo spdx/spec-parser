@@ -19,6 +19,13 @@
 {% endif %}
 {% endfor %}
 
+{% if direct_subclasses %}
+#### Direct subclasses
+
+{% for subclass in direct_subclasses | sort %}
+- {{subclass}}
+{% endfor %}
+{% endif %}
 {% endblock %}
 
 {% block extra %}
