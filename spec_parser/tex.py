@@ -88,6 +88,7 @@ def gen_tex(model, outpath, cfg):
         "Service",
         "SupplyChain",
         "Operations",
+        "FunctionalSafety",
     ]:
         if nsname in namespaces:
             filelines.extend(files[nsname])
