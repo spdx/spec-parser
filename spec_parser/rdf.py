@@ -10,7 +10,7 @@ from rdflib.collection import Collection
 from rdflib.namespace import DCTERMS, OWL, RDF, RDFS, SH, SKOS, XSD
 from rdflib.tools.rdf2dot import rdf2dot
 
-URI_BASE = "https://spdx.org/rdf/3.0.1/terms/"
+URI_BASE = "https://spdx.org/rdf/3.1/terms/"
 
 logger = logging.getLogger(__name__)
 
@@ -60,12 +60,12 @@ def gen_rdf_ontology(model):
             ),
         ),
     )
-    g.add((node, DCTERMS.created, Literal("2024-04-05", datatype=XSD.date)))
+    g.add((node, DCTERMS.created, Literal("2026-01-23", datatype=XSD.date)))
     g.add((node, DCTERMS.creator, Literal("SPDX Project", lang="en")))
     g.add((node, DCTERMS.license, URIRef("https://spdx.org/licenses/Community-Spec-1.0.html")))
     g.add((node, DCTERMS.references, URIRef("https://spdx.dev/specifications/")))
     g.add((node, DCTERMS.title, Literal("System Package Data Exchange (SPDX) Ontology", lang="en")))
-    g.add((node, OMG_ANN.copyright, Literal("Copyright (C) 2024 SPDX Project", lang="en")))
+    g.add((node, OMG_ANN.copyright, Literal("Copyright (C) 2026 SPDX Project", lang="en")))
 
     gen_rdf_classes(model, g)
     gen_rdf_properties(model, g)
@@ -238,12 +238,12 @@ def gen_rdf_individuals(model, g):
         return URIRef(URI_BASE + "Core/" + s)
 
     for i in model.individuals.values():
-        ci_node = URIRef("https://spdx.org/rdf/3.0.1/creationInfo_" + i.name)
+        ci_node = URIRef("https://spdx.org/rdf/3.1/creationInfo_" + i.name)
         g.add((ci_node, RDF.type, ci_ref("CreationInfo")))
         g.add((ci_node, RDFS.comment, Literal("This individual element was defined by the spec.", lang="en")))
-        g.add((ci_node, ci_ref("created"), Literal("2024-11-22T03:00:01Z", datatype=XSD.dateTimeStamp)))
+        g.add((ci_node, ci_ref("created"), Literal("2026-01-23T03:01:00Z", datatype=XSD.dateTimeStamp)))
         g.add((ci_node, ci_ref("createdBy"), ci_ref("SpdxOrganization")))
-        g.add((ci_node, ci_ref("specVersion"), Literal("3.0.1")))
+        g.add((ci_node, ci_ref("specVersion"), Literal("3.1")))
         node = URIRef(i.iri)
         g.add((node, RDF.type, OWL.NamedIndividual))
         g.add((node, ci_ref("creationInfo"), ci_node))
