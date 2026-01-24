@@ -10,19 +10,31 @@ from rdflib.collection import Collection
 from rdflib.namespace import DCTERMS, OWL, RDF, RDFS, SH, SKOS, XSD
 from rdflib.tools.rdf2dot import rdf2dot
 
-URI_BASE = "https://spdx.org/rdf/3.1/terms/"
 
 logger = logging.getLogger(__name__)
 
 def gen_rdf(model, outpath, cfg):
     p = outpath
 
-    ret = gen_rdf_ontology(model)
+    base_uri = "https://spdx.org/rdf/3.1/terms/"
+    # Determine actual base URI from Core namespace:
+    # https://spdx.org/rdf/<version>/terms/Core/
+    # -> https://spdx.org/rdf/<version>/terms/
+    for ns in model.namespaces:
+        if ns.name == "Core":
+            iri = ns.iri
+            if iri.endswith("/Core/"):
+                base_uri = iri[: -len("Core/")]
+            elif iri.endswith("/Core"):
+                base_uri = iri[: -len("Core")]
+            break
+
+    ret = gen_rdf_ontology(model, base_uri)
     for ext in ["hext", "json-ld", "longturtle", "n3", "nt", "pretty-xml", "trig", "ttl", "xml"]:
         f = p / ("spdx-model." + ext)
         ret.serialize(f, format=ext, encoding="utf-8")
 
-    ctx = jsonld_context(ret)
+    ctx = jsonld_context(ret, base_uri)
     fn = p / "spdx-context.jsonld"
     with fn.open("w") as f:
         json.dump(ctx, f, sort_keys=True, indent=2)
@@ -40,13 +52,13 @@ def xsd_range(rng, propname):
     return None
 
 
-def gen_rdf_ontology(model):
+def gen_rdf_ontology(model, base_uri: str):
     g = Graph()
-    g.bind("spdx", Namespace(URI_BASE))
+    g.bind("spdx", Namespace(base_uri))
     OMG_ANN = Namespace("https://www.omg.org/spec/Commons/AnnotationVocabulary/")
     g.bind("omg-ann", OMG_ANN)
 
-    node = URIRef(URI_BASE)
+    node = URIRef(base_uri)
     g.add((node, RDF.type, OWL.Ontology))
     g.add((node, OWL.versionIRI, node))
     g.add((node, RDFS.label, Literal("System Package Data Exchange™ (SPDX®) Ontology", lang="en")))
@@ -71,7 +83,7 @@ def gen_rdf_ontology(model):
     gen_rdf_properties(model, g)
     #     gen_rdf_datatypes(model, g)
     gen_rdf_vocabularies(model, g)
-    gen_rdf_individuals(model, g)
+    gen_rdf_individuals(model, g, base_uri)
 
     return g
 
@@ -233,9 +245,9 @@ def gen_rdf_vocabularies(model, g):
             g.add((enode, RDFS.comment, Literal(d, lang="en")))
 
 
-def gen_rdf_individuals(model, g):
+def gen_rdf_individuals(model, g, base_uri: str):
     def ci_ref(s):
-        return URIRef(URI_BASE + "Core/" + s)
+        return URIRef(base_uri + "Core/" + s)
 
     for i in model.individuals.values():
         ci_node = URIRef("https://spdx.org/rdf/3.1/creationInfo_" + i.name)
@@ -259,7 +271,7 @@ def gen_rdf_individuals(model, g):
             g.add((node, OWL.sameAs, URIRef(custom_iri)))
 
 
-def jsonld_context(g):
+def jsonld_context(g, base_uri: str):
     terms = dict()
 
     def get_subject_term(subject):
@@ -308,7 +320,7 @@ def jsonld_context(g):
         except ValueError:
             continue
 
-        if base != URI_BASE.rstrip("/"):
+        if base != base_uri.rstrip("/"):
             continue
 
         key = name if ns == "Core" else ns.lower() + "_" + name
@@ -320,7 +332,7 @@ def jsonld_context(g):
 
         terms[key] = get_subject_term(subject)
 
-    terms["spdx"] = URI_BASE
+    terms["spdx"] = base_uri
     terms["spdxId"] = "@id"
     terms["type"] = "@type"
 
