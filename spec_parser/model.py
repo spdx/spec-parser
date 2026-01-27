@@ -125,6 +125,14 @@ class Model:
                 c.inheritance_stack.append(pcn)
                 pcn = self.classes[pcn].fqsupercname
 
+        # add direct subclasses
+        for c in self.classes.values():
+            c.direct_subclasses = []
+        for c in self.classes.values():
+            if c.fqsupercname:
+                parent = self.classes[c.fqsupercname]
+                parent.direct_subclasses.append(c.fqname)
+
         # add inherited properties to classes
         for cn in stack:
             c = self.classes[cn]
