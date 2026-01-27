@@ -90,6 +90,7 @@ def gen_mkdocs(model, outpath, cfg):
         "Service",
         "SupplyChain",
         "Operations",
+        "FunctionalSafety",
     ]:
         if nsname in namespaces:
             filelines.extend(files[nsname])
