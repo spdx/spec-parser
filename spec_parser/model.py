@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
+from collections import defaultdict
 from copy import deepcopy
 
 from .mdparsing import ContentSection, NestedListSection, SingleListSection, SpecFile
@@ -103,7 +104,17 @@ class Model:
             if parent:
                 inheritances.append((c.fqname, parent))
                 self.classes[parent].direct_subclasses.append(c.fqname)
-        self.inheritances = inheritances
+
+        tree = defaultdict(list)
+        children = set()
+        nodes = set()
+        for child, parent in inheritances:
+            tree[parent].append(child)
+            children.add(child)
+            nodes.add(parent)
+            nodes.add(child)
+        self.class_hierarchy = dict(tree)
+        self.toplevel_classes = list(nodes - children)
 
         def _tsort_recursive(inh, cn, visited, stack):
             visited[cn] = True
