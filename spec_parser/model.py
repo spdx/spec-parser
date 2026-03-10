@@ -102,6 +102,8 @@ class Model:
             parent = c.fqsupercname
             if parent:
                 inheritances.append((c.fqname, parent))
+                self.classes[parent].direct_subclasses.append(c.fqname)
+        self.inheritances = inheritances
 
         def _tsort_recursive(inh, cn, visited, stack):
             visited[cn] = True
@@ -119,7 +121,6 @@ class Model:
                 _tsort_recursive(inheritances, c.fqname, visited, stack)
         for cn in stack:
             c = self.classes[cn]
-            c.inheritance_stack = []
             pcn = c.fqsupercname
             while pcn:
                 c.inheritance_stack.append(pcn)
@@ -278,6 +279,10 @@ class Class:
             if not parent.startswith("/"):
                 parent = f"/{ns.name}/{parent}"
         self.fqsupercname = parent
+
+        self.inheritance_stack = []
+        self.direct_subclasses = []
+        self.all_properties = dict()
 
 
 class Property:
