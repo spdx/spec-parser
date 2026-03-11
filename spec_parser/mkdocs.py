@@ -99,6 +99,11 @@ def gen_mkdocs(model, outpath, cfg):
     if namespaces:
         logger.warning("The following namespaces were not processed for MkDocs generation: %s", ", ".join(namespaces))
 
+    fn = outpath / "class-hierarchy.md"
+    template = jinja.get_template("hierarchy.md.j2")
+    page = template.render(vars(model))
+    fn.write_text(page)
+
     fn = outpath / "model-files.yml"
     fn.write_text("\n".join(filelines))
 
