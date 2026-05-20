@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 def gen_rdf(model, outpath, cfg):
     p = outpath
 
-    base_uri = "https://spdx.org/rdf/3.1/terms/"
+    base_uri = "https://spdx.org/rdf/3/terms/"
     # Determine actual base URI from Core namespace:
     # https://spdx.org/rdf/<version>/terms/Core/
     # -> https://spdx.org/rdf/<version>/terms/
@@ -250,7 +250,7 @@ def gen_rdf_individuals(model, g, base_uri: str):
         return URIRef(base_uri + "Core/" + s)
 
     for i in model.individuals.values():
-        ci_node = URIRef("https://spdx.org/rdf/3.1/creationInfo_" + i.name)
+        ci_node = URIRef("https://spdx.org/rdf/3/creationInfo_" + i.name)
         g.add((ci_node, RDF.type, ci_ref("CreationInfo")))
         g.add((ci_node, RDFS.comment, Literal("This individual element was defined by the spec.", lang="en")))
         g.add((ci_node, ci_ref("created"), Literal("2026-01-23T03:01:00Z", datatype=XSD.dateTimeStamp)))
