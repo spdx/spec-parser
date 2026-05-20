@@ -60,7 +60,22 @@ def gen_rdf_ontology(model, base_uri: str):
 
     node = URIRef(base_uri)
     g.add((node, RDF.type, OWL.Ontology))
-    g.add((node, OWL.versionIRI, node))
+
+    # owl:versionInfo / owl:versionIRI from namespace metadata.
+    # Ontology IRI is stable across minor releases (major ver. only in path).
+    # versionIRI identifies the specific release by replacing the major version
+    # segment with the full version: https://spdx.org/rdf/3/terms/ (ontology)
+    # -> https://spdx.org/rdf/3.1/terms/ (versionIRI for 3.1 release).
+    # W3C OWL 2 Section 3.1:
+    # https://www.w3.org/TR/owl2-syntax/#Ontology_IRI_and_Version_IRI
+    for ns in model.namespaces:
+        v = ns.metadata.get("version") or ns.metadata.get("Version")
+        if v:
+            g.add((node, OWL.versionInfo, Literal(v)))
+            major = v.split(".")[0]
+            versioned_iri = URIRef(base_uri.replace(f"/{major}/", f"/{v}/", 1))
+            g.add((node, OWL.versionIRI, versioned_iri))
+            break
     g.add((node, RDFS.label, Literal("System Package Data Exchange™ (SPDX®) Ontology", lang="en")))
     g.add(
         (
