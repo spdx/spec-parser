@@ -34,15 +34,16 @@
 
 {% block extra %}
 
-{% if properties %}
 ## Properties
 
+{% if properties %}
 | Property | Type | minCount | maxCount |
 |---|---|:---:|:---:|
     {% for name, kv in properties | dictsort %}
 | {{property_link(name)}} | {{type_link(kv["type"])}} | {{kv["minCount"]}} | {{kv["maxCount"]}} |
     {% endfor %}
-
+{% else %}
+No properties defined in this class.
 {% endif %}
 
 {% if ext_prop_restrs %}
