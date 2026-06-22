@@ -10,7 +10,7 @@ from rdflib.collection import Collection
 from rdflib.namespace import DCTERMS, OWL, RDF, RDFS, SH, SKOS, XSD
 from rdflib.tools.rdf2dot import rdf2dot
 
-URI_BASE = "https://spdx.org/rdf/3.1/terms/"
+URI_BASE = "https://spdx.org/rdf/3/terms/"
 
 logger = logging.getLogger(__name__)
 
