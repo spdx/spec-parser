@@ -23,8 +23,8 @@
 {% endblock %}
 
 {% block extra %}
-{% if properties %}
 \spdxpagepart{Properties}
+{% if properties %}
 \begin{tabular}{ l l c c } 
 \toprule
  Property & Type & minCount & maxCount \\
@@ -35,6 +35,8 @@
 \bottomrule
 \end{tabular} 
 \par
+{% else %}
+No properties defined in this class.
 {% endif %}
 
 {% if ext_prop_restrs %}

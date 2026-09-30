@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
+from collections import defaultdict
 from copy import deepcopy
 
 from .mdparsing import ContentSection, NestedListSection, SingleListSection, SpecFile
@@ -102,6 +103,18 @@ class Model:
             parent = c.fqsupercname
             if parent:
                 inheritances.append((c.fqname, parent))
+                self.classes[parent].direct_subclasses.append(c.fqname)
+
+        tree = defaultdict(list)
+        children = set()
+        nodes = set()
+        for child, parent in inheritances:
+            tree[parent].append(child)
+            children.add(child)
+            nodes.add(parent)
+            nodes.add(child)
+        self.class_hierarchy = dict(tree)
+        self.toplevel_classes = list(nodes - children)
 
         def _tsort_recursive(inh, cn, visited, stack):
             visited[cn] = True
@@ -119,7 +132,6 @@ class Model:
                 _tsort_recursive(inheritances, c.fqname, visited, stack)
         for cn in stack:
             c = self.classes[cn]
-            c.inheritance_stack = []
             pcn = c.fqsupercname
             while pcn:
                 c.inheritance_stack.append(pcn)
@@ -252,6 +264,12 @@ class Class:
         else:
             self.ext_prop_restrs = dict()
 
+        if "SPARQL" in sf.sections:
+            s = NestedListSection(sf.sections["SPARQL"], filename=self.fqname, context="sparql")
+            self.sparql = s.ikv
+        else:
+            self.sparql = dict()
+
         # checks
         assert self.name == self.metadata["name"], f"Class name {self.name} does not match metadata {self.metadata['name']}"
         for p in self.metadata:
@@ -279,6 +297,10 @@ class Class:
                 parent = f"/{ns.name}/{parent}"
         self.fqsupercname = parent
 
+        self.inheritance_stack = []
+        self.direct_subclasses = []
+        self.all_properties = dict()
+
 
 class Property:
     VALID_METADATA = (
@@ -303,6 +325,12 @@ class Property:
 
         s = SingleListSection(sf.sections["Metadata"], filename=self.fqname, context="metadata")
         self.metadata = s.kv
+
+        if "SPARQL" in sf.sections:
+            s = NestedListSection(sf.sections["SPARQL"], filename=self.fqname, context="sparql")
+            self.sparql = s.ikv
+        else:
+            self.sparql = dict()
 
         # checks
         assert self.name == self.metadata["name"], f"Property name {self.name} does not match metadata {self.metadata['name']}"
@@ -338,6 +366,12 @@ class Vocabulary:
 
         s = SingleListSection(sf.sections["Entries"], filename=self.fqname, context="entries")
         self.entries = s.kv
+
+        if "SPARQL" in sf.sections:
+            s = NestedListSection(sf.sections["SPARQL"], filename=self.fqname, context="sparql")
+            self.sparql = s.ikv
+        else:
+            self.sparql = dict()
 
         # checks
         assert self.name == self.metadata["name"], f"Vocabulary name {self.name} does not match metadata {self.metadata['name']}"

@@ -81,24 +81,59 @@ class SingleListSection(Section):
 
 class NestedListSection(Section):
     RE_EXTRACT_TOP_LEVEL = re.compile(r"-\s+((\w|/)+)")
-    RE_EXTRACT_KEY_VALUE = re.compile(r"\s+-\s+(\w+):\s+(.+)")
+    RE_EXTRACT_KEY_VALUE = re.compile(r"(\s+)-\s+(\w+):\s+(.+)")
+    HEREDOC_MARKER = "<<<"
 
     def load(self, content):
         self.content = content
         self.ikv = dict()
-        for i,l in enumerate(content.splitlines()):
+        item = None
+        lines = content.splitlines()
+        i = 0
+        while i < len(lines):
+            l = lines[i]
+            i += 1
+            if not l.strip():
+                continue
             if l.startswith("-"):
                 m = re.fullmatch(self.RE_EXTRACT_TOP_LEVEL, l)
                 if m is None:
-                    logger.error(self._fmt_err_msg("Top-level nested list parsing error", i+1, l))
+                    logger.error(self._fmt_err_msg("Top-level nested list parsing error", i, l))
                 else:
                     item = m.group(1)
                     self.ikv[item] = dict()
             else:
                 m = re.fullmatch(self.RE_EXTRACT_KEY_VALUE, l)
                 if m is None:
-                    logger.error(self._fmt_err_msg("Nested list parsing error", i+1, l))
-                else:
-                    key = m.group(1)
-                    val = m.group(2).strip()
-                    self.ikv[item][key] = val
+                    logger.error(self._fmt_err_msg("Nested list parsing error", i, l))
+                    continue
+                indent = len(m.group(1))
+                key = m.group(2)
+                val = m.group(3).strip()
+                if val == self.HEREDOC_MARKER:
+                    val, i = self._read_heredoc(lines, i, indent)
+                if item is None:
+                    logger.error(self._fmt_err_msg("Nested list item without top-level entry", i, l))
+                    continue
+                self.ikv[item][key] = val
+
+    def _read_heredoc(self, lines, i, indent):
+        collected = []
+        while i < len(lines):
+            l = lines[i]
+            if l.strip():
+                break
+            i += 1
+        while i < len(lines):
+            l = lines[i]
+            if not l.strip():
+                break
+            cur_indent = len(l) - len(l.lstrip())
+            if cur_indent <= indent:
+                break
+            collected.append(l)
+            i += 1
+        if collected:
+            common = min(len(l) - len(l.lstrip()) for l in collected)
+            collected = [l[common:].rstrip() for l in collected]
+        return collected, i

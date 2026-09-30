@@ -1,0 +1,55 @@
+# Class Hierarchy (Informational)
+
+{% macro render_tree(node, tree) %}
+    {% if node in tree %}
+        <li>
+            <details open>
+                <summary>{{ node }}</summary>
+                <ul>
+                    {% for child in tree[node] | sort %}
+                        {{ render_tree(child, tree) }}
+                    {% endfor %}
+                </ul>
+            </details>
+        </li>
+    {% else %}
+        <li class="classhier-leaf">{{ node }}</li>
+    {% endif %}
+{% endmacro %}
+
+<ul class="classhier-view">
+{% for root in toplevel_classes | sort%}
+    {{ render_tree(root, class_hierarchy) }}
+{% endfor %}
+</ul>
+
+
+<style>
+/* CSS specific to this tree to avoid conflicts with other MkDocs styles */
+.classhier-view ul { list-style-type: none; padding-left: 20px; margin: 0; }
+.classhier-view li { margin: 5px 0; }
+
+/* Style the clickable text */
+.classhier-view summary { 
+    cursor: pointer; 
+    font-weight: bold; 
+    padding: 5px;
+    background-color: var(--md-code-bg-color, #f0f0f0); /* Uses MkDocs theme var or fallback */
+    border-radius: 4px;
+    display: inline-block;
+    min-width: 150px;
+}
+.classhier-view summary:hover { background-color: var(--md-accent-fg-color--transparent, #e0e0e0); }
+
+/* Style leaf nodes */
+.classhier-leaf { 
+    padding: 5px; 
+    padding-left: 25px; 
+    color: var(--md-default-fg-color--light, #555);
+}
+
+/* Custom +/- icons */
+.classhier-view summary::marker, .classhier-view summary::-webkit-details-marker { display: none; content: ""; }
+.classhier-view details > summary::before { content: "+ "; display: inline-block; width: 15px; font-family: monospace; }
+.classhier-view details[open] > summary::before { content: "- "; }
+</style>
