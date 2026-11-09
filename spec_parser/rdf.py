@@ -7,10 +7,11 @@ import logging
 
 from rdflib import BNode, Graph, Literal, Namespace, URIRef
 from rdflib.collection import Collection
-from rdflib.namespace import DCTERMS, OWL, RDF, RDFS, SH, SKOS, XSD
+from rdflib.namespace import DCTERMS, OWL, RDF, RDFS, SH, SKOS, VANN, XSD
 from rdflib.tools.rdf2dot import rdf2dot
 
 URI_BASE = "https://spdx.org/rdf/3/terms/"
+URI_PREFIX = "spdx3"
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +43,7 @@ def xsd_range(rng, propname):
 
 def gen_rdf_ontology(model):
     g = Graph()
-    g.bind("spdx", Namespace(URI_BASE))
+    g.bind(URI_PREFIX, Namespace(URI_BASE))
     OMG_ANN = Namespace("https://www.omg.org/spec/Commons/AnnotationVocabulary/")
     g.bind("omg-ann", OMG_ANN)
 
@@ -66,6 +67,9 @@ def gen_rdf_ontology(model):
     g.add((node, DCTERMS.references, URIRef("https://spdx.dev/specifications/")))
     g.add((node, DCTERMS.title, Literal("System Package Data Exchange (SPDX) Ontology", lang="en")))
     g.add((node, OMG_ANN.copyright, Literal("Copyright (C) 2026 SPDX Project", lang="en")))
+    g.add((node, VANN.preferredNamespacePrefix, Literal(URI_PREFIX)))
+    g.add((node, VANN.preferredNamespaceUri, Literal(URI_BASE)))
+    bind_prefixes(model, g)
 
     gen_rdf_classes(model, g)
     gen_rdf_properties(model, g)
@@ -74,6 +78,17 @@ def gen_rdf_ontology(model):
     gen_rdf_individuals(model, g)
 
     return g
+
+def bind_prefixes(model, g):
+    for e in model.namespaces + list(model.vocabularies.values()):
+        prefix = e.metadata.get("preferredNamespacePrefix")
+        if prefix:
+            # terms are f"{e.iri}/{name}", so the namespace IRI ends with "/"
+            ns = e.iri + "/"
+            g.bind(prefix, Namespace(ns))
+            g.add((URIRef(e.iri), VANN.preferredNamespacePrefix, Literal(prefix)))
+            g.add((URIRef(e.iri), VANN.preferredNamespaceUri, Literal(ns)))
+
 
 def get_parent(model, c):
     parent = c.metadata.get("SubclassOf")
@@ -339,6 +354,7 @@ def jsonld_context(g):
 
         terms[key] = get_subject_term(subject)
 
+    terms[URI_PREFIX] = URI_BASE
     terms["spdx"] = URI_BASE
     terms["spdxId"] = "@id"
     terms["type"] = "@type"

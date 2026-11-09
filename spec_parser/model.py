@@ -345,7 +345,10 @@ class Property:
 
 
 class Vocabulary:
-    VALID_METADATA = ("name",)
+    VALID_METADATA = (
+        "name",
+        "preferredNamespacePrefix",
+    )
 
     def __init__(self, fname, ns):
         self.ns = ns
