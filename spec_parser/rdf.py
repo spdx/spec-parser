@@ -97,6 +97,9 @@ def gen_rdf_classes(model, g):
     for c in model.classes.values():
         node = URIRef(c.iri)
         g.add((node, RDF.type, OWL.Class))
+        # Explicit target: owl:Class gets no implicit class target in SHACL
+        g.add((node, RDF.type, SH.NodeShape))
+        g.add((node, SH.targetClass, node))
         if c.summary:
             g.add((node, RDFS.comment, Literal(c.summary, lang="en")))
         p = get_parent(model, c)
@@ -124,7 +127,6 @@ def gen_rdf_classes(model, g):
             add_sparql(g, node, s)
 
         if c.properties:
-            g.add((node, RDF.type, SH.NodeShape))
             for p in c.properties:
                 fqprop = c.properties[p]["fqname"]
                 if fqprop == "/Core/spdxId":
