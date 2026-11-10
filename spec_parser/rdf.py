@@ -252,17 +252,27 @@ def gen_rdf_vocabularies(model, g):
             g.add((enode, RDFS.comment, Literal(d, lang="en")))
 
 
+# not a term; versioned by the release that first published it
+CREATION_INFO_IRI = "https://spdx.org/rdf/{version}/creationInfo_{name}"
+
+
 def gen_rdf_individuals(model, g):
     def ci_ref(s):
         return URIRef(URI_BASE + "Core/" + s)
 
     for i in model.individuals.values():
-        ci_node = URIRef("https://spdx.org/rdf/3.1/creationInfo_" + i.name)
+        # values as first released, frozen
+        spec_version = i.metadata.get("specVersion")
+        created = i.metadata.get("created")
+        if not (spec_version and created):
+            logger.error(f"Individual {i.name} missing specVersion or created metadata")
+            continue
+        ci_node = URIRef(CREATION_INFO_IRI.format(version=spec_version, name=i.name))
         g.add((ci_node, RDF.type, ci_ref("CreationInfo")))
         g.add((ci_node, RDFS.comment, Literal("This individual element was defined by the spec.", lang="en")))
-        g.add((ci_node, ci_ref("created"), Literal("2026-01-23T03:01:00Z", datatype=XSD.dateTimeStamp)))
+        g.add((ci_node, ci_ref("created"), Literal(created, datatype=XSD.dateTimeStamp)))
         g.add((ci_node, ci_ref("createdBy"), ci_ref("SpdxOrganization")))
-        g.add((ci_node, ci_ref("specVersion"), Literal("3.1")))
+        g.add((ci_node, ci_ref("specVersion"), Literal(spec_version)))
         node = URIRef(i.iri)
         g.add((node, RDF.type, OWL.NamedIndividual))
         g.add((node, ci_ref("creationInfo"), ci_node))
