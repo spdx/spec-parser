@@ -252,8 +252,8 @@ def gen_rdf_vocabularies(model, g):
             g.add((enode, RDFS.comment, Literal(d, lang="en")))
 
 
-# not under terms/
-CREATION_INFO_BASE = "https://spdx.org/rdf/3/creationInfo_"
+# not a term; versioned by the release that first published it
+CREATION_INFO_IRI = "https://spdx.org/rdf/{version}/creationInfo_{name}"
 
 
 def gen_rdf_individuals(model, g):
@@ -267,7 +267,7 @@ def gen_rdf_individuals(model, g):
         if not (spec_version and created):
             logger.error(f"Individual {i.name} missing specVersion or created metadata")
             continue
-        ci_node = URIRef(CREATION_INFO_BASE + i.name)
+        ci_node = URIRef(CREATION_INFO_IRI.format(version=spec_version, name=i.name))
         g.add((ci_node, RDF.type, ci_ref("CreationInfo")))
         g.add((ci_node, RDFS.comment, Literal("This individual element was defined by the spec.", lang="en")))
         g.add((ci_node, ci_ref("created"), Literal(created, datatype=XSD.dateTimeStamp)))
