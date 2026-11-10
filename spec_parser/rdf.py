@@ -12,6 +12,15 @@ from rdflib.tools.rdf2dot import rdf2dot
 
 URI_BASE = "https://spdx.org/rdf/3/terms/"
 
+# Prefixes available to SHACL-SPARQL constraints, declared on the ontology
+# node and referenced by every constraint via sh:prefixes (SHACL 5.2.1).
+SPARQL_PREFIXES = {
+    "owl": str(OWL),
+    "rdf": str(RDF),
+    "rdfs": str(RDFS),
+    "xsd": str(XSD),
+}
+
 logger = logging.getLogger(__name__)
 
 def gen_rdf(model, outpath, cfg):
@@ -67,6 +76,13 @@ def gen_rdf_ontology(model):
     g.add((node, DCTERMS.title, Literal("System Package Data Exchange (SPDX) Ontology", lang="en")))
     g.add((node, OMG_ANN.copyright, Literal("Copyright (C) 2026 SPDX Project", lang="en")))
 
+    for prefix, namespace in SPARQL_PREFIXES.items():
+        decl = BNode()
+        g.add((node, SH.declare, decl))
+        g.add((decl, RDF.type, SH.PrefixDeclaration))
+        g.add((decl, SH.prefix, Literal(prefix)))
+        g.add((decl, SH.namespace, Literal(namespace, datatype=XSD.anyURI)))
+
     gen_rdf_classes(model, g)
     gen_rdf_properties(model, g)
     #     gen_rdf_datatypes(model, g)
@@ -90,6 +106,7 @@ def add_sparql(g, target, sparql):
 
     query = "\n".join([f"BASE <{URI_BASE}>"] + sparql["query"])
     g.add((snode, SH.select, Literal(query)))
+    g.add((snode, SH.prefixes, URIRef(URI_BASE)))
 
     g.add((target, SH.sparql, snode))
 
