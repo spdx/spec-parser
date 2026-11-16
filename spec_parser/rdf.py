@@ -264,14 +264,15 @@ def gen_rdf_individuals(model, g):
         # values as first released, frozen
         spec_version = i.metadata.get("specVersion")
         created = i.metadata.get("created")
-        if not (spec_version and created):
-            logger.error(f"Individual {i.name} missing specVersion or created metadata")
+        created_by = model.individuals.get(i.metadata.get("createdBy"))
+        if not (spec_version and created and created_by):
+            logger.error(f"Individual {i.name} missing specVersion, created or createdBy metadata")
             continue
         ci_node = URIRef(CREATION_INFO_IRI.format(version=spec_version, name=i.name))
         g.add((ci_node, RDF.type, ci_ref("CreationInfo")))
         g.add((ci_node, RDFS.comment, Literal("This individual element was defined by the spec.", lang="en")))
         g.add((ci_node, ci_ref("created"), Literal(created, datatype=XSD.dateTimeStamp)))
-        g.add((ci_node, ci_ref("createdBy"), ci_ref("SpdxOrganization")))
+        g.add((ci_node, ci_ref("createdBy"), URIRef(created_by.iri)))
         g.add((ci_node, ci_ref("specVersion"), Literal(spec_version)))
         node = URIRef(i.iri)
         g.add((node, RDF.type, OWL.NamedIndividual))
