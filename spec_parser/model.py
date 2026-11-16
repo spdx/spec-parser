@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
+import re
 from collections import defaultdict
 from copy import deepcopy
 
@@ -163,6 +164,36 @@ class Model:
                         if c.all_properties[shortname][k] == v:
                             logger.warning(f"In class {c.fqname} property {p} has same {k} as the parent class")
                         c.all_properties[shortname][k] = v
+
+        self.check_individuals_creation_info()
+
+    def check_individuals_creation_info(self):
+        # specVersion, created and createdBy are required and must be valid
+        for i in self.individuals.values():
+            for key in ("specVersion", "created", "createdBy"):
+                value = i.metadata.get(key)
+                if value is None:
+                    logger.error(f"Individual {i.fqname} missing required metadata '{key}'")
+                elif not self.valid_creation_info(key, value):
+                    logger.error(f"Individual {i.fqname} has invalid {key} '{value}'")
+
+    def valid_creation_info(self, key, value):
+        if key == "createdBy":
+            # reference to an individual of an Agent class, e.g. /Core/SpdxOrganization
+            agent = self.individuals.get(value)
+            if agent is None:
+                return False
+            typ = agent.metadata["type"]
+            cn = typ if typ.startswith("/") else f"/{agent.ns.name}/{typ}"
+            while cn in self.classes and cn != "/Core/Agent":
+                cn = self.classes[cn].fqsupercname
+            return cn == "/Core/Agent"
+        # value must match the pattern of the property's datatype
+        prop = self.properties[f"/Core/{key}"]
+        rng = prop.metadata["Range"]
+        dt = self.datatypes.get(rng if rng.startswith("/") else f"/{prop.ns.name}/{rng}")
+        pattern = dt.format.get("pattern") if dt else None
+        return not pattern or re.fullmatch(pattern, value) is not None
 
     def generate(self, cfg):
         if cfg.generate_jsondump:
@@ -387,6 +418,9 @@ class Individual:
         "name",
         "type",
         "IRI",
+        "specVersion",
+        "created",
+        "createdBy",
     )
 
     def __init__(self, fname, ns):
