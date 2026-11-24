@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 def gen_rdf(model, outpath, cfg):
     p = outpath
 
-    ret = gen_rdf_ontology(model)
+    ret = gen_rdf_ontology(model, cfg.info)
     for ext in ["hext", "json-ld", "longturtle", "n3", "nt", "pretty-xml", "trig", "ttl", "xml"]:
         f = p / ("spdx-model." + ext)
         ret.serialize(f, format=ext, encoding="utf-8")
@@ -40,7 +40,7 @@ def xsd_range(rng, propname):
     return None
 
 
-def gen_rdf_ontology(model):
+def gen_rdf_ontology(model, info):
     g = Graph()
     g.bind("spdx", Namespace(URI_BASE))
     OMG_ANN = Namespace("https://www.omg.org/spec/Commons/AnnotationVocabulary/")
@@ -48,7 +48,12 @@ def gen_rdf_ontology(model):
 
     node = URIRef(URI_BASE)
     g.add((node, RDF.type, OWL.Ontology))
-    g.add((node, OWL.versionIRI, node))
+    if info:
+        info_iri = f"{URI_BASE.rstrip('/').rsplit('/', 1)[0]}/{info}"
+        g.add((node, OWL.versionIRI, URIRef(info_iri)))
+        g.add((node, OWL.versionInfo, Literal(info)))
+    else:
+        g.add((node, OWL.versionIRI, node))
     g.add((node, RDFS.label, Literal("System Package Data Exchange™ (SPDX®) Ontology", lang="en")))
     g.add(
         (

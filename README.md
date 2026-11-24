@@ -24,6 +24,7 @@ the default functionality is to generate everything.
 
 ```
 usage: main.py [-h] [-V] [-d] [-v] [-f] [-n]
+               [-I INFO]
                [-o OUTPUT]
                [-j] [-J dir]
                [-m] [-M dir]
@@ -44,6 +45,7 @@ options:
   -h, --help                                show this help message and exit
   -d, --debug                               Print spec-parser debug information.
   -f, --force                               Force overwrite of existing output directories.
+  -I, --info                                Information about the specification version.
   -j, --generate-jsondump                   Generate a dump of the model in JSON format.
   -J, --output-jsondump OUTPUT_JSONDUMP     Output directory for JSON dump file.
   -m, --generate-mkdocs                     Generate MkDocs output.
